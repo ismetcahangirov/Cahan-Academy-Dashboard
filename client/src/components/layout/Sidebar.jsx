@@ -35,6 +35,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       baseLinks.push(
         { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
         { name: 'Tələbələr', path: '/students', icon: Users },
+        { name: 'Kurslar', path: '/courses', icon: BookOpen },
         { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },

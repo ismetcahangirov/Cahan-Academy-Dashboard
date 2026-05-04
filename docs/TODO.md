@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 7 — Qruplar (14/14) |
-| **Aktiv branch** | `feature/groups-api` |
-| **Növbəti branch** | `feature/courses-api` |
-| **Növbəti tapşırıq** | Kurslar və Dərslər (Mərhələ 8) |
+| **Son tamamlanan tapşırıq** | Mərhələ 8 — Kurslar (14/14) |
+| **Aktiv branch** | `feature/courses-api` |
+| **Növbəti branch** | `feature/attendance-api` |
+| **Növbəti tapşırıq** | Davamiyyət Sistemi (Mərhələ 9) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Qruplar modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Kurslar modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 

@@ -11,6 +11,7 @@ import Students from './pages/students/Students';
 import Invitations from './pages/invitations/Invitations';
 import AcceptInvitation from './pages/invitations/AcceptInvitation';
 import Groups from './pages/groups/Groups';
+import Courses from './pages/courses/Courses';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -49,6 +50,8 @@ function App() {
             <Route path="/students" element={<Students />} />
             <Route path="/invitations" element={<Invitations />} />
             <Route path="/groups" element={<Groups />} />
+            <Route path="/courses" element={<Courses />} />
+            <Route path="/courses/:id" element={<div className="text-white">Kurs Detalları (Tezliklə)</div>} />
             <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
           </Route>
         </Route>
