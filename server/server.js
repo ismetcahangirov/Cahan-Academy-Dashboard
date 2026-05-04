@@ -16,6 +16,7 @@ import groupRoutes from './routes/groupRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import homeworkRoutes from './routes/homeworkRoutes.js';
+import classworkRoutes from './routes/classworkRoutes.js';
 import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
@@ -59,6 +60,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/homeworks', homeworkRoutes);
+app.use('/api/classworks', classworkRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
