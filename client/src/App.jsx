@@ -10,6 +10,7 @@ import Teachers from './pages/teachers/Teachers';
 import Students from './pages/students/Students';
 import Invitations from './pages/invitations/Invitations';
 import AcceptInvitation from './pages/invitations/AcceptInvitation';
+import Groups from './pages/groups/Groups';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -47,6 +48,7 @@ function App() {
             <Route path="/teachers" element={<Teachers />} />
             <Route path="/students" element={<Students />} />
             <Route path="/invitations" element={<Invitations />} />
+            <Route path="/groups" element={<Groups />} />
             <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
           </Route>
         </Route>
