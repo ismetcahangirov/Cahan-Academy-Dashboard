@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 5 — İstifadəçilər (8/24) |
+| **Son tamamlanan tapşırıq** | Mərhələ 5 — İstifadəçilər (10/24) |
 | **Aktiv branch** | `feature/m05-users` |
 | **Növbəti branch** | `feature/m05-users` |
-| **Növbəti tapşırıq** | İstifadəçi əlavə etmə/redaktə etmə Modal-ı |
+| **Növbəti tapşırıq** | Müəllimlər siyahısı və API (5.1) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | İstifadəçi siyahısı və cədvəli hazırdır. Modallara keçilir. |
+| **Qeyd** | Ümumi istifadəçi idarəetməsi (siyahı, əlavə/redaktə/silmə) hazırdır. |
 
 ---
 
@@ -185,7 +185,7 @@
 ---
 
 ## Mərhələ 5 — İstifadəçi İdarəsi
-**Status:** `[~]` davam edir — 8/24 tamamlandı  
+**Status:** `[~]` davam edir — 9/24 tamamlandı  
 **Branch:** `feature/m05-users`
 
 ### 5.0 Ümumi İstifadəçi İdarəetməsi
@@ -197,6 +197,7 @@
 - [x] `UserApi` (RTK Query) yaradıldı
 - [x] İstifadəçilər cədvəli dizayn edildi (Premium Table)
 - [x] Siyahıda pagination (səhifələmə) tətbiq edildi
+- [x] İstifadəçi əlavə etmə/redaktə etmə Modal-ı yaradıldı
 
 ### 5.1 Müəllimlər
 
