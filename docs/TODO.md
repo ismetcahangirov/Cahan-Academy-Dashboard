@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 11 — Sinif İşləri (15/15) |
-| **Aktiv branch** | `feature/classworks-api` |
-| **Növbəti branch** | `feature/quizzes-api` |
-| **Növbəti tapşırıq** | Quiz Sistemi (Mərhələ 12) |
+| **Son tamamlanan tapşırıq** | Mərhələ 12 — Quiz Sistemi (15/15) |
+| **Aktiv branch** | `feature/quizzes-api` |
+| **Növbəti branch** | `feature/notifications-api` |
+| **Növbəti tapşırıq** | Bildiriş Sistemi (Mərhələ 13) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Sinif İşləri modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Quiz sistemi (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -350,30 +350,6 @@
 
 ---
 
-## Mərhələ 11 — İmtahanlar
-**Status:** `[ ]` gözləyir — 0/14 tamamlandı
-
-### 11.1 Backend
-- [ ] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
-- [ ] `GET /api/exams` — siyahı
-- [ ] `GET /api/exams/:id` — tək imtahan
-- [ ] `POST /api/exams` — yarat
-- [ ] `PUT /api/exams/:id` — yenilə
-- [ ] `DELETE /api/exams/:id` — sil
-- [ ] `POST /api/exams/:id/results` — nəticə əlavə et
-- [ ] `GET /api/exams/:id/results` — nəticələri gör
-
-### 11.2 Frontend
-- [ ] Redux `examsSlice` yaradıldı
-- [ ] RTK Query `examsApi` yaradıldı
-- [ ] İmtahanlar səhifəsi yaradıldı
-- [ ] İmtahan yaratma modalı yaradıldı
-- [ ] İmtahan nəticələri görünüşü yaradıldı
-- [ ] Rola görə fərqli görünüş tətbiq edildi
-
----
-
-## Mərhələ 12 — Profil & Parametrlər
 **Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 12.1 Backend
