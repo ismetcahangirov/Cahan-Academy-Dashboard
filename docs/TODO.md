@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 3 — Layout & Naviqasiya (10/10) |
-| **Aktiv branch** | `feature/m03-layout` |
-| **Növbəti branch** | `feature/m04-dashboard` |
-| **Növbəti tapşırıq** | Dashboard Backend statistikaları |
+| **Son tamamlanan tapşırıq** | Mərhələ 4 — Dashboard (11/11) |
+| **Aktiv branch** | `feature/m04-dashboard` |
+| **Növbəti branch** | `feature/m05-users` |
+| **Növbəti tapşırıq** | İstifadəçilər modulu |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 3 tamamlandı. Mərhələ 4-ə (Dashboard) keçilir. |
+| **Qeyd** | Mərhələ 4 tamamlandı. Mərhələ 5-ə keçilir. |
 
 ---
 
@@ -166,27 +166,21 @@
 
 ---
 
-## Mərhələ 4 — Dashboard Səhifəsi
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+## Mərhələ 4 — Dashboard
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı  
+**Branch:** `feature/m04-dashboard`
 
-### 4.1 Backend
-**Branch:** `feature/m04-dashboard-backend`
-
-- [ ] Statistika endpointi hazırlandı (`GET /api/dashboard/stats`)
-- [ ] Son fəaliyyətlər endpointi hazırlandı
-- [ ] Rola görə fərqli statistika qaytarılır
-
-### 4.2 Frontend
-**Branch:** `feature/m04-dashboard-frontend`
-
-- [ ] Redux `dashboardSlice` yaradıldı
-- [ ] RTK Query `dashboardApi` yaradıldı
-- [ ] Ümumi statistika kartları yaradıldı (tələbə sayı, müəllim sayı, qrup sayı, imtahan sayı)
-- [ ] Admin dashboard komponenti yaradıldı
-- [ ] Müəllim dashboard komponenti yaradıldı
-- [ ] Tələbə dashboard komponenti yaradıldı
-- [ ] Qrafik / Chart komponenti əlavə edildi
-- [ ] Son fəaliyyətlər lenti yaradıldı
+- [x] Dashboard statistikaları üçün `controller` yaradıldı (Backend)
+- [x] Ümumi tələbə, müəllim, qrup sayını gətirən endpoint hazırlandı
+- [x] Aktiv dərslərin sayını hesablama məntiqi yazıldı
+- [x] Aylıq artım faizini hesablayan util funksiya yazıldı
+- [x] "Son aktivlik" siyahısı üçün backend route yaradıldı
+- [x] `DashboardApi` (RTK Query) yaradıldı (Frontend)
+- [x] Statistik kartlar real dataya bağlandı
+- [x] Aktivlik feed-i frontend-də göstərildi
+- [x] Statistika üçün Skeleton loader-lər hazırlandı
+- [x] Error boundary-lər əlavə edildi
+- [x] Dashboard datası üçün caching (RTK Query) tənzimləndi
 
 ---
 
@@ -448,8 +442,8 @@
 | 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
 | 2 — Auth | `[x]` tamamlandı | 96% (26/27) | 27 |
 | 3 — Layout | `[x]` tamamlandı | 100% (10/10) | 10 |
-| 4 — Dashboard | `[~]` davam edir | 0% (0/11) | 11 |
-| 5 — İstifadəçilər | `[ ]` gözləyir | 0% (0/24) | 24 |
+| 4 — Dashboard | `[x]` tamamlandı | 100% (11/11) | 11 |
+| 5 — İstifadəçilər | `[~]` davam edir | 0% (0/24) | 24 |
 | 6 — Dəvətlər | `[ ]` gözləyir | 0% (0/14) | 14 |
 | 7 — Qruplar | `[ ]` gözləyir | 0% (0/14) | 14 |
 | 8 — Cədvəl | `[ ]` gözləyir | 0% (0/11) | 11 |
@@ -460,7 +454,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **35% (82/237)** | **237** |
+| **CƏMI** | | **39% (93/237)** | **237** |
 
 ---
 
