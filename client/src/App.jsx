@@ -13,6 +13,7 @@ import AcceptInvitation from './pages/invitations/AcceptInvitation';
 import Groups from './pages/groups/Groups';
 import Courses from './pages/courses/Courses';
 import Attendance from './pages/attendance/Attendance';
+import Homeworks from './pages/homeworks/Homeworks';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -53,6 +54,7 @@ function App() {
             <Route path="/groups" element={<Groups />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/attendance" element={<Attendance />} />
+            <Route path="/homeworks" element={<Homeworks />} />
             <Route path="/courses/:id" element={<div className="text-white">Kurs Detalları (Tezliklə)</div>} />
             <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
           </Route>
