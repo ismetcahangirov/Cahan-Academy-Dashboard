@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | .gitignore hazırlandı (17/19) |
+| **Son tamamlanan tapşırıq** | Mərhələ 0 bitdi: .eslintrc və .prettierrc hazırlandı (19/19) |
 | **Aktiv branch** | — (hələ başlanmayıb) |
-| **Növbəti branch** | `feature/m00-eslint-prettier` |
-| **Növbəti tapşırıq** | `.eslintrc` hazırlandı |
+| **Növbəti branch** | `feature/m01-frontend-setup` |
+| **Növbəti tapşırıq** | Vite + React layihəsi yaradıldı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 0-da 2 tapşırıq qalıb, Mərhələ 1–15 tamamilə başlanmayıb |
+| **Qeyd** | Mərhələ 0 bitdi. Mərhələ 1-ə keçilə bilər. |
 
 ---
 
@@ -42,8 +42,8 @@
 ---
 
 ## Mərhələ 0 — Hazırlıq & Sənədləşmə
-**Branch:** `feature/m00-env-files`  
-**Status:** `[~]` davam edir — 17/19 tamamlandı
+**Branch:** —  
+**Status:** `[x]` tamamlandı — 19/19 tamamlandı
 
 - [x] README.md hazırlandı
 - [x] TODO.md hazırlandı
@@ -62,8 +62,8 @@
 - [x] `.env.example` (client) hazırlandı → `feature/m00-env-files`
 - [x] `.env.example` (server) hazırlandı → `feature/m00-env-files`
 - [x] `.gitignore` hazırlandı → `feature/m00-env-files`
-- [ ] `.eslintrc` hazırlandı → `feature/m00-eslint-prettier`
-- [ ] `.prettierrc` hazırlandı → `feature/m00-eslint-prettier`
+- [x] `.eslintrc` hazırlandı → `feature/m00-eslint-prettier`
+- [x] `.prettierrc` hazırlandı → `feature/m00-eslint-prettier`
 
 ---
 
@@ -442,7 +442,7 @@
 
 | Mərhələ | Status | Tamamlanma | Tapşırıq sayı |
 |---|---|---|---|
-| 0 — Sənədləşmə | `[~]` davam edir | 89% (17/19) | 19 |
+| 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[ ]` gözləyir | 0% (0/26) | 26 |
 | 2 — Auth | `[ ]` gözləyir | 0% (0/27) | 27 |
 | 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
@@ -458,7 +458,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **7% (17/237)** | **237** |
+| **CƏMI** | | **8% (19/237)** | **237** |
 
 ---
 
