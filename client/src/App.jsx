@@ -2,15 +2,27 @@ import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Dashboard from './pages/Dashboard';
+import AppLayout from './components/layout/AppLayout';
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
     <>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster 
+        position="top-right" 
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: '#1a1a1a',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+        }}
+      />
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
@@ -22,11 +34,12 @@ function App() {
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={
-            <div className="min-h-screen flex items-center justify-center bg-black text-white">
-              <h1 className="text-4xl font-bold">Xoş gəldiniz, Dashboard tezliklə hazır olacaq!</h1>
-            </div>
-          } />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            {/* Other protected routes will go here */}
+            <Route path="/users" element={<div className="text-white">İstifadəçilər Səhifəsi (Tezliklə)</div>} />
+            <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
+          </Route>
         </Route>
       </Routes>
     </>
