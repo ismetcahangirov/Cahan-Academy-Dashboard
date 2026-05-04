@@ -29,11 +29,19 @@ export const userApi = createApi({
       query: (id) => `/${id}`,
       providesTags: ['User'],
     }),
+    addUser: builder.mutation({
+      query: (user) => ({
+        url: '/',
+        method: 'POST',
+        body: user,
+      }),
+      invalidatesTags: ['User'],
+    }),
     updateUser: builder.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, ...user }) => ({
         url: `/${id}`,
         method: 'PUT',
-        body: data,
+        body: user,
       }),
       invalidatesTags: ['User'],
     }),
@@ -50,6 +58,7 @@ export const userApi = createApi({
 export const {
   useGetUsersQuery,
   useGetUserByIdQuery,
+  useAddUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
 } = userApi;
