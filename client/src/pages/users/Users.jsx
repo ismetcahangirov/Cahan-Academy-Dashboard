@@ -15,10 +15,13 @@ import {
 } from 'lucide-react';
 import { 
   useGetUsersQuery, 
-  useDeleteUserMutation 
+  useDeleteUserMutation,
+  useAddUserMutation,
+  useUpdateUserMutation 
 } from '../../features/users/userApi';
 import { cn } from '../../lib/utils';
 import toast from 'react-hot-toast';
+import UserModal from './UserModal';
 
 const RoleBadge = ({ role }) => {
   const styles = {
@@ -53,6 +56,8 @@ const Users = () => {
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const { data, isLoading, isFetching } = useGetUsersQuery({ 
     page, 
@@ -61,6 +66,8 @@ const Users = () => {
   });
 
   const [deleteUser] = useDeleteUserMutation();
+  const [addUser, { isLoading: isAdding }] = useAddUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -79,6 +86,31 @@ const Users = () => {
     }
   };
 
+  const handleAddUser = () => {
+    setSelectedUser(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditUser = (user) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
+  const handleModalSubmit = async (formData) => {
+    try {
+      if (selectedUser) {
+        await updateUser({ id: selectedUser._id, ...formData }).unwrap();
+        toast.success('İstifadəçi məlumatları yeniləndi');
+      } else {
+        await addUser(formData).unwrap();
+        toast.success('Yeni istifadəçi yaradıldı');
+      }
+      setIsModalOpen(false);
+    } catch (err) {
+      toast.error(err.data?.message || 'Xəta baş verdi');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
@@ -87,7 +119,10 @@ const Users = () => {
           <h1 className="text-2xl font-bold text-white">İstifadəçilər</h1>
           <p className="text-white/60 text-sm mt-1">Sistemdəki bütün istifadəçilərin idarə edilməsi.</p>
         </div>
-        <button className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0">
+        <button 
+          onClick={handleAddUser}
+          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
+        >
           <UserPlus size={18} />
           Yeni İstifadəçi
         </button>
@@ -167,7 +202,10 @@ const Users = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                        <button 
+                          onClick={() => handleEditUser(user)}
+                          className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                        >
                           <Edit2 size={16} />
                         </button>
                         <button 
@@ -238,6 +276,14 @@ const Users = () => {
           </div>
         )}
       </div>
+
+      <UserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+        user={selectedUser}
+        isLoading={isAdding || isUpdating}
+      />
     </div>
   );
 };
