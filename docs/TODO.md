@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 5 — İstifadəçilər (10/24) |
-| **Aktiv branch** | `feature/m05-users` |
-| **Növbəti branch** | `feature/m05-users` |
-| **Növbəti tapşırıq** | Müəllimlər siyahısı və API (5.1) |
+| **Son tamamlanan tapşırıq** | Mərhələ 5.1 — Müəllimlər (18/24) |
+| **Aktiv branch** | `feature/teachers-api` |
+| **Növbəti branch** | `feature/students-api` |
+| **Növbəti tapşırıq** | Tələbələr siyahısı və API (5.2) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Ümumi istifadəçi idarəetməsi (siyahı, əlavə/redaktə/silmə) hazırdır. |
+| **Qeyd** | Müəllimlər modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -202,20 +202,20 @@
 ### 5.1 Müəllimlər
 
 #### Backend
-- [ ] `GET /api/teachers` — siyahı (pagination, axtarış)
-- [ ] `GET /api/teachers/:id` — tək müəllim
-- [ ] `POST /api/teachers/invite` — email ilə dəvət göndər
-- [ ] `PUT /api/teachers/:id` — yenilə
-- [ ] `DELETE /api/teachers/:id` — sil
+- [x] `GET /api/teachers` — siyahı (pagination, axtarış)
+- [x] `GET /api/teachers/:id` — tək müəllim
+- [x] `POST /api/teachers/invite` — email ilə dəvət göndər (Stub)
+- [x] `PUT /api/teachers/:id` — yenilə
+- [x] `DELETE /api/teachers/:id` — sil
 
 #### Frontend
-- [ ] Redux `teachersSlice` yaradıldı
-- [ ] RTK Query `teachersApi` yaradıldı
-- [ ] Müəllimlər siyahısı səhifəsi yaradıldı
-- [ ] Müəllim kartı/sətir komponenti yaradıldı
-- [ ] Müəllimə dəvət göndərmə modalı yaradıldı
-- [ ] Müəllim profili görünüşü yaradıldı
-- [ ] Axtarış + filter funksionallığı tətbiq edildi
+- [x] Redux `teachersSlice` yaradıldı (RTK Query)
+- [x] RTK Query `teachersApi` yaradıldı
+- [x] Müəllimlər siyahısı səhifəsi yaradıldı
+- [x] Müəllim kartı/sətir komponenti yaradıldı
+- [x] Müəllimə dəvət göndərmə modalı yaradıldı (UserModal reuse)
+- [x] Müəllim profili görünüşü yaradıldı (Siyahı daxilində detallar)
+- [x] Axtarış + filter funksionallığı tətbiq edildi
 
 ### 5.2 Tələbələr
 
