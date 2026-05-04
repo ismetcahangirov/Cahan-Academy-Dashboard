@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 4 — Dashboard (11/11) |
-| **Aktiv branch** | `feature/m04-dashboard` |
+| **Son tamamlanan tapşırıq** | Mərhələ 5 — İstifadəçilər (8/24) |
+| **Aktiv branch** | `feature/m05-users` |
 | **Növbəti branch** | `feature/m05-users` |
-| **Növbəti tapşırıq** | İstifadəçilər modulu |
+| **Növbəti tapşırıq** | İstifadəçi əlavə etmə/redaktə etmə Modal-ı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 4 tamamlandı. Mərhələ 5-ə keçilir. |
+| **Qeyd** | İstifadəçi siyahısı və cədvəli hazırdır. Modallara keçilir. |
 
 ---
 
@@ -185,7 +185,18 @@
 ---
 
 ## Mərhələ 5 — İstifadəçi İdarəsi
-**Status:** `[ ]` gözləyir — 0/24 tamamlandı
+**Status:** `[~]` davam edir — 8/24 tamamlandı  
+**Branch:** `feature/m05-users`
+
+### 5.0 Ümumi İstifadəçi İdarəetməsi
+- [x] İstifadəçi siyahısını gətirən endpoint (`GET /api/users`)
+- [x] İstifadəçi axtarışı və filtrləmə (rola görə)
+- [x] İstifadəçi statusunu dəyişmə (Active/Inactive)
+- [x] İstifadəçi rolunu dəyişmə (Admin/Teacher/Student)
+- [x] İstifadəçini silmə funksiyası
+- [x] `UserApi` (RTK Query) yaradıldı
+- [x] İstifadəçilər cədvəli dizayn edildi (Premium Table)
+- [x] Siyahıda pagination (səhifələmə) tətbiq edildi
 
 ### 5.1 Müəllimlər
 
