@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 1.1 — Frontend (Client) qurulumu (16/26) |
-| **Aktiv branch** | `feature/m01-frontend-setup` |
-| **Növbəti branch** | `feature/m01-backend-setup` |
-| **Növbəti tapşırıq** | Node.js + Express layihəsi yaradıldı |
+| **Son tamamlanan tapşırıq** | Mərhələ 1.2 — Backend (Server) qurulumu (11/11) |
+| **Aktiv branch** | `feature/m01-backend-setup` |
+| **Növbəti branch** | `feature/m02-auth-backend` |
+| **Növbəti tapşırıq** | `User` modeli yaradıldı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 1.1 tamamlandı, Mərhələ 1.2-yə keçilir. |
+| **Qeyd** | Mərhələ 1 tamamlandı. Mərhələ 2-yə (Auth) keçilir. |
 
 ---
 
@@ -93,17 +93,17 @@
 ### 1.2 Backend (Server)
 **Branch:** `feature/m01-backend-setup`
 
-- [ ] Node.js + Express layihəsi yaradıldı
-- [ ] MongoDB bağlantısı quruldu (`config/db.js`)
-- [ ] Mongoose quraşdırıldı
-- [ ] Helmet quraşdırıldı
-- [ ] CORS konfiqurasiya edildi
-- [ ] Morgan (logging) quraşdırıldı
-- [ ] dotenv konfiqurasiya edildi
-- [ ] Rate limiter quraşdırıldı
-- [ ] Global error handler middleware yazıldı
-- [ ] API response utility yazıldı (`utils/apiResponse.js`)
-- [ ] Nodemailer konfiqurasiya edildi
+- [x] Node.js + Express layihəsi yaradıldı
+- [x] MongoDB bağlantısı quruldu (`config/db.js`)
+- [x] Mongoose quraşdırıldı
+- [x] Helmet quraşdırıldı
+- [x] CORS konfiqurasiya edildi
+- [x] Morgan (logging) quraşdırıldı
+- [x] dotenv konfiqurasiya edildi
+- [x] Rate limiter quraşdırıldı
+- [x] Global error handler middleware yazıldı
+- [x] API response utility yazıldı (`utils/apiResponse.js`)
+- [x] Nodemailer konfiqurasiya edildi
 
 ---
 
@@ -443,7 +443,7 @@
 | Mərhələ | Status | Tamamlanma | Tapşırıq sayı |
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
-| 1 — Qurulum | `[~]` davam edir | 62% (16/26) | 26 |
+| 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
 | 2 — Auth | `[ ]` gözləyir | 0% (0/27) | 27 |
 | 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
 | 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
@@ -458,7 +458,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **15% (35/237)** | **237** |
+| **CƏMI** | | **19% (46/237)** | **237** |
 
 ---
 
