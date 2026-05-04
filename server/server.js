@@ -13,6 +13,7 @@ import teacherRoutes from './routes/teacherRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import invitationRoutes from './routes/invitationRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
 
 dotenv.config();
 
@@ -49,6 +50,7 @@ app.use('/api/teachers', teacherRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/invitations', invitationRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/courses', courseRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
