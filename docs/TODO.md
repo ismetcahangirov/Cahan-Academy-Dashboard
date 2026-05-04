@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 0 bitdi: .eslintrc və .prettierrc hazırlandı (19/19) |
-| **Aktiv branch** | — (hələ başlanmayıb) |
-| **Növbəti branch** | `feature/m01-frontend-setup` |
-| **Növbəti tapşırıq** | Vite + React layihəsi yaradıldı |
+| **Son tamamlanan tapşırıq** | Mərhələ 1.1 — Frontend (Client) qurulumu (16/26) |
+| **Aktiv branch** | `feature/m01-frontend-setup` |
+| **Növbəti branch** | `feature/m01-backend-setup` |
+| **Növbəti tapşırıq** | Node.js + Express layihəsi yaradıldı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 0 bitdi. Mərhələ 1-ə keçilə bilər. |
+| **Qeyd** | Mərhələ 1.1 tamamlandı, Mərhələ 1.2-yə keçilir. |
 
 ---
 
@@ -73,22 +73,22 @@
 ### 1.1 Frontend (Client)
 **Branch:** `feature/m01-frontend-setup`
 
-- [ ] Vite + React layihəsi yaradıldı
-- [ ] Tailwind CSS konfiqurasiya edildi
-- [ ] Lucide React quraşdırıldı
-- [ ] React Router v6 quraşdırıldı
-- [ ] Redux Toolkit + RTK Query quraşdırıldı
-- [ ] Redux store quruldu (`src/app/store.js`)
-- [ ] React Hook Form quraşdırıldı
-- [ ] Zod quraşdırıldı
-- [ ] Axios instance yaradıldı (base URL, interceptors)
-- [ ] i18next quraşdırıldı (AZ, EN, RU)
-- [ ] AZ tərcümə faylı yaradıldı
-- [ ] EN tərcümə faylı yaradıldı
-- [ ] RU tərcümə faylı yaradıldı
-- [ ] Tailwind rəng palitası konfiqurasiya edildi (bordo, ağ, qara)
-- [ ] Global CSS dəyişənləri yaradıldı
-- [ ] Qovluq strukturu yaradıldı (`features/`, `pages/`, `components/` və s.)
+- [x] Vite + React layihəsi yaradıldı
+- [x] Tailwind CSS konfiqurasiya edildi
+- [x] Lucide React quraşdırıldı
+- [x] React Router v6 quraşdırıldı
+- [x] Redux Toolkit + RTK Query quraşdırıldı
+- [x] Redux store quruldu (`src/app/store.js`)
+- [x] React Hook Form quraşdırıldı
+- [x] Zod quraşdırıldı
+- [x] Axios instance yaradıldı (base URL, interceptors)
+- [x] i18next quraşdırıldı (AZ, EN, RU)
+- [x] AZ tərcümə faylı yaradıldı
+- [x] EN tərcümə faylı yaradıldı
+- [x] RU tərcümə faylı yaradıldı
+- [x] Tailwind rəng palitası konfiqurasiya edildi (bordo, ağ, qara)
+- [x] Global CSS dəyişənləri yaradıldı
+- [x] Qovluq strukturu yaradıldı (`features/`, `pages/`, `components/` və s.)
 
 ### 1.2 Backend (Server)
 **Branch:** `feature/m01-backend-setup`
@@ -443,7 +443,7 @@
 | Mərhələ | Status | Tamamlanma | Tapşırıq sayı |
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
-| 1 — Qurulum | `[ ]` gözləyir | 0% (0/26) | 26 |
+| 1 — Qurulum | `[~]` davam edir | 62% (16/26) | 26 |
 | 2 — Auth | `[ ]` gözləyir | 0% (0/27) | 27 |
 | 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
 | 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
@@ -458,7 +458,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **8% (19/237)** | **237** |
+| **CƏMI** | | **15% (35/237)** | **237** |
 
 ---
 
