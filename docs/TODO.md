@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 8 — Kurslar (14/14) |
-| **Aktiv branch** | `feature/courses-api` |
-| **Növbəti branch** | `feature/attendance-api` |
-| **Növbəti tapşırıq** | Davamiyyət Sistemi (Mərhələ 9) |
+| **Son tamamlanan tapşırıq** | Mərhələ 9 — Davamiyyət (10/10) |
+| **Aktiv branch** | `feature/attendance-api` |
+| **Növbəti branch** | `feature/materials-api` |
+| **Növbəti tapşırıq** | Materiallar Modulu (Mərhələ 10) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Kurslar modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Davamiyyət sistemi (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -304,7 +304,6 @@
 
 ---
 
-## Mərhələ 9 — Ev Tapşırıqları (Homeworks)
 **Status:** `[ ]` gözləyir — 0/16 tamamlandı
 
 ### 9.1 Backend
