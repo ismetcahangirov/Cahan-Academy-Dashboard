@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.use('/api', limiter);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
