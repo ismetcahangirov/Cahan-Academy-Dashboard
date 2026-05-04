@@ -12,8 +12,8 @@
 |---|---|
 | **Son tamamlanan tapşırıq** | Mərhələ 9 — Davamiyyət (10/10) |
 | **Aktiv branch** | `feature/attendance-api` |
-| **Növbəti branch** | `feature/materials-api` |
-| **Növbəti tapşırıq** | Materiallar Modulu (Mərhələ 10) |
+| **Növbəti branch** | `feature/homeworks-api` |
+| **Növbəti tapşırıq** | Ev Tapşırıqları Modulu (Mərhələ 10) |
 | **Bloklanmış tapşırıq** | Yoxdur |
 | **Qeyd** | Davamiyyət sistemi (Backend API + Frontend UI) tamamlandı. |
 
@@ -104,6 +104,7 @@
 - [x] Global error handler middleware yazıldı
 - [x] API response utility yazıldı (`utils/apiResponse.js`)
 - [x] Nodemailer konfiqurasiya edildi
+- [x] Admin seed mexanizmi yaradıldı (seedAdmin.js)
 
 ---
 
@@ -304,6 +305,7 @@
 
 ---
 
+## Mərhələ 10 — Ev Tapşırıqları (Homeworks)
 **Status:** `[ ]` gözləyir — 0/16 tamamlandı
 
 ### 9.1 Backend
@@ -328,7 +330,7 @@
 
 ---
 
-## Mərhələ 10 — Sinif İşləri (Classworks)
+## Mərhələ 11 — Sinif İşləri (Classworks)
 **Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 10.1 Backend

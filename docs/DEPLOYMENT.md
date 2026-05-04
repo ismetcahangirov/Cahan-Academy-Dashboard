@@ -428,7 +428,8 @@ FRONTEND
 
 VERİLƏNLƏR BAZASI
   [ ]  MongoDB Atlas bağlantısı aktiv
-  [ ]  İlk admin istifadəçisi yaradılıb
+  [ ]  İlk admin hesabı avtomatik yaradıldı
+  [ ]  ismetcahangirov022@gmail.com ilə giriş yoxlanıldı
   [ ]  İndexlər yaradılıb
 
 TƏHLÜKƏSİZLİK
