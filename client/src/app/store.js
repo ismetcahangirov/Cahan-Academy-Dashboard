@@ -9,6 +9,7 @@ import { invitationsApi } from '../features/invitations/invitationsApi';
 import { groupsApi } from '../features/groups/groupsApi';
 import { coursesApi } from '../features/courses/coursesApi';
 import { attendanceApi } from '../features/attendance/attendanceApi';
+import { homeworksApi } from '../features/homeworks/homeworksApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({
@@ -22,6 +23,7 @@ export const store = configureStore({
     [groupsApi.reducerPath]: groupsApi.reducer,
     [coursesApi.reducerPath]: coursesApi.reducer,
     [attendanceApi.reducerPath]: attendanceApi.reducer,
+    [homeworksApi.reducerPath]: homeworksApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -34,7 +36,8 @@ export const store = configureStore({
       invitationsApi.middleware,
       groupsApi.middleware,
       coursesApi.middleware,
-      attendanceApi.middleware
+      attendanceApi.middleware,
+      homeworksApi.middleware
     ),
 });
 

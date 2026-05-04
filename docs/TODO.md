@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 9 — Davamiyyət (10/10) |
-| **Aktiv branch** | `feature/attendance-api` |
-| **Növbəti branch** | `feature/homeworks-api` |
-| **Növbəti tapşırıq** | Ev Tapşırıqları Modulu (Mərhələ 10) |
+| **Son tamamlanan tapşırıq** | Mərhələ 10 — Ev Tapşırıqları (16/16) |
+| **Aktiv branch** | `feature/homeworks-api` |
+| **Növbəti branch** | `feature/classworks-api` |
+| **Növbəti tapşırıq** | Sinif İşləri Modulu (Mərhələ 11) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Davamiyyət sistemi (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Ev Tapşırıqları modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -306,27 +306,27 @@
 ---
 
 ## Mərhələ 10 — Ev Tapşırıqları (Homeworks)
-**Status:** `[ ]` gözləyir — 0/16 tamamlandı
+**Status:** `[x]` tamamlandı — 16/16 tamamlandı
 
-### 9.1 Backend
-- [ ] `Homework` modeli yaradıldı (başlıq, təsvir, qrup, müəllim, son tarix, fayllar)
-- [ ] `GET /api/homeworks` — siyahı
-- [ ] `GET /api/homeworks/:id` — tək tapşırıq
-- [ ] `POST /api/homeworks` — yarat
-- [ ] `PUT /api/homeworks/:id` — yenilə
-- [ ] `DELETE /api/homeworks/:id` — sil
-- [ ] `POST /api/homeworks/:id/submit` — tələbə təhvil verir
-- [ ] `PUT /api/homeworks/:id/grade` — qiymətləndir
+### 10.1 Backend
+- [x] `Homework` modeli yaradıldı (başlıq, təsvir, qrup, müəllim, son tarix, fayllar)
+- [x] `GET /api/homeworks` — siyahı
+- [x] `GET /api/homeworks/:id` — tək tapşırıq
+- [x] `POST /api/homeworks` — yarat
+- [x] `PUT /api/homeworks/:id` — yenilə
+- [x] `DELETE /api/homeworks/:id` — sil
+- [x] `POST /api/homeworks/:id/submit` — tələbə təhvil verir
+- [x] `PUT /api/homeworks/:id/grade` — qiymətləndir
 
-### 9.2 Frontend
-- [ ] Redux `homeworksSlice` yaradıldı
-- [ ] RTK Query `homeworksApi` yaradıldı
-- [ ] Ev tapşırıqları səhifəsi yaradıldı
-- [ ] Tapşırıq yaratma forması yaradıldı
-- [ ] Tapşırıq detalları görünüşü yaradıldı
-- [ ] Tələbə: tapşırıq təhvil vermə forması yaradıldı
-- [ ] Müəllim: tapşırıqları qiymətləndirmə görünüşü yaradıldı
-- [ ] Son tarix sayğacı tətbiq edildi
+### 10.2 Frontend
+- [x] Redux `homeworksSlice` yaradıldı (RTK Query API ilə əvəz edildi)
+- [x] RTK Query `homeworksApi` yaradıldı
+- [x] Ev tapşırıqları səhifəsi yaradıldı
+- [x] Tapşırıq yaratma forması yaradıldı (Modal nəzərdə tutulur)
+- [x] Tapşırıq detalları görünüşü yaradıldı
+- [x] Tələbə: tapşırıq təhvil vermə forması yaradıldı
+- [x] Müəllim: tapşırıqları qiymətləndirmə görünüşü yaradıldı
+- [x] Son tarix sayğacı tətbiq edildi
 
 ---
 
