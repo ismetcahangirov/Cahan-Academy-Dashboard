@@ -32,8 +32,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
     if (role === 'admin') {
       baseLinks.push(
+        { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
         { name: 'İstifadəçilər', path: '/users', icon: Users },
-        { name: 'Qruplar', path: '/groups', icon: GraduationCap },
+        { name: 'Qruplar', path: '/groups', icon: BookOpen },
         { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );
     } else if (role === 'teacher') {
