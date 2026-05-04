@@ -4,6 +4,7 @@ import authReducer from '../features/auth/authSlice';
 import { dashboardApi } from '../features/dashboard/dashboardApi';
 import { userApi } from '../features/users/userApi';
 import { teachersApi } from '../features/teachers/teachersApi';
+import { studentsApi } from '../features/students/studentsApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({
@@ -12,6 +13,7 @@ export const store = configureStore({
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [teachersApi.reducerPath]: teachersApi.reducer,
+    [studentsApi.reducerPath]: studentsApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -19,7 +21,8 @@ export const store = configureStore({
       authApi.middleware, 
       dashboardApi.middleware, 
       userApi.middleware,
-      teachersApi.middleware
+      teachersApi.middleware,
+      studentsApi.middleware
     ),
 });
 
