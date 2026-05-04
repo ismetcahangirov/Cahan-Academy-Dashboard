@@ -12,6 +12,7 @@ import userRoutes from './routes/userRoutes.js';
 import teacherRoutes from './routes/teacherRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import invitationRoutes from './routes/invitationRoutes.js';
+import groupRoutes from './routes/groupRoutes.js';
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/teachers', teacherRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/invitations', invitationRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
