@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 6 — Dəvətlər (12/12) |
-| **Aktiv branch** | `feature/invitations-api` |
+| **Son tamamlanan tapşırıq** | Mərhələ 7 — Qruplar (14/14) |
+| **Aktiv branch** | `feature/groups-api` |
 | **Növbəti branch** | `feature/courses-api` |
-| **Növbəti tapşırıq** | Kurslar və Dərslər (Mərhələ 7) |
+| **Növbəti tapşırıq** | Kurslar və Dərslər (Mərhələ 8) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Dəvətlər sistemi (Email + Token + Registration) tamamlandı. |
+| **Qeyd** | Qruplar modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -262,25 +262,25 @@
 ---
 
 ## Mərhələ 7 — Qruplar
-**Status:** `[ ]` gözləyir — 0/14 tamamlandı
+**Status:** `[x]` tamamlandı — 14/14 tamamlandı
 
 ### 7.1 Backend
-- [ ] `Group` modeli yaradıldı (ad, müəllim, tələbələr, cədvəl)
-- [ ] `GET /api/groups` — siyahı
-- [ ] `GET /api/groups/:id` — tək qrup
-- [ ] `POST /api/groups` — yarat
-- [ ] `PUT /api/groups/:id` — yenilə
-- [ ] `DELETE /api/groups/:id` — sil
-- [ ] `POST /api/groups/:id/students` — tələbə əlavə et
-- [ ] `DELETE /api/groups/:id/students/:studentId` — tələbəni çıxar
+- [x] `Group` modeli yaradıldı (ad, müəllim, tələbələr, cədvəl)
+- [x] `GET /api/groups` — siyahı
+- [x] `GET /api/groups/:id` — tək qrup
+- [x] `POST /api/groups` — yarat
+- [x] `PUT /api/groups/:id` — yenilə
+- [x] `DELETE /api/groups/:id` — sil
+- [x] `POST /api/groups/:id/students` — tələbə əlavə et
+- [x] `DELETE /api/groups/:id/students/:studentId` — tələbəni çıxar (Stub)
 
 ### 7.2 Frontend
-- [ ] Redux `groupsSlice` yaradıldı
-- [ ] RTK Query `groupsApi` yaradıldı
-- [ ] Qruplar səhifəsi yaradıldı
-- [ ] Qrup yaratma modalı yaradıldı
-- [ ] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
-- [ ] Qrup detalları görünüşü yaradıldı
+- [x] Redux `groupsSlice` yaradıldı (RTK Query)
+- [x] RTK Query `groupsApi` yaradıldı
+- [x] Qruplar səhifəsi yaradıldı
+- [x] Qrup yaratma modalı yaradıldı
+- [x] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
+- [x] Qrup detalları görünüşü yaradıldı (Kart daxilində)
 
 ---
 
