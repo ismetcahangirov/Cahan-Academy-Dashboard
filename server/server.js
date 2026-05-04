@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import authRoutes from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -33,6 +34,9 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 app.use('/api', limiter);
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
