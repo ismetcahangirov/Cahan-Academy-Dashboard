@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Attendance from '../models/Attendance.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 

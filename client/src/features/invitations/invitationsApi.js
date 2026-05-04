@@ -3,9 +3,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const invitationsApi = createApi({
   reducerPath: 'invitationsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/invitations',
+    baseUrl: `${import.meta.env.VITE_API_URL || ''}/invitations`,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
+      const token = getState().auth.user?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
