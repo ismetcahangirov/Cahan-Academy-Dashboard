@@ -15,7 +15,8 @@ import {
   Menu,
   GraduationCap,
   Mail,
-  CheckCircle
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +39,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: 'Tələbələr', path: '/students', icon: Users },
         { name: 'Kurslar', path: '/courses', icon: BookOpen },
         { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
+        { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
         { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },
