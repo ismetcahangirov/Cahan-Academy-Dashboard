@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 1.2 — Backend (Server) qurulumu (11/11) |
-| **Aktiv branch** | `feature/m01-backend-setup` |
-| **Növbəti branch** | `feature/m02-auth-backend` |
-| **Növbəti tapşırıq** | `User` modeli yaradıldı |
+| **Son tamamlanan tapşırıq** | Mərhələ 2.1 — Backend — Auth (13/13) |
+| **Aktiv branch** | `feature/m02-auth-backend` |
+| **Növbəti branch** | `feature/m02-auth-frontend` |
+| **Növbəti tapşırıq** | Redux `authSlice` yaradıldı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 1 tamamlandı. Mərhələ 2-yə (Auth) keçilir. |
+| **Qeyd** | Mərhələ 2.1 tamamlandı, Mərhələ 2.2-yə (Frontend Auth) keçilir. |
 
 ---
 
@@ -113,19 +113,19 @@
 ### 2.1 Backend — Auth
 **Branch:** `feature/m02-auth-backend`
 
-- [ ] `User` modeli yaradıldı (ad, email, şifrə, rol, avatar, status)
-- [ ] Şifrə hashlanması (bcryptjs) tətbiq edildi
-- [ ] JWT token generasiyası yazıldı (`generateToken.js`)
-- [ ] Refresh token mexanizmi tətbiq edildi
-- [ ] `POST /api/auth/register` endpointi hazırlandı
-- [ ] `POST /api/auth/login` endpointi hazırlandı
-- [ ] `POST /api/auth/logout` endpointi hazırlandı
-- [ ] `POST /api/auth/refresh-token` endpointi hazırlandı
-- [ ] `POST /api/auth/google` — Google OAuth endpointi hazırlandı
-- [ ] `POST /api/auth/forgot-password` endpointi hazırlandı
-- [ ] `POST /api/auth/reset-password` endpointi hazırlandı
-- [ ] Auth middleware yazıldı (`authMiddleware.js`)
-- [ ] Rol middleware yazıldı (`roleMiddleware.js`)
+- [x] `User` modeli yaradıldı (ad, email, şifrə, rol, avatar, status)
+- [x] Şifrə hashlanması (bcryptjs) tətbiq edildi
+- [x] JWT token generasiyası yazıldı (`generateToken.js`)
+- [x] Refresh token mexanizmi tətbiq edildi
+- [x] `POST /api/auth/register` endpointi hazırlandı
+- [x] `POST /api/auth/login` endpointi hazırlandı
+- [x] `POST /api/auth/logout` endpointi hazırlandı
+- [x] `POST /api/auth/refresh-token` endpointi hazırlandı
+- [x] `POST /api/auth/google` — Google OAuth endpointi hazırlandı
+- [x] `POST /api/auth/forgot-password` endpointi hazırlandı
+- [x] `POST /api/auth/reset-password` endpointi hazırlandı
+- [x] Auth middleware yazıldı (`authMiddleware.js`)
+- [x] Rol middleware yazıldı (`roleMiddleware.js`)
 
 ### 2.2 Frontend — Auth
 **Branch:** `feature/m02-auth-frontend`
@@ -444,7 +444,7 @@
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
-| 2 — Auth | `[ ]` gözləyir | 0% (0/27) | 27 |
+| 2 — Auth | `[~]` davam edir | 48% (13/27) | 27 |
 | 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
 | 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 5 — İstifadəçilər | `[ ]` gözləyir | 0% (0/24) | 24 |
@@ -458,7 +458,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **19% (46/237)** | **237** |
+| **CƏMI** | | **25% (59/237)** | **237** |
 
 ---
 
