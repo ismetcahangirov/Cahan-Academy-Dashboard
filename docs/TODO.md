@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 10 — Ev Tapşırıqları (16/16) |
-| **Aktiv branch** | `feature/homeworks-api` |
-| **Növbəti branch** | `feature/classworks-api` |
-| **Növbəti tapşırıq** | Sinif İşləri Modulu (Mərhələ 11) |
+| **Son tamamlanan tapşırıq** | Mərhələ 11 — Sinif İşləri (15/15) |
+| **Aktiv branch** | `feature/classworks-api` |
+| **Növbəti branch** | `feature/quizzes-api` |
+| **Növbəti tapşırıq** | Quiz Sistemi (Mərhələ 12) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Ev Tapşırıqları modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Sinif İşləri modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
