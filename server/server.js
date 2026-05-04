@@ -15,11 +15,15 @@ import invitationRoutes from './routes/invitationRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
+import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
 
 // Connect to Database
 connectDB();
+
+// Seed Admin User
+seedAdmin();
 
 const app = express();
 

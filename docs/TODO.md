@@ -104,6 +104,7 @@
 - [x] Global error handler middleware yazıldı
 - [x] API response utility yazıldı (`utils/apiResponse.js`)
 - [x] Nodemailer konfiqurasiya edildi
+- [x] Admin seed mexanizmi yaradıldı (seedAdmin.js)
 
 ---
 
