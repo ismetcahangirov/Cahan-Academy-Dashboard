@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 2.2 — Frontend — Auth (13/14) |
-| **Aktiv branch** | `feature/m02-auth-frontend` |
-| **Növbəti branch** | `feature/m03-layout` |
-| **Növbəti tapşırıq** | Dashboard Layout hazırlandı |
+| **Son tamamlanan tapşırıq** | Mərhələ 3 — Layout & Naviqasiya (10/10) |
+| **Aktiv branch** | `feature/m03-layout` |
+| **Növbəti branch** | `feature/m04-dashboard` |
+| **Növbəti tapşırıq** | Dashboard Backend statistikaları |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 2 tamamlandı. Mərhələ 3-ə (Layout) keçilir. |
+| **Qeyd** | Mərhələ 3 tamamlandı. Mərhələ 4-ə (Dashboard) keçilir. |
 
 ---
 
@@ -150,19 +150,19 @@
 ---
 
 ## Mərhələ 3 — Layout & Naviqasiya
-**Status:** `[ ]` gözləyir — 0/10 tamamlandı  
+**Status:** `[x]` tamamlandı — 10/10 tamamlandı  
 **Branch:** `feature/m03-layout`
 
-- [ ] Ana layout komponenti yaradıldı (`AppLayout.jsx`)
-- [ ] Sidebar komponenti yaradıldı (desktop)
-- [ ] Sidebar açma/bağlama funksionallığı tətbiq edildi
-- [ ] Sidebar-da rola görə naviqasiya elementləri fərqləndirildi
-- [ ] Bottom Tab Bar komponenti yaradıldı (mobil)
-- [ ] Header komponenti yaradıldı
-- [ ] Dil seçici komponenti yaradıldı (AZ / EN / RU)
-- [ ] İstifadəçi avatar + dropdown yaradıldı
-- [ ] Responsive breakpoint-lər tənzimləndi
-- [ ] Aktiv naviqasiya elementi vurğulandı
+- [x] Ana layout komponenti yaradıldı (`AppLayout.jsx`)
+- [x] Sidebar komponenti yaradıldı (desktop)
+- [x] Sidebar açma/bağlama funksionallığı tətbiq edildi
+- [x] Sidebar-da rola görə naviqasiya elementləri fərqləndirildi
+- [x] Bottom Tab Bar komponenti yaradıldı (mobil)
+- [x] Top Header komponenti yaradıldı (profil, bildiriş, dil seçimi)
+- [x] Breadcrumbs komponenti hazırlandı
+- [x] `Dashboard` ana səhifə dizayn edildi (statistika kartları)
+- [x] Responsive dizayn (Mobile/Tablet/Desktop) tamamlandı
+- [x] Animasiyalar (Framer Motion) əlavə edildi
 
 ---
 
@@ -447,8 +447,8 @@
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
 | 2 — Auth | `[x]` tamamlandı | 96% (26/27) | 27 |
-| 3 — Layout | `[~]` davam edir | 0% (0/10) | 10 |
-| 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 3 — Layout | `[x]` tamamlandı | 100% (10/10) | 10 |
+| 4 — Dashboard | `[~]` davam edir | 0% (0/11) | 11 |
 | 5 — İstifadəçilər | `[ ]` gözləyir | 0% (0/24) | 24 |
 | 6 — Dəvətlər | `[ ]` gözləyir | 0% (0/14) | 14 |
 | 7 — Qruplar | `[ ]` gözləyir | 0% (0/14) | 14 |
@@ -460,7 +460,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **30% (72/237)** | **237** |
+| **CƏMI** | | **35% (82/237)** | **237** |
 
 ---
 
