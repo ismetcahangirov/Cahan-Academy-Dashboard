@@ -15,7 +15,7 @@ const loginSchema = z.object({
 });
 
 const Login = () => {
-  const navigate = navigate = useNavigate();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
