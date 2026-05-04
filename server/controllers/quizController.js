@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Quiz from '../models/Quiz.js';
 import Group from '../models/Group.js';
-import { apiResponse } from '../utils/apiResponse.js';
+import apiResponse from '../utils/apiResponse.js';
 
 // @desc    Get all quizzes
 // @route   GET /api/quizzes
@@ -25,10 +25,10 @@ export const getQuizzes = asyncHandler(async (req, res) => {
   const quizzes = await Quiz.find(query)
     .populate('group', 'name')
     .populate('teacher', 'name')
-    .select('-questions.correctAnswer') // Don't send correct answers to list
+    .select('-questions.correctAnswer')
     .sort('-createdAt');
 
-  res.status(200).json(apiResponse(quizzes, 'Quizlər uğurla gətirildi'));
+  return apiResponse.success(res, 'Quizlər uğurla gətirildi', quizzes);
 });
 
 // @desc    Get single quiz
@@ -44,18 +44,16 @@ export const getQuizById = asyncHandler(async (req, res) => {
     throw new Error('Quiz tapılmadı');
   }
 
-  // If student, check if they already attempted and hide correct answers unless they finished
   if (req.user.role === 'student') {
     const attempt = quiz.attempts.find(a => a.student.toString() === req.user._id.toString());
     if (!attempt) {
-      // Hide correct answers for first time
       const quizObj = quiz.toObject();
       quizObj.questions.forEach(q => delete q.correctAnswer);
-      return res.status(200).json(apiResponse(quizObj, 'Quiz detalları uğurla gətirildi'));
+      return apiResponse.success(res, 'Quiz detalları uğurla gətirildi', quizObj);
     }
   }
 
-  res.status(200).json(apiResponse(quiz, 'Quiz detalları uğurla gətirildi'));
+  return apiResponse.success(res, 'Quiz detalları uğurla gətirildi', quiz);
 });
 
 // @desc    Create new quiz
@@ -79,7 +77,7 @@ export const createQuiz = asyncHandler(async (req, res) => {
     teacher: req.user._id,
   });
 
-  res.status(201).json(apiResponse(quiz, 'Quiz uğurla yaradıldı'));
+  return apiResponse.success(res, 'Quiz uğurla yaradıldı', quiz, 201);
 });
 
 // @desc    Update quiz
@@ -107,17 +105,15 @@ export const updateQuiz = asyncHandler(async (req, res) => {
   if (isActive !== undefined) quiz.isActive = isActive;
 
   const updatedQuiz = await quiz.save();
-  res.status(200).json(apiResponse(updatedQuiz, 'Quiz uğurla yeniləndi'));
+  return apiResponse.success(res, 'Quiz uğurla yeniləndi', updatedQuiz);
 });
 
 // @desc    Submit quiz attempt (Student)
 // @route   POST /api/quizzes/:id/submit
 // @access  Private/Student
 export const submitQuiz = asyncHandler(async (req, res) => {
-  const { answers } = req.body; // Array of { questionId, selectedOption }
-  const quizId = req.params.id;
-
-  const quiz = await Quiz.findById(quizId);
+  const { answers } = req.body;
+  const quiz = await Quiz.findById(req.params.id);
 
   if (!quiz) {
     res.status(404);
@@ -140,10 +136,8 @@ export const submitQuiz = asyncHandler(async (req, res) => {
   quiz.questions.forEach(question => {
     const studentAnswer = answers.find(a => a.questionId === question._id.toString());
     const isCorrect = studentAnswer && studentAnswer.selectedOption === question.correctAnswer;
-    
-    if (isCorrect) {
-      score += question.points;
-    }
+
+    if (isCorrect) score += question.points;
     totalPoints += question.points;
 
     processedAnswers.push({
@@ -164,7 +158,7 @@ export const submitQuiz = asyncHandler(async (req, res) => {
   quiz.attempts.push(attempt);
   await quiz.save();
 
-  res.status(200).json(apiResponse(attempt, 'Quiz uğurla tamamlandı'));
+  return apiResponse.success(res, 'Quiz uğurla tamamlandı', attempt);
 });
 
 // @desc    Delete quiz
@@ -184,5 +178,5 @@ export const deleteQuiz = asyncHandler(async (req, res) => {
   }
 
   await quiz.deleteOne();
-  res.status(200).json(apiResponse(null, 'Quiz uğurla silindi'));
+  return apiResponse.success(res, 'Quiz uğurla silindi', null);
 });

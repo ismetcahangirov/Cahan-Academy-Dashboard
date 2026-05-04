@@ -3,9 +3,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const groupsApi = createApi({
   reducerPath: 'groupsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/groups',
+    baseUrl: `${import.meta.env.VITE_API_URL || ''}/groups`,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
+      const token = getState().auth.user?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }

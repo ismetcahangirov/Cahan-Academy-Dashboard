@@ -1,9 +1,9 @@
 import asyncHandler from 'express-async-handler';
 import Homework from '../models/Homework.js';
 import Group from '../models/Group.js';
-import { apiResponse } from '../utils/apiResponse.js';
+import apiResponse from '../utils/apiResponse.js';
 
-// @desc    Get all homeworks (teacher sees their own, student sees group's)
+// @desc    Get all homeworks
 // @route   GET /api/homeworks
 // @access  Private
 export const getHomeworks = asyncHandler(async (req, res) => {
@@ -12,14 +12,11 @@ export const getHomeworks = asyncHandler(async (req, res) => {
   if (req.user.role === 'teacher') {
     query.teacher = req.user._id;
   } else if (req.user.role === 'student') {
-    // Tələbənin qruplarını tapıb o qruplara aid tapşırıqları gətirmək olar.
-    // Lakin hazırda qrupları Group modelindən tapmaq daha uyğundur.
     const groups = await Group.find({ students: req.user._id });
     const groupIds = groups.map(g => g._id);
     query.group = { $in: groupIds };
   }
 
-  // Qrup filtri əgər query-də varsa (Məsələn, müəllim yalnız bir qrupun tapşırıqlarını görmək istəyir)
   if (req.query.groupId) {
     query.group = req.query.groupId;
   }
@@ -29,7 +26,7 @@ export const getHomeworks = asyncHandler(async (req, res) => {
     .populate('teacher', 'name')
     .sort('-createdAt');
 
-  res.status(200).json(apiResponse(homeworks, 'Ev tapşırıqları uğurla gətirildi'));
+  return apiResponse.success(res, 'Ev tapşırıqları uğurla gətirildi', homeworks);
 });
 
 // @desc    Get single homework
@@ -46,17 +43,14 @@ export const getHomeworkById = asyncHandler(async (req, res) => {
     throw new Error('Tapşırıq tapılmadı');
   }
 
-  // Tələbə yalnız öz submission-ını görsün
   if (req.user.role === 'student') {
     const studentSubmission = homework.submissions.find(
       sub => sub.student._id.toString() === req.user._id.toString()
     );
-    // Tam siyahını tələbəyə qaytarmırıq, yalnız ona aid olanı saxlayırıq və ya sadəcə öz submission-unu göndəririk
-    // Hələlik bütün modeli, lakin filtrelenmiş submissonlar ilə qaytaraq
     homework.submissions = studentSubmission ? [studentSubmission] : [];
   }
 
-  res.status(200).json(apiResponse(homework, 'Tapşırıq detalları uğurla gətirildi'));
+  return apiResponse.success(res, 'Tapşırıq detalları uğurla gətirildi', homework);
 });
 
 // @desc    Create new homework
@@ -84,7 +78,7 @@ export const createHomework = asyncHandler(async (req, res) => {
     .populate('group', 'name')
     .populate('teacher', 'name');
 
-  res.status(201).json(apiResponse(createdHomework, 'Ev tapşırığı uğurla yaradıldı'));
+  return apiResponse.success(res, 'Ev tapşırığı uğurla yaradıldı', createdHomework, 201);
 });
 
 // @desc    Update homework
@@ -100,7 +94,6 @@ export const updateHomework = asyncHandler(async (req, res) => {
     throw new Error('Tapşırıq tapılmadı');
   }
 
-  // Yalnız yaradan müəllim və ya admin yeniləyə bilər
   if (homework.teacher.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
     res.status(403);
     throw new Error('Bu tapşırığı yeniləmək hüququnuz yoxdur');
@@ -116,7 +109,7 @@ export const updateHomework = asyncHandler(async (req, res) => {
     .populate('group', 'name')
     .populate('teacher', 'name');
 
-  res.status(200).json(apiResponse(populated, 'Tapşırıq uğurla yeniləndi'));
+  return apiResponse.success(res, 'Tapşırıq uğurla yeniləndi', populated);
 });
 
 // @desc    Delete homework
@@ -136,8 +129,7 @@ export const deleteHomework = asyncHandler(async (req, res) => {
   }
 
   await homework.deleteOne();
-
-  res.status(200).json(apiResponse(null, 'Tapşırıq uğurla silindi'));
+  return apiResponse.success(res, 'Tapşırıq uğurla silindi', null);
 });
 
 // @desc    Submit homework (Student)
@@ -145,40 +137,34 @@ export const deleteHomework = asyncHandler(async (req, res) => {
 // @access  Private/Student
 export const submitHomework = asyncHandler(async (req, res) => {
   const { files } = req.body;
-  const homeworkId = req.params.id;
-
-  const homework = await Homework.findById(homeworkId);
+  const homework = await Homework.findById(req.params.id);
 
   if (!homework) {
     res.status(404);
     throw new Error('Tapşırıq tapılmadı');
   }
 
-  // Tələbənin artıq təhvil verib-vermədiyini yoxlayaq
-  const existingSubmissionIndex = homework.submissions.findIndex(
+  const existingIndex = homework.submissions.findIndex(
     sub => sub.student.toString() === req.user._id.toString()
   );
 
   const status = new Date() > new Date(homework.dueDate) ? 'late' : 'submitted';
 
-  if (existingSubmissionIndex !== -1) {
-    // Yeniləmə
-    homework.submissions[existingSubmissionIndex].files = files || homework.submissions[existingSubmissionIndex].files;
-    homework.submissions[existingSubmissionIndex].submittedAt = Date.now();
-    homework.submissions[existingSubmissionIndex].status = status;
+  if (existingIndex !== -1) {
+    homework.submissions[existingIndex].files = files || homework.submissions[existingIndex].files;
+    homework.submissions[existingIndex].submittedAt = Date.now();
+    homework.submissions[existingIndex].status = status;
   } else {
-    // Yeni submission
     homework.submissions.push({
       student: req.user._id,
       files: files || [],
       submittedAt: Date.now(),
-      status: status,
+      status,
     });
   }
 
   await homework.save();
-
-  res.status(200).json(apiResponse(homework, 'Tapşırıq uğurla təhvil verildi'));
+  return apiResponse.success(res, 'Tapşırıq uğurla təhvil verildi', homework);
 });
 
 // @desc    Grade homework submission (Teacher)
@@ -186,9 +172,7 @@ export const submitHomework = asyncHandler(async (req, res) => {
 // @access  Private/Teacher,Admin
 export const gradeHomework = asyncHandler(async (req, res) => {
   const { studentId, grade, feedback } = req.body;
-  const homeworkId = req.params.id;
-
-  const homework = await Homework.findById(homeworkId);
+  const homework = await Homework.findById(req.params.id);
 
   if (!homework) {
     res.status(404);
@@ -200,20 +184,19 @@ export const gradeHomework = asyncHandler(async (req, res) => {
     throw new Error('Bu tapşırığı qiymətləndirmək hüququnuz yoxdur');
   }
 
-  const submissionIndex = homework.submissions.findIndex(
+  const subIndex = homework.submissions.findIndex(
     sub => sub.student.toString() === studentId
   );
 
-  if (submissionIndex === -1) {
+  if (subIndex === -1) {
     res.status(404);
     throw new Error('Tələbənin təhvil verilmiş tapşırığı tapılmadı');
   }
 
-  homework.submissions[submissionIndex].grade = grade;
-  homework.submissions[submissionIndex].feedback = feedback;
-  homework.submissions[submissionIndex].status = 'graded';
+  homework.submissions[subIndex].grade = grade;
+  homework.submissions[subIndex].feedback = feedback;
+  homework.submissions[subIndex].status = 'graded';
 
   await homework.save();
-
-  res.status(200).json(apiResponse(homework, 'Tapşırıq uğurla qiymətləndirildi'));
+  return apiResponse.success(res, 'Tapşırıq uğurla qiymətləndirildi', homework);
 });

@@ -3,9 +3,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const dashboardApi = createApi({
   reducerPath: 'dashboardApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/dashboard',
+    baseUrl: `${import.meta.env.VITE_API_URL || ''}/dashboard`,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
+      const token = getState().auth.user?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }

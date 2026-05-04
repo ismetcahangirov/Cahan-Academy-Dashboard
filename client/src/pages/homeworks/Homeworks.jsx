@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Plus, Search, Filter, MoreVertical, Calendar, 
-  Users, CheckCircle, Clock, FileText, X
+  Plus, Search, MoreVertical, Calendar, 
+  Users, FileText
 } from 'lucide-react';
 import { 
   useGetHomeworksQuery, 
@@ -13,7 +13,6 @@ import {
 } from '../../features/homeworks/homeworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
-import { useForm } from 'react-form'; // Placeholder for react-hook-form if needed
 import { format } from 'date-fns';
 
 const Homeworks = () => {
@@ -24,7 +23,7 @@ const Homeworks = () => {
   const { data: homeworksResponse, isLoading } = useGetHomeworksQuery(selectedGroup || undefined);
   const { data: groupsResponse } = useGetGroupsQuery();
   
-  const homeworks = homeworksResponse?.data || [];
+  const homeworks = homeworksResponse || [];
   const groups = groupsResponse?.data || [];
 
   return (
