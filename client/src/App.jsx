@@ -7,6 +7,7 @@ import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/users/Users';
 import Teachers from './pages/teachers/Teachers';
+import Students from './pages/students/Students';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -41,6 +42,7 @@ function App() {
             {/* Other protected routes will go here */}
             <Route path="/users" element={<Users />} />
             <Route path="/teachers" element={<Teachers />} />
+            <Route path="/students" element={<Students />} />
             <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
           </Route>
         </Route>
