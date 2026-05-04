@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  GraduationCap
+  GraduationCap,
+  Mail
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +35,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       baseLinks.push(
         { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
         { name: 'Tələbələr', path: '/students', icon: Users },
+        { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },
         { name: 'Tənzimləmələr', path: '/settings', icon: Settings }

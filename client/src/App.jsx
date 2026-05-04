@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import Users from './pages/users/Users';
 import Teachers from './pages/teachers/Teachers';
 import Students from './pages/students/Students';
+import Invitations from './pages/invitations/Invitations';
+import AcceptInvitation from './pages/invitations/AcceptInvitation';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -33,6 +35,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
         </Route>
 
         {/* Protected Routes */}
@@ -43,6 +46,7 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/teachers" element={<Teachers />} />
             <Route path="/students" element={<Students />} />
+            <Route path="/invitations" element={<Invitations />} />
             <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
           </Route>
         </Route>
