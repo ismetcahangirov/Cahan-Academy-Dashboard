@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import User from '../models/userModel.js';
 // Digər modellər (Course, Group və s.) yaradıldıqdan sonra bura əlavə ediləcək
 
 // @desc    Get dashboard statistics

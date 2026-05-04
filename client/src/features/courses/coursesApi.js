@@ -3,9 +3,9 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const coursesApi = createApi({
   reducerPath: 'coursesApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/courses',
+    baseUrl: `${import.meta.env.VITE_API_URL || ''}/courses`,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
+      const token = getState().auth.user?.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
