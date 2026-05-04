@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-bordo: #7B001C;
-  --color-brand-white: #FFFFFF;
-  --color-brand-black: #0F0F0F;
+  --color-bordo: #7B001C;
+  --color-white: #FFFFFF;
+  --color-black: #0F0F0F;
   
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
@@ -28,7 +28,7 @@ body {
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-white/10;
   }
   body {
     @apply antialiased;
