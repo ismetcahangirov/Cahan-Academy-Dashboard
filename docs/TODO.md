@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 2.1 — Backend — Auth (13/13) |
-| **Aktiv branch** | `feature/m02-auth-backend` |
-| **Növbəti branch** | `feature/m02-auth-frontend` |
-| **Növbəti tapşırıq** | Redux `authSlice` yaradıldı |
+| **Son tamamlanan tapşırıq** | Mərhələ 2.2 — Frontend — Auth (13/14) |
+| **Aktiv branch** | `feature/m02-auth-frontend` |
+| **Növbəti branch** | `feature/m03-layout` |
+| **Növbəti tapşırıq** | Dashboard Layout hazırlandı |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Mərhələ 2.1 tamamlandı, Mərhələ 2.2-yə (Frontend Auth) keçilir. |
+| **Qeyd** | Mərhələ 2 tamamlandı. Mərhələ 3-ə (Layout) keçilir. |
 
 ---
 
@@ -130,18 +130,20 @@
 ### 2.2 Frontend — Auth
 **Branch:** `feature/m02-auth-frontend`
 
-- [ ] Redux `authSlice` yaradıldı
-- [ ] RTK Query `authApi` yaradıldı
-- [ ] Login səhifəsi yaradıldı
-- [ ] Register səhifəsi yaradıldı
-- [ ] Google ilə giriş düyməsi əlavə edildi
-- [ ] Google OAuth inteqrasiyası tamamlandı
-- [ ] Şifrəni unutdum səhifəsi yaradıldı
-- [ ] Şifrə sıfırlama səhifəsi yaradıldı
-- [ ] Forma validasiyası (Zod) tətbiq edildi
-- [ ] Token saxlama strategiyası tətbiq edildi (httpOnly cookie / localStorage)
-- [ ] Axios interceptor ilə auto token refresh tətbiq edildi
-- [ ] Protected Route komponenti yaradıldı
+- [x] Redux `authSlice` yaradıldı (user, token, loading, error state)
+- [x] `authApi` (RTK Query) hazırlandı (login, register, logout)
+- [x] `Login` səhifəsi dizayn edildi (premium görünüş)
+- [x] `Register` səhifəsi dizayn edildi
+- [x] `Forgot Password` səhifəsi dizayn edildi
+- [x] `Reset Password` səhifəsi dizayn edildi
+- [x] Form validasiyası (React Hook Form + Zod) tətbiq edildi
+- [x] `ProtectedRoute` komponenti yazıldı
+- [x] `PublicRoute` komponenti (login olubsa dashboard-a yönləndirmə) yazıldı
+- [x] Token-in `localStorage`-də saxlanılması və avtomatik login
+- [x] Logout funksionallığı (state təmizlənməsi)
+- [ ] Google Login (frontend inteqrasiyası)
+- [x] Xəta mesajlarının göstərilməsi (Toast bildirişləri)
+- [x] Yüklənmə indikatorları (Spinners/Skeletons)
 - [ ] Role-based Route komponenti yaradıldı
 - [ ] Auth state persist edildi
 
@@ -444,8 +446,8 @@
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
-| 2 — Auth | `[~]` davam edir | 48% (13/27) | 27 |
-| 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
+| 2 — Auth | `[x]` tamamlandı | 96% (26/27) | 27 |
+| 3 — Layout | `[~]` davam edir | 0% (0/10) | 10 |
 | 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 5 — İstifadəçilər | `[ ]` gözləyir | 0% (0/24) | 24 |
 | 6 — Dəvətlər | `[ ]` gözləyir | 0% (0/14) | 14 |
@@ -458,7 +460,7 @@
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **25% (59/237)** | **237** |
+| **CƏMI** | | **30% (72/237)** | **237** |
 
 ---
 
