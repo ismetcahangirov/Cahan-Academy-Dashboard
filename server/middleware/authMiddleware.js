@@ -36,4 +36,19 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+
+// Role-based authorization middleware
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return apiResponse.error(
+        res,
+        `Bu əməliyyat üçün icazəniz yoxdur (tələb olunan: ${roles.join(', ')})`,
+        403
+      );
+    }
+    next();
+  };
+};
+
+export { protect, authorize };
