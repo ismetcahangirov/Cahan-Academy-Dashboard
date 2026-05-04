@@ -5,6 +5,20 @@
 
 ---
 
+## ⚡ Cari Vəziyyət
+> **Bu bloku hər PR birləşəndən sonra yenilə. Token bitib yeni hesabdan davam edirsənsə — yalnız bu bloku oxu.**
+
+| Sahə | Dəyər |
+|---|---|
+| **Son tamamlanan tapşırıq** | .gitignore hazırlandı (17/19) |
+| **Aktiv branch** | — (hələ başlanmayıb) |
+| **Növbəti branch** | `feature/m00-eslint-prettier` |
+| **Növbəti tapşırıq** | `.eslintrc` hazırlandı |
+| **Bloklanmış tapşırıq** | Yoxdur |
+| **Qeyd** | Mərhələ 0-da 2 tapşırıq qalıb, Mərhələ 1–15 tamamilə başlanmayıb |
+
+---
+
 ## Git İş Axını (Hər tapşırıq üçün)
 
 ```
@@ -28,7 +42,8 @@
 ---
 
 ## Mərhələ 0 — Hazırlıq & Sənədləşmə
-**Branch:** `feature/m00-documentation`
+**Branch:** `feature/m00-env-files`  
+**Status:** `[~]` davam edir — 17/19 tamamlandı
 
 - [x] README.md hazırlandı
 - [x] TODO.md hazırlandı
@@ -44,15 +59,16 @@
 - [x] DEPLOYMENT.md hazırlandı
 - [x] CONTRIBUTING.md hazırlandı
 - [x] AI_WORKFLOW.md hazırlandı
-- [ ] `.env.example` (client) hazırlandı → `feature/m00-env-files`
-- [ ] `.env.example` (server) hazırlandı → `feature/m00-env-files`
-- [ ] `.gitignore` hazırlandı → `feature/m00-env-files`
+- [x] `.env.example` (client) hazırlandı → `feature/m00-env-files`
+- [x] `.env.example` (server) hazırlandı → `feature/m00-env-files`
+- [x] `.gitignore` hazırlandı → `feature/m00-env-files`
 - [ ] `.eslintrc` hazırlandı → `feature/m00-eslint-prettier`
 - [ ] `.prettierrc` hazırlandı → `feature/m00-eslint-prettier`
 
 ---
 
 ## Mərhələ 1 — Layihə Qurulumu
+**Status:** `[ ]` gözləyir — 0/26 tamamlandı
 
 ### 1.1 Frontend (Client)
 **Branch:** `feature/m01-frontend-setup`
@@ -92,6 +108,7 @@
 ---
 
 ## Mərhələ 2 — Autentifikasiya
+**Status:** `[ ]` gözləyir — 0/27 tamamlandı
 
 ### 2.1 Backend — Auth
 **Branch:** `feature/m02-auth-backend`
@@ -131,6 +148,7 @@
 ---
 
 ## Mərhələ 3 — Layout & Naviqasiya
+**Status:** `[ ]` gözləyir — 0/10 tamamlandı  
 **Branch:** `feature/m03-layout`
 
 - [ ] Ana layout komponenti yaradıldı (`AppLayout.jsx`)
@@ -147,6 +165,7 @@
 ---
 
 ## Mərhələ 4 — Dashboard Səhifəsi
+**Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 4.1 Backend
 **Branch:** `feature/m04-dashboard-backend`
@@ -170,6 +189,7 @@
 ---
 
 ## Mərhələ 5 — İstifadəçi İdarəsi
+**Status:** `[ ]` gözləyir — 0/24 tamamlandı
 
 ### 5.1 Müəllimlər
 
@@ -210,6 +230,7 @@
 ---
 
 ## Mərhələ 6 — Dəvətlər
+**Status:** `[ ]` gözləyir — 0/14 tamamlandı
 
 ### 6.1 Backend
 - [ ] `Invitation` modeli yaradıldı (email, rol, token, status, son tarix)
@@ -232,6 +253,7 @@
 ---
 
 ## Mərhələ 7 — Qruplar
+**Status:** `[ ]` gözləyir — 0/14 tamamlandı
 
 ### 7.1 Backend
 - [ ] `Group` modeli yaradıldı (ad, müəllim, tələbələr, cədvəl)
@@ -254,6 +276,7 @@
 ---
 
 ## Mərhələ 8 — Cədvəl
+**Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 8.1 Backend
 - [ ] `Schedule` modeli yaradıldı (qrup, fənn, müəllim, gün, saat, otaq)
@@ -273,6 +296,7 @@
 ---
 
 ## Mərhələ 9 — Ev Tapşırıqları (Homeworks)
+**Status:** `[ ]` gözləyir — 0/16 tamamlandı
 
 ### 9.1 Backend
 - [ ] `Homework` modeli yaradıldı (başlıq, təsvir, qrup, müəllim, son tarix, fayllar)
@@ -297,6 +321,7 @@
 ---
 
 ## Mərhələ 10 — Sinif İşləri (Classworks)
+**Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 10.1 Backend
 - [ ] `Classwork` modeli yaradıldı
@@ -316,6 +341,7 @@
 ---
 
 ## Mərhələ 11 — İmtahanlar
+**Status:** `[ ]` gözləyir — 0/14 tamamlandı
 
 ### 11.1 Backend
 - [ ] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
@@ -338,6 +364,7 @@
 ---
 
 ## Mərhələ 12 — Profil & Parametrlər
+**Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 ### 12.1 Backend
 - [ ] `GET /api/users/me` — öz profilini gör
@@ -357,6 +384,7 @@
 ---
 
 ## Mərhələ 13 — Təhlükəsizlik
+**Status:** `[ ]` gözləyir — 0/11 tamamlandı
 
 - [ ] Helmet middleware tətbiq edildi
 - [ ] CORS düzgün konfiqurasiya edildi
@@ -373,6 +401,7 @@
 ---
 
 ## Mərhələ 14 — Testlər
+**Status:** `[ ]` gözləyir — 0/15 tamamlandı
 
 ### Backend Testlər
 - [ ] Jest + Supertest quraşdırıldı
@@ -396,6 +425,7 @@
 ---
 
 ## Mərhələ 15 — Deploy & CI/CD
+**Status:** `[ ]` gözləyir — 0/8 tamamlandı
 
 - [ ] Frontend production build yoxlanıldı
 - [ ] Backend production modu yoxlanıldı
@@ -410,26 +440,28 @@
 
 ## Ümumi Tərəqqi
 
-| Mərhələ | Status | Tamamlanma |
-|---|---|---|
-| 0 — Sənədləşmə | `[~]` davam edir | 15% |
-| 1 — Qurulum | `[ ]` gözləyir | 0% |
-| 2 — Auth | `[ ]` gözləyir | 0% |
-| 3 — Layout | `[ ]` gözləyir | 0% |
-| 4 — Dashboard | `[ ]` gözləyir | 0% |
-| 5 — İstifadəçilər | `[ ]` gözləyir | 0% |
-| 6 — Dəvətlər | `[ ]` gözləyir | 0% |
-| 7 — Qruplar | `[ ]` gözləyir | 0% |
-| 8 — Cədvəl | `[ ]` gözləyir | 0% |
-| 9 — Ev tapşırıqları | `[ ]` gözləyir | 0% |
-| 10 — Sinif işi | `[ ]` gözləyir | 0% |
-| 11 — İmtahanlar | `[ ]` gözləyir | 0% |
-| 12 — Profil | `[ ]` gözləyir | 0% |
-| 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% |
-| 14 — Testlər | `[ ]` gözləyir | 0% |
-| 15 — Deploy | `[ ]` gözləyir | 0% |
+| Mərhələ | Status | Tamamlanma | Tapşırıq sayı |
+|---|---|---|---|
+| 0 — Sənədləşmə | `[~]` davam edir | 89% (17/19) | 19 |
+| 1 — Qurulum | `[ ]` gözləyir | 0% (0/26) | 26 |
+| 2 — Auth | `[ ]` gözləyir | 0% (0/27) | 27 |
+| 3 — Layout | `[ ]` gözləyir | 0% (0/10) | 10 |
+| 4 — Dashboard | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 5 — İstifadəçilər | `[ ]` gözləyir | 0% (0/24) | 24 |
+| 6 — Dəvətlər | `[ ]` gözləyir | 0% (0/14) | 14 |
+| 7 — Qruplar | `[ ]` gözləyir | 0% (0/14) | 14 |
+| 8 — Cədvəl | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 9 — Ev tapşırıqları | `[ ]` gözləyir | 0% (0/16) | 16 |
+| 10 — Sinif işi | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 11 — İmtahanlar | `[ ]` gözləyir | 0% (0/14) | 14 |
+| 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
+| 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
+| **CƏMI** | | **7% (17/237)** | **237** |
 
 ---
 
 > **Qeyd:** Hər tapşırığı tamamladıqdan sonra bu faylı yenilə.  
+> Yeni AI sessiyanı başladıqda: **yalnız "Cari Vəziyyət" blokunu oxu** — bu kifayətdir.  
 > Local AI ilə işləyərkən: "Bu TODO.md faylına bax, hansı tapşırıq növbəti?" deyə soruşa bilərsən.
