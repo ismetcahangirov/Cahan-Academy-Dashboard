@@ -1,4 +1,5 @@
 import User from '../models/userModel.js';
+import Invitation from '../models/Invitation.js';
 import { generateToken, generateRefreshToken } from '../utils/generateToken.js';
 import apiResponse from '../utils/apiResponse.js';
 import crypto from 'crypto';
@@ -143,4 +144,49 @@ const resetPassword = async (req, res) => {
   return apiResponse.success(res, 'Password reset successful');
 };
 
-export { register, login, refreshToken, logout, forgotPassword, resetPassword };
+// @desc    Register via invitation
+// @route   POST /api/auth/register-invitation/:token
+// @access  Public
+const registerViaInvitation = async (req, res) => {
+  const { name, password } = req.body;
+  const { token } = req.params;
+
+  const invitation = await Invitation.findOne({ token, status: 'pending' });
+
+  if (!invitation) {
+    return apiResponse.error(res, 'Invalid or expired invitation', 404);
+  }
+
+  if (invitation.expiresAt < Date.now()) {
+    invitation.status = 'expired';
+    await invitation.save();
+    return apiResponse.error(res, 'Invitation has expired', 400);
+  }
+
+  // Create user
+  const user = await User.create({
+    name,
+    email: invitation.email,
+    password,
+    role: invitation.role,
+    status: 'active',
+  });
+
+  if (user) {
+    // Mark invitation as accepted
+    invitation.status = 'accepted';
+    await invitation.save();
+
+    return apiResponse.success(res, 'User registered successfully via invitation', {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    }, 201);
+  } else {
+    return apiResponse.error(res, 'Invalid user data', 400);
+  }
+};
+
+export { register, login, refreshToken, logout, forgotPassword, resetPassword, registerViaInvitation };
