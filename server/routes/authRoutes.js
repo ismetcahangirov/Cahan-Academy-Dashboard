@@ -6,6 +6,7 @@ import {
   logout,
   forgotPassword,
   resetPassword,
+  registerViaInvitation,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -17,5 +18,6 @@ router.post('/refresh-token', refreshToken);
 router.post('/logout', protect, logout);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password/:token', resetPassword);
+router.post('/register-invitation/:token', registerViaInvitation);
 
 export default router;

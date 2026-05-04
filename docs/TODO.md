@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 5.2 — Tələbələr (26/24) |
-| **Aktiv branch** | `feature/students-api` |
-| **Növbəti branch** | `feature/invitations-api` |
-| **Növbəti tapşırıq** | Dəvətlər sistemi (Mərhələ 6) |
+| **Son tamamlanan tapşırıq** | Mərhələ 6 — Dəvətlər (12/12) |
+| **Aktiv branch** | `feature/invitations-api` |
+| **Növbəti branch** | `feature/courses-api` |
+| **Növbəti tapşırıq** | Kurslar və Dərslər (Mərhələ 7) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Tələbələr modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Dəvətlər sistemi (Email + Token + Registration) tamamlandı. |
 
 ---
 
@@ -238,25 +238,26 @@
 ---
 
 ## Mərhələ 6 — Dəvətlər
-**Status:** `[ ]` gözləyir — 0/14 tamamlandı
+**Status:** `[x]` tamamlandı — 12/12 tamamlandı
 
 ### 6.1 Backend
-- [ ] `Invitation` modeli yaradıldı (email, rol, token, status, son tarix)
-- [ ] `GET /api/invitations` — bütün dəvətlər
-- [ ] `POST /api/invitations` — dəvət göndər
-- [ ] `GET /api/invitations/accept/:token` — dəvəti qəbul et
-- [ ] `DELETE /api/invitations/:id` — dəvəti ləğv et
-- [ ] Dəvət emaili şablonu yaradıldı (Nodemailer)
-- [ ] Dəvət tokeni vaxt məhdudiyyəti tətbiq edildi (24 saat)
+- [x] `Invitation` modeli yaradıldı (email, rol, token, status, son tarix)
+- [x] `GET /api/invitations` — bütün dəvətlər
+- [x] `POST /api/invitations` — dəvət göndər (Email + Token)
+- [x] `GET /api/invitations/verify/:token` — token yoxla
+- [x] `POST /api/auth/register-invitation/:token` — dəvət ilə qeydiyyat
+- [x] `DELETE /api/invitations/:id` — dəvəti ləğv et
+- [x] Dəvət emaili şablonu yaradıldı (Nodemailer)
+- [x] Dəvət tokeni vaxt məhdudiyyəti tətbiq edildi (7 gün)
 
 ### 6.2 Frontend
-- [ ] Redux `invitationsSlice` yaradıldı
-- [ ] RTK Query `invitationsApi` yaradıldı
-- [ ] Dəvətlər səhifəsi yaradıldı
-- [ ] Dəvət göndərmə forması yaradıldı
-- [ ] Dəvət statusu göstərildi (gözləyir / qəbul edildi / ləğv edildi)
-- [ ] Dəvəti yenidən göndərmə funksionallığı tətbiq edildi
-- [ ] Dəvəti ləğv etmə funksionallığı tətbiq edildi
+- [x] Redux `invitationsSlice` yaradıldı (RTK Query)
+- [x] RTK Query `invitationsApi` yaradıldı
+- [x] Dəvətlər səhifəsi yaradıldı
+- [x] Dəvət göndərmə forması yaradıldı
+- [x] Dəvət statusu göstərildi (gözləyir / qəbul edildi / ləğv edildi)
+- [x] Dəvəti ləğv etmə funksionallığı tətbiq edildi
+- [x] Dəvəti qəbul etmə səhifəsi (`/accept-invitation/:token`) yaradıldı
 
 ---
 
