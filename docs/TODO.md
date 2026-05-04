@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 5.1 — Müəllimlər (18/24) |
-| **Aktiv branch** | `feature/teachers-api` |
-| **Növbəti branch** | `feature/students-api` |
-| **Növbəti tapşırıq** | Tələbələr siyahısı və API (5.2) |
+| **Son tamamlanan tapşırıq** | Mərhələ 5.2 — Tələbələr (26/24) |
+| **Aktiv branch** | `feature/students-api` |
+| **Növbəti branch** | `feature/invitations-api` |
+| **Növbəti tapşırıq** | Dəvətlər sistemi (Mərhələ 6) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Müəllimlər modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Tələbələr modulu (Backend API + Frontend UI) tamamlandı. |
 
 ---
 
@@ -220,20 +220,20 @@
 ### 5.2 Tələbələr
 
 #### Backend
-- [ ] `GET /api/students` — siyahı (pagination, axtarış)
-- [ ] `GET /api/students/:id` — tək tələbə
-- [ ] `POST /api/students/invite` — email ilə dəvət göndər
-- [ ] `PUT /api/students/:id` — yenilə
-- [ ] `DELETE /api/students/:id` — sil
+- [x] `GET /api/students` — siyahı (pagination, axtarış)
+- [x] `GET /api/students/:id` — tək tələbə
+- [x] `POST /api/students/invite` — email ilə dəvət göndər (Stub)
+- [x] `PUT /api/students/:id` — yenilə
+- [x] `DELETE /api/students/:id` — sil
 
 #### Frontend
-- [ ] Redux `studentsSlice` yaradıldı
-- [ ] RTK Query `studentsApi` yaradıldı
-- [ ] Tələbələr siyahısı səhifəsi yaradıldı
-- [ ] Tələbə kartı/sətir komponenti yaradıldı
-- [ ] Tələbəyə dəvət göndərmə modalı yaradıldı
-- [ ] Tələbə profili görünüşü yaradıldı
-- [ ] Axtarış + filter funksionallığı tətbiq edildi
+- [x] Redux `studentsSlice` yaradıldı (RTK Query)
+- [x] RTK Query `studentsApi` yaradıldı
+- [x] Tələbələr siyahısı səhifəsi yaradıldı
+- [x] Tələbə kartı/sətir komponenti yaradıldı
+- [x] Tələbəyə dəvət göndərmə modalı yaradıldı (UserModal reuse)
+- [x] Tələbə profili görünüşü yaradıldı
+- [x] Axtarış + filter funksionallığı tətbiq edildi
 
 ---
 
