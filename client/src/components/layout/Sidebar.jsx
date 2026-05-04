@@ -33,12 +33,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     if (role === 'admin') {
       baseLinks.push(
         { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
-        { name: 'İstifadəçilər', path: '/users', icon: Users },
+        { name: 'Tələbələr', path: '/students', icon: Users },
+        { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },
         { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );
     } else if (role === 'teacher') {
       baseLinks.push(
+        { name: 'Tələbələrim', path: '/students', icon: Users },
         { name: 'Dərslərim', path: '/courses', icon: BookOpen },
         { name: 'Cədvəl', path: '/schedule', icon: Calendar }
       );
