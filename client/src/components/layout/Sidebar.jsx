@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Menu,
   GraduationCap,
-  Mail
+  Mail,
+  CheckCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
         { name: 'Tələbələr', path: '/students', icon: Users },
         { name: 'Kurslar', path: '/courses', icon: BookOpen },
+        { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
         { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },
