@@ -13,10 +13,10 @@ const AppLayout = () => {
       <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-bordo rounded-full mix-blend-multiply filter blur-[120px] opacity-10 pointer-events-none"></div>
 
       <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
-      
+
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <Header setIsMobileOpen={setIsMobileOpen} />
-        
+
         <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>

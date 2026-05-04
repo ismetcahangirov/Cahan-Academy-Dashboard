@@ -72,15 +72,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     dispatch(logout());
   };
 
-  const sidebarVariants = {
-    expanded: { width: '256px', transition: { duration: 0.3 } },
-    collapsed: { width: '80px', transition: { duration: 0.3 } },
-  };
 
-  const mobileSidebarVariants = {
-    open: { x: 0, transition: { duration: 0.3 } },
-    closed: { x: '-100%', transition: { duration: 0.3 } },
-  };
 
   return (
     <>
@@ -100,15 +92,16 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       {/* Sidebar Content */}
       <motion.aside
         initial={false}
-        animate={
-          typeof window !== 'undefined' && window.innerWidth < 1024
-            ? isMobileOpen ? 'open' : 'closed'
-            : isCollapsed ? 'collapsed' : 'expanded'
-        }
-        variants={typeof window !== 'undefined' && window.innerWidth < 1024 ? mobileSidebarVariants : sidebarVariants}
+        animate={isMobileOpen ? 'open' : (isCollapsed ? 'collapsed' : 'expanded')}
+        variants={{
+          expanded: { width: '256px', x: 0 },
+          collapsed: { width: '80px', x: 0 },
+          open: { x: 0, width: '256px' },
+          closed: { x: '-100%', width: '256px' }
+        }}
         className={cn(
           'fixed lg:sticky top-0 left-0 h-screen z-50 bg-black border-r border-white/10 flex flex-col transition-colors',
-          'lg:translate-x-0' // Ensure it's visible on desktop
+          'lg:translate-x-0'
         )}
       >
         {/* Logo Area */}
