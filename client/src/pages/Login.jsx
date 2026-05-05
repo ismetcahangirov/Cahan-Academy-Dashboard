@@ -9,6 +9,9 @@ import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { Mail, Lock, LogIn, Loader2 } from 'lucide-react';
 
+import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLoginMutation } from '../features/auth/authApi';
+
 const loginSchema = z.object({
   email: z.string().email('Düzgün email daxil edin'),
   password: z.string().min(6, 'Şifrə ən azı 6 simvoldan ibarət olmalıdır'),
@@ -20,6 +23,7 @@ const Login = () => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   const [login, { isLoading }] = useLoginMutation();
+  const [googleLogin, { isLoading: isGoogleLoading }] = useGoogleLoginMutation();
 
   const {
     register,
@@ -43,6 +47,17 @@ const Login = () => {
       navigate('/');
     } catch (err) {
       toast.error(err?.data?.message || 'Giriş uğursuz oldu');
+    }
+  };
+
+  const onGoogleSuccess = async (response) => {
+    try {
+      const userData = await googleLogin({ token: response.credential }).unwrap();
+      dispatch(setCredentials(userData.data));
+      toast.success('Google ilə giriş edildi!');
+      navigate('/');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Google girişi uğursuz oldu');
     }
   };
 
@@ -93,7 +108,7 @@ const Login = () => {
           </div>
 
           <button
-            disabled={isLoading}
+            disabled={isLoading || isGoogleLoading}
             type="submit"
             className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -107,6 +122,28 @@ const Login = () => {
             )}
           </button>
         </form>
+
+        <div className="mt-6">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-black/20 backdrop-blur-sm px-2 text-white/40">Və ya</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={onGoogleSuccess}
+              onError={() => toast.error('Google girişi uğursuz oldu')}
+              theme="filled_black"
+              shape="pill"
+              text="signin_with"
+              width="100%"
+            />
+          </div>
+        </div>
 
         <div className="mt-8 text-center">
           <p className="text-white/60 text-sm">
