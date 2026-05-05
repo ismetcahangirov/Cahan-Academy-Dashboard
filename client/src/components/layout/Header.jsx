@@ -1,9 +1,17 @@
 import { Menu, Bell, Search } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { selectCurrentUser } from '../../features/auth/authSlice';
+import { useGetUnreadCountQuery } from '../../features/notifications/notificationsApi';
 
 const Header = ({ setIsMobileOpen }) => {
   const user = useSelector(selectCurrentUser);
+  const navigate = useNavigate();
+  const { data: countData } = useGetUnreadCountQuery(undefined, {
+    pollingInterval: 30000, // Poll every 30 seconds
+  });
+  
+  const unreadCount = countData?.count || 0;
 
   return (
     <header className="h-16 border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 lg:px-8">
@@ -29,9 +37,16 @@ const Header = ({ setIsMobileOpen }) => {
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <button className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors relative">
+        <button 
+          onClick={() => navigate('/notifications')}
+          className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors relative"
+        >
           <Bell size={20} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-bordo rounded-full border border-black"></span>
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center bg-bordo rounded-full text-[10px] font-bold text-white border border-black">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </button>
 
         {/* User Profile */}
