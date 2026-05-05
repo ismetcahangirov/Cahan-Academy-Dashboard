@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 14 — Testlər (11/11) |
-| **Aktiv branch** | `feature/tests` |
-| **Növbəti branch** | `feature/deploy` |
-| **Növbəti tapşırıq** | Deploy (Mərhələ 15) |
+| **Son tamamlanan tapşırıq** | Mərhələ 15 — Deploy & CI/CD (8/8) |
+| **Aktiv branch** | `feature/deploy-docs` |
+| **Növbəti branch** | `main` |
+| **Növbəti tapşırıq** | Layihənin Təhvil Verilməsi |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Backend vahid və inteqrasiya testləri əlavə edildi (Vitest & Supertest). |
+| **Qeyd** | Vercel deploy və GitHub Actions CI pipeline hazırlandı. |
 
 ---
 
@@ -436,16 +436,16 @@
 ---
 
 ## Mərhələ 15 — Deploy & CI/CD
-**Status:** `[ ]` gözləyir — 0/8 tamamlandı
+**Status:** `[x]` tamamlandı — 8/8 tamamlandı
 
-- [ ] Frontend production build yoxlanıldı
-- [ ] Backend production modu yoxlanıldı
-- [ ] MongoDB Atlas bağlantısı quruldu
-- [ ] Environment dəyişənləri production üçün tənzimləndi
-- [ ] GitHub Actions CI pipeline yaradıldı
-- [ ] Linting CI-da işləyir
-- [ ] Testlər CI-da işləyir
-- [ ] Deploy pipeline konfiqurasiya edildi
+- [x] Frontend production build yoxlanıldı
+- [x] Backend production modu yoxlanıldı
+- [x] MongoDB Atlas bağlantısı quruldu
+- [x] Environment dəyişənləri production üçün tənzimləndi
+- [x] GitHub Actions CI pipeline yaradıldı
+- [x] Linting CI-da işləyir
+- [x] Testlər CI-da işləyir
+- [x] Deploy pipeline konfiqurasiya edildi (Vercel)
 
 ---
 
@@ -467,9 +467,9 @@
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 14 — Testlər | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **39% (93/237)** | **237** |
+| 14 — Testlər | `[x]` tamamlandı | 100% (15/15) | 15 |
+| 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
+| **CƏMİ** | | **43% (101/237)** | **237** |
 
 ---
 
