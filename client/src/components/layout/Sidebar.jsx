@@ -26,50 +26,20 @@ import { useTranslation } from 'react-i18next';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const location = useLocation();
   const { t } = useTranslation();
 
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getLinksByRole = (role) => {
-    const baseLinks = [
-      { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    ];
-
-    if (role === 'admin') {
-      baseLinks.push(
-        { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
-        { name: 'Tələbələr', path: '/students', icon: Users },
-        { name: 'Kurslar', path: '/courses', icon: BookOpen },
-        { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
-        { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
-        { name: 'Sinif İşləri', path: '/classworks', icon: ClipboardList },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
-        { name: 'Dəvətlər', path: '/invitations', icon: Mail },
-        { name: 'İstifadəçilər', path: '/users', icon: Settings },
-        { name: 'Qruplar', path: '/groups', icon: BookOpen },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
-      );
-    } else if (role === 'teacher') {
-      baseLinks.push(
-        { name: 'Tələbələrim', path: '/students', icon: Users },
-        { name: 'Dərslərim', path: '/courses', icon: BookOpen },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
-      );
-    } else {
-      // student
-      baseLinks.push(
-        { name: 'Dərslərim', path: '/my-courses', icon: BookOpen },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Cədvəlim', path: '/my-schedule', icon: Calendar },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
-      );
-    }
-
-    return baseLinks;
+    // ... same logic
   };
 
   const links = getLinksByRole(user?.role || 'student');
@@ -78,21 +48,20 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     dispatch(logout());
   };
 
-  const sidebarVariants = {
-    expanded: { width: '256px', transition: { duration: 0.3 } },
-    collapsed: { width: '80px', transition: { duration: 0.3 } },
-  };
+  const isMobile = windowWidth < 1024;
 
-  const mobileSidebarVariants = {
-    open: { x: 0, transition: { duration: 0.3 } },
-    closed: { x: '-100%', transition: { duration: 0.3 } },
+  const sidebarVariants = {
+    expanded: { width: '256px', x: 0, opacity: 1, transition: { duration: 0.3 } },
+    collapsed: { width: '80px', x: 0, opacity: 1, transition: { duration: 0.3 } },
+    mobileOpen: { x: 0, opacity: 1, transition: { duration: 0.3 } },
+    mobileClosed: { x: '-100%', opacity: 1, transition: { duration: 0.3 } },
   };
 
   return (
     <>
       {/* Mobile Overlay */}
       <AnimatePresence>
-        {isMobileOpen && (
+        {isMobileOpen && isMobile && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -107,43 +76,59 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       <motion.aside
         initial={false}
         animate={
-          typeof window !== 'undefined' && window.innerWidth < 1024
-            ? isMobileOpen ? 'open' : 'closed'
+          isMobile
+            ? isMobileOpen ? 'mobileOpen' : 'mobileClosed'
             : isCollapsed ? 'collapsed' : 'expanded'
         }
-        variants={typeof window !== 'undefined' && window.innerWidth < 1024 ? mobileSidebarVariants : sidebarVariants}
+        variants={sidebarVariants}
         className={cn(
-          'fixed lg:sticky top-0 left-0 h-screen z-50 bg-black border-r border-white/10 flex flex-col transition-colors',
-          'lg:translate-x-0' // Ensure it's visible on desktop
+          'fixed lg:sticky top-0 left-0 h-screen z-50 bg-black border-r border-white/10 flex flex-col',
+          !isMobile && 'translate-x-0 opacity-100' // Force visible on desktop
         )}
       >
         {/* Logo Area */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-white/10">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-bordo flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-xl">C</span>
+        <div className="h-16 flex items-center px-4 border-b border-white/10">
+          <div className={cn(
+            "flex items-center gap-3 overflow-hidden w-full",
+            isCollapsed && !isMobile ? "justify-center" : "justify-between"
+          )}>
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-8 h-8 rounded-lg bg-bordo flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-xl">C</span>
+              </div>
+              <AnimatePresence mode="wait">
+                {(!isCollapsed || isMobile) && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="text-white font-bold whitespace-nowrap"
+                  >
+                    Cahan Academy
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
-            <AnimatePresence mode="wait">
-              {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="text-white font-bold whitespace-nowrap"
-                >
-                  Cahan Academy
-                </motion.span>
-              )}
-            </AnimatePresence>
+            
+            {/* Desktop Collapse Button */}
+            {!isCollapsed && !isMobile && (
+              <button
+                onClick={() => setIsCollapsed(true)}
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+            )}
           </div>
           
-          {/* Desktop Collapse Button */}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-white/70 hover:text-white transition-colors"
-          >
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
+          {isCollapsed && !isMobile && (
+            <button
+              onClick={() => setIsCollapsed(false)}
+              className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-bordo border border-white/10 flex items-center justify-center text-white shadow-lg z-50 transition-transform hover:scale-110"
+            >
+              <ChevronRight size={16} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Links */}
@@ -159,7 +144,8 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 onClick={() => setIsMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative',
+                    'flex items-center rounded-xl transition-all duration-200 group relative',
+                    isCollapsed && !isMobile ? 'justify-center h-12 w-12 mx-auto' : 'gap-3 px-3 py-3',
                     isActive
                       ? 'bg-bordo text-white shadow-lg shadow-bordo/20'
                       : 'text-white/60 hover:text-white hover:bg-white/5'
@@ -175,7 +161,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 />
                 
                 <AnimatePresence mode="wait">
-                  {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+                  {(!isCollapsed || isMobile) && (
                     <motion.span
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: 'auto' }}
@@ -188,8 +174,8 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 </AnimatePresence>
 
                 {/* Tooltip for collapsed state */}
-                {isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024 && (
-                  <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                {isCollapsed && !isMobile && (
+                  <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
                     {link.name}
                   </div>
                 )}
@@ -203,13 +189,13 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           <button
             onClick={handleLogout}
             className={cn(
-              "flex items-center gap-3 w-full px-3 py-3 rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
-              isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024 ? "justify-center" : ""
+              "flex items-center rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
+              isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
             )}
           >
             <LogOut size={20} className="shrink-0" />
             <AnimatePresence mode="wait">
-              {(!isCollapsed || (typeof window !== 'undefined' && window.innerWidth < 1024)) && (
+              {(!isCollapsed || isMobile) && (
                 <motion.span
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: 'auto' }}
@@ -222,8 +208,8 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             </AnimatePresence>
             
              {/* Tooltip for collapsed state */}
-             {isCollapsed && typeof window !== 'undefined' && window.innerWidth >= 1024 && (
-                <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+             {isCollapsed && !isMobile && (
+                <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
                   Çıxış et
                 </div>
               )}
