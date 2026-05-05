@@ -5,7 +5,7 @@ export const teachersApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${import.meta.env.VITE_API_URL || ''}/teachers`,
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.user?.token;
+      const token = getState().auth.token;
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
