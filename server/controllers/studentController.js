@@ -88,17 +88,30 @@ export const getStudentById = async (req, res) => {
  */
 export const updateStudent = async (req, res) => {
   try {
-    const { name, isActive, status, groupId } = req.body;
+    const { name, email, status, password, groupId } = req.body;
 
-    const student = await User.findOneAndUpdate(
-      { _id: req.params.id, role: 'student' },
-      { name, isActive, status, groupId },
-      { new: true, runValidators: true }
-    );
+    const student = await User.findOne({ _id: req.params.id, role: 'student' });
 
     if (!student) {
       return sendError(res, 'Student not found', 404);
     }
+
+    if (email && email !== student.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return sendError(res, 'Email already in use', 400);
+      }
+      student.email = email;
+    }
+
+    if (name) student.name = name;
+    if (status) student.status = status;
+    if (groupId) student.groupId = groupId;
+    if (password) {
+      student.password = password;
+    }
+
+    await student.save();
 
     return sendSuccess(res, 'Student updated successfully', student);
   } catch (error) {
@@ -132,18 +145,23 @@ export const deleteStudent = async (req, res) => {
  */
 export const inviteStudent = async (req, res) => {
   try {
-    const { email, groupId } = req.body;
+    const { name, email, password, status, groupId } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists) {
       return sendError(res, 'User already exists', 400);
     }
 
-    return sendSuccess(res, 'Invitation sent successfully', {
+    const student = await User.create({
+      name,
       email,
-      groupId,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      password,
+      status: status || 'active',
+      role: 'student',
+      groupId
     });
+
+    return sendSuccess(res, 'Student created successfully', student);
   } catch (error) {
     return sendError(res, error.message, 500);
   }
