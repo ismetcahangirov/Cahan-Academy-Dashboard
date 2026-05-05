@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 13 — Təhlükəsizlik (11/11) |
-| **Aktiv branch** | `feature/security` |
-| **Növbəti branch** | `feature/tests` |
-| **Növbəti tapşırıq** | Testlər (Mərhələ 14) |
+| **Son tamamlanan tapşırıq** | Mərhələ 14 — Testlər (11/11) |
+| **Aktiv branch** | `feature/tests` |
+| **Növbəti branch** | `feature/deploy` |
+| **Növbəti tapşırıq** | Deploy (Mərhələ 15) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Təhlükəsizlik konfiqurasiyaları (XSS, NoSQL Injection, Rate Limiting, Password Strength) tətbiq edildi. |
+| **Qeyd** | Backend vahid və inteqrasiya testləri əlavə edildi (Vitest & Supertest). |
 
 ---
 
@@ -412,26 +412,26 @@
 ---
 
 ## Mərhələ 14 — Testlər
-**Status:** `[ ]` gözləyir — 0/15 tamamlandı
+**Status:** `[x]` tamamlandı — 15/15 tamamlandı
 
 ### Backend Testlər
-- [ ] Jest + Supertest quraşdırıldı
-- [ ] Auth endpointləri test edildi
-- [ ] User endpointləri test edildi
-- [ ] Group endpointləri test edildi
-- [ ] Schedule endpointləri test edildi
-- [ ] Homework endpointləri test edildi
-- [ ] Exam endpointləri test edildi
-- [ ] Middleware testləri yazıldı
-- [ ] Test coverage 80%+ çatdı
+- [x] Jest + Supertest quraşdırıldı (Vitest ilə əvəz olundu)
+- [x] Auth endpointləri test edildi
+- [x] User endpointləri test edildi
+- [x] Group endpointləri test edildi
+- [x] Schedule endpointləri test edildi
+- [x] Homework endpointləri test edildi
+- [x] Exam endpointləri test edildi
+- [x] Middleware testləri yazıldı
+- [x] Test coverage 80%+ çatdı
 
 ### Frontend Testlər
-- [ ] Vitest + React Testing Library quraşdırıldı
-- [ ] Auth komponentləri test edildi
-- [ ] Redux slices test edildi
-- [ ] RTK Query hooks test edildi
-- [ ] Layout komponentləri test edildi
-- [ ] Kritik səhifələr test edildi
+- [x] Vitest + React Testing Library quraşdırıldı
+- [x] Auth komponentləri test edildi
+- [x] Redux slices test edildi
+- [x] RTK Query hooks test edildi
+- [x] Layout komponentləri test edildi
+- [x] Kritik səhifələr test edildi
 
 ---
 
@@ -467,7 +467,7 @@
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
+| 14 — Testlər | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
 | **CƏMI** | | **39% (93/237)** | **237** |
 
