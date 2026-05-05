@@ -1,19 +1,9 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from '../../utils/baseQuery';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: (typeof window !== 'undefined' && window.location.hostname === 'localhost')
-      ? 'http://localhost:5000/api'
-      : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api'),
-    prepareHeaders: (headers, { getState }) => {
-      const user = getState().auth.user;
-      if (user && user.token) {
-        headers.set('authorization', `Bearer ${user.token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery(),
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
