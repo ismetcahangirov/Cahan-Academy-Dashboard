@@ -20,6 +20,7 @@ import classworkRoutes from './routes/classworkRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
+import examRoutes from './routes/examRoutes.js';
 import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
@@ -67,6 +68,7 @@ app.use('/api/classworks', classworkRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/schedule', scheduleRoutes);
+app.use('/api/exams', examRoutes);
 
 // Root Route
 app.get('/', (req, res) => {

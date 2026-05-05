@@ -15,6 +15,7 @@ import { profileApi } from '../features/profile/profileApi';
 import { quizzesApi } from '../features/quizzes/quizzesApi';
 import { scheduleApi } from '../features/schedule/scheduleApi';
 import { notificationsApi } from '../features/notifications/notificationsApi';
+import { examsApi } from '../features/exams/examsApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({
@@ -34,6 +35,7 @@ export const store = configureStore({
     [quizzesApi.reducerPath]: quizzesApi.reducer,
     [scheduleApi.reducerPath]: scheduleApi.reducer,
     [notificationsApi.reducerPath]: notificationsApi.reducer,
+    [examsApi.reducerPath]: examsApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -52,7 +54,8 @@ export const store = configureStore({
       profileApi.middleware,
       quizzesApi.middleware,
       scheduleApi.middleware,
-      notificationsApi.middleware
+      notificationsApi.middleware,
+      examsApi.middleware
     ),
 });
 
