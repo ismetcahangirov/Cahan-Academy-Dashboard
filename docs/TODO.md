@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 15 — Deploy & CI/CD (8/8) |
-| **Aktiv branch** | `main` |
-| **Növbəti branch** | `feature/m14-tests` |
-| **Növbəti tapşırıq** | Backend və frontend testlərinin genenişləndirilməsi |
+| **Son tamamlanan tapşırıq** | Mərhələ 2.2 — Google Login Frontend İnteqrasiyası |
+| **Aktiv branch** | `feature/m02-google-login-frontend` |
+| **Növbəti branch** | `main` |
+| **Növbəti tapşırıq** | Layihənin yekun dökümantasiyası və təhvil-təslimi |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Ümumi progress 95%. Qalan: Testlər (Faza 14), Google Login. |
+| **Qeyd** | Ümumi progress 100%. Bütün texniki tapşırıqlar tamamlandı. |
 
 ---
 
@@ -109,7 +109,7 @@
 ---
 
 ## Mərhələ 2 — Autentifikasiya
-**Status:** `[~]` davam edir — 26/27 tamamlandı
+**Status:** `[x]` tamamlandı — 27/27 tamamlandı
 
 ### 2.1 Backend — Auth
 **Branch:** `feature/m02-auth-backend`
@@ -142,7 +142,7 @@
 - [x] `PublicRoute` komponenti (login olubsa dashboard-a yönləndirmə) yazıldı
 - [x] Token-in `localStorage`-də saxlanılması və avtomatik login
 - [x] Logout funksionallığı (state təmizlənməsi)
-- [ ] Google Login (frontend inteqrasiyası)
+- [x] Google Login (frontend inteqrasiyası)
 - [x] Xəta mesajlarının göstərilməsi (Toast bildirişləri)
 - [x] Yüklənmə indikatorları (Spinners/Skeletons)
 - [x] Role-based Route komponenti yaradıldı
@@ -455,7 +455,7 @@
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[x]` tamamlandı | 100% (26/26) | 26 |
-| 2 — Auth | `[~]` davam edir | 96% (26/27) | 27 |
+| 2 — Auth | `[x]` tamamlandı | 100% (27/27) | 27 |
 | 3 — Layout | `[x]` tamamlandı | 100% (10/10) | 10 |
 | 4 — Dashboard | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 5 — İstifadəçilər | `[x]` tamamlandı | 100% (24/24) | 24 |
@@ -469,7 +469,7 @@
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 14 — Testlər | `[x]` tamamlandı | 100% (15/15) | 15 |
 | 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
-| **CƏMİ** | | **99% (239/240)** | **240** |
+| **CƏMİ** | | **100% (240/240)** | **240** |
 
 ---
 
