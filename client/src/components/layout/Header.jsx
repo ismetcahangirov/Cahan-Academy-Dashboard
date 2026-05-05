@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Menu, Bell, Search } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetUnreadCountQuery } from '../../features/notifications/notificationsApi';
 

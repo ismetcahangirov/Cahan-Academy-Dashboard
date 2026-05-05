@@ -1,6 +1,18 @@
-import { apiSlice } from '../../app/api/apiSlice';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const notificationsApi = apiSlice.injectEndpoints({
+export const notificationsApi = createApi({
+  reducerPath: 'notificationsApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: import.meta.env.VITE_API_URL || '',
+    prepareHeaders: (headers, { getState }) => {
+      const token = getState().auth.user?.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ['Notification', 'NotificationCount'],
   endpoints: (builder) => ({
     getNotifications: builder.query({
       query: ({ page = 1, limit = 20 }) => ({
