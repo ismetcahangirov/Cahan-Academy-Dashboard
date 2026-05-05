@@ -4,8 +4,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
@@ -59,10 +57,24 @@ app.use(cors({
 }));
 
 // Sanitize data against NoSQL query injection
-app.use(mongoSanitize());
-
-// Sanitize data against XSS
-app.use(xss());
+// Custom sanitizer compatible with Express 5 (req.query is read-only)
+app.use((req, res, next) => {
+  const sanitize = (obj) => {
+    if (obj && typeof obj === 'object') {
+      for (const key of Object.keys(obj)) {
+        if (key.startsWith('$') || key.includes('.')) {
+          delete obj[key];
+        } else if (typeof obj[key] === 'object') {
+          sanitize(obj[key]);
+        }
+      }
+    }
+    return obj;
+  };
+  if (req.body) sanitize(req.body);
+  if (req.params) sanitize(req.params);
+  next();
+});
 
 if (process.env.NODE_ENV === 'development') {
   morgan.token('body', (req) => {
