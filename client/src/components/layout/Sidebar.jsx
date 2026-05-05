@@ -18,7 +18,8 @@ import {
   CheckCircle,
   FileText,
   ClipboardList,
-  Trophy
+  Trophy,
+  PenTool
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
         { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
         { name: 'Sinif İşləri', path: '/classworks', icon: ClipboardList },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
         { name: 'Quizlər', path: '/quizzes', icon: Trophy },
         { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
@@ -53,6 +55,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       baseLinks.push(
         { name: 'Tələbələrim', path: '/students', icon: Users },
         { name: 'Dərslərim', path: '/courses', icon: BookOpen },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
         { name: 'Cədvəl', path: '/schedule', icon: Calendar },
         { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );
@@ -60,6 +63,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       // student
       baseLinks.push(
         { name: 'Dərslərim', path: '/my-courses', icon: BookOpen },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
         { name: 'Cədvəlim', path: '/my-schedule', icon: Calendar },
         { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );

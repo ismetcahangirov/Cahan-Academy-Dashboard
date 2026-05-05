@@ -18,6 +18,7 @@ import Classworks from './pages/classworks/Classworks';
 import Profile from './pages/profile/Profile';
 import Settings from './pages/settings/Settings';
 import Quizzes from './pages/quizzes/Quizzes';
+import Exams from './pages/exams/Exams';
 import Notifications from './pages/notifications/Notifications';
 import Schedule from './pages/schedule/Schedule';
 import AppLayout from './components/layout/AppLayout';
@@ -62,6 +63,7 @@ function App() {
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/homeworks" element={<Homeworks />} />
             <Route path="/classworks" element={<Classworks />} />
+            <Route path="/exams" element={<Exams />} />
             <Route path="/quizzes" element={<Quizzes />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/schedule" element={<Schedule />} />
