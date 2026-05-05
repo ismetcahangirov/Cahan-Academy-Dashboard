@@ -17,7 +17,8 @@ import {
   Mail,
   CheckCircle,
   FileText,
-  ClipboardList
+  ClipboardList,
+  Trophy
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -42,6 +43,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
         { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
         { name: 'Sinif İşləri', path: '/classworks', icon: ClipboardList },
+        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
         { name: 'Dəvətlər', path: '/invitations', icon: Mail },
         { name: 'İstifadəçilər', path: '/users', icon: Settings },
         { name: 'Qruplar', path: '/groups', icon: BookOpen },
