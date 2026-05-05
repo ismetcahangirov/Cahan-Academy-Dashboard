@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logout } from '../../features/auth/authSlice';
@@ -39,7 +39,49 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   }, []);
 
   const getLinksByRole = (role) => {
-    // ... same logic
+    const baseLinks = [
+      { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    ];
+
+    if (role === 'admin') {
+      baseLinks.push(
+        { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
+        { name: 'Tələbələr', path: '/students', icon: Users },
+        { name: 'Kurslar', path: '/courses', icon: BookOpen },
+        { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
+        { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
+        { name: 'Sinif İşləri', path: '/classworks', icon: ClipboardList },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
+        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
+        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
+        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
+        { name: 'Dəvətlər', path: '/invitations', icon: Mail },
+        { name: 'İstifadəçilər', path: '/users', icon: Users },
+        { name: 'Qruplar', path: '/groups', icon: BookOpen },
+        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+      );
+    } else if (role === 'teacher') {
+      baseLinks.push(
+        { name: 'Tələbələrim', path: '/students', icon: Users },
+        { name: 'Dərslərim', path: '/courses', icon: BookOpen },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
+        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
+        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
+        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
+        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+      );
+    } else {
+      baseLinks.push(
+        { name: 'Kurslarım', path: '/courses', icon: BookOpen },
+        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
+        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
+        { name: 'Cədvəlim', path: '/schedule', icon: Calendar },
+        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
+        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+      );
+    }
+
+    return baseLinks;
   };
 
   const links = getLinksByRole(user?.role || 'student');
