@@ -1,7 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Classwork from '../models/Classwork.js';
 import Group from '../models/Group.js';
-import { apiResponse } from '../utils/apiResponse.js';
+import apiResponse from '../utils/apiResponse.js';
 
 // @desc    Get all classworks
 // @route   GET /api/classworks
@@ -26,7 +26,7 @@ export const getClassworks = asyncHandler(async (req, res) => {
     .populate('teacher', 'name')
     .sort('-createdAt');
 
-  res.status(200).json(apiResponse(classworks, 'Sinif işləri uğurla gətirildi'));
+  return apiResponse.success(res, 'Sinif işləri uğurla gətirildi', classworks);
 });
 
 // @desc    Get single classwork
@@ -50,7 +50,7 @@ export const getClassworkById = asyncHandler(async (req, res) => {
     classwork.submissions = studentSubmission ? [studentSubmission] : [];
   }
 
-  res.status(200).json(apiResponse(classwork, 'Sinif işi detalları uğurla gətirildi'));
+  return apiResponse.success(res, 'Sinif işi detalları uğurla gətirildi', classwork);
 });
 
 // @desc    Create new classwork
@@ -77,7 +77,7 @@ export const createClasswork = asyncHandler(async (req, res) => {
     .populate('group', 'name')
     .populate('teacher', 'name');
 
-  res.status(201).json(apiResponse(createdClasswork, 'Sinif işi uğurla yaradıldı'));
+  return apiResponse.success(res, 'Sinif işi uğurla yaradıldı', createdClasswork, 201);
 });
 
 // @desc    Update classwork
@@ -107,7 +107,7 @@ export const updateClasswork = asyncHandler(async (req, res) => {
     .populate('group', 'name')
     .populate('teacher', 'name');
 
-  res.status(200).json(apiResponse(populated, 'Sinif işi uğurla yeniləndi'));
+  return apiResponse.success(res, 'Sinif işi uğurla yeniləndi', populated);
 });
 
 // @desc    Delete classwork
@@ -127,8 +127,7 @@ export const deleteClasswork = asyncHandler(async (req, res) => {
   }
 
   await classwork.deleteOne();
-
-  res.status(200).json(apiResponse(null, 'Sinif işi uğurla silindi'));
+  return apiResponse.success(res, 'Sinif işi uğurla silindi', null);
 });
 
 // @desc    Submit classwork (Student)
@@ -136,23 +135,21 @@ export const deleteClasswork = asyncHandler(async (req, res) => {
 // @access  Private/Student
 export const submitClasswork = asyncHandler(async (req, res) => {
   const { files } = req.body;
-  const classworkId = req.params.id;
-
-  const classwork = await Classwork.findById(classworkId);
+  const classwork = await Classwork.findById(req.params.id);
 
   if (!classwork) {
     res.status(404);
     throw new Error('Sinif işi tapılmadı');
   }
 
-  const existingSubmissionIndex = classwork.submissions.findIndex(
+  const existingIndex = classwork.submissions.findIndex(
     sub => sub.student.toString() === req.user._id.toString()
   );
 
-  if (existingSubmissionIndex !== -1) {
-    classwork.submissions[existingSubmissionIndex].files = files || classwork.submissions[existingSubmissionIndex].files;
-    classwork.submissions[existingSubmissionIndex].submittedAt = Date.now();
-    classwork.submissions[existingSubmissionIndex].status = 'submitted';
+  if (existingIndex !== -1) {
+    classwork.submissions[existingIndex].files = files || classwork.submissions[existingIndex].files;
+    classwork.submissions[existingIndex].submittedAt = Date.now();
+    classwork.submissions[existingIndex].status = 'submitted';
   } else {
     classwork.submissions.push({
       student: req.user._id,
@@ -163,8 +160,7 @@ export const submitClasswork = asyncHandler(async (req, res) => {
   }
 
   await classwork.save();
-
-  res.status(200).json(apiResponse(classwork, 'Sinif işi uğurla təhvil verildi'));
+  return apiResponse.success(res, 'Sinif işi uğurla təhvil verildi', classwork);
 });
 
 // @desc    Grade classwork submission (Teacher)
@@ -172,9 +168,7 @@ export const submitClasswork = asyncHandler(async (req, res) => {
 // @access  Private/Teacher,Admin
 export const gradeClasswork = asyncHandler(async (req, res) => {
   const { studentId, grade, feedback } = req.body;
-  const classworkId = req.params.id;
-
-  const classwork = await Classwork.findById(classworkId);
+  const classwork = await Classwork.findById(req.params.id);
 
   if (!classwork) {
     res.status(404);
@@ -186,20 +180,19 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
     throw new Error('Bu sinif işini qiymətləndirmək hüququnuz yoxdur');
   }
 
-  const submissionIndex = classwork.submissions.findIndex(
+  const subIndex = classwork.submissions.findIndex(
     sub => sub.student.toString() === studentId
   );
 
-  if (submissionIndex === -1) {
+  if (subIndex === -1) {
     res.status(404);
     throw new Error('Tələbənin təhvil verilmiş işi tapılmadı');
   }
 
-  classwork.submissions[submissionIndex].grade = grade;
-  classwork.submissions[submissionIndex].feedback = feedback;
-  classwork.submissions[submissionIndex].status = 'graded';
+  classwork.submissions[subIndex].grade = grade;
+  classwork.submissions[subIndex].feedback = feedback;
+  classwork.submissions[subIndex].status = 'graded';
 
   await classwork.save();
-
-  res.status(200).json(apiResponse(classwork, 'Sinif işi uğurla qiymətləndirildi'));
+  return apiResponse.success(res, 'Sinif işi uğurla qiymətləndirildi', classwork);
 });

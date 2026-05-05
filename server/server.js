@@ -17,6 +17,9 @@ import courseRoutes from './routes/courseRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import homeworkRoutes from './routes/homeworkRoutes.js';
 import classworkRoutes from './routes/classworkRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js';
 import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
@@ -61,6 +64,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/homeworks', homeworkRoutes);
 app.use('/api/classworks', classworkRoutes);
+app.use('/api/quizzes', quizRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // Root Route
 app.get('/', (req, res) => {
@@ -73,6 +79,11 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// Yalnız lokalda və ya birbaşa işə salındıqda listen etsin
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
+
+export default app;

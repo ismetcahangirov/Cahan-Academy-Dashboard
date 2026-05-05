@@ -17,6 +17,9 @@ import Homeworks from './pages/homeworks/Homeworks';
 import Classworks from './pages/classworks/Classworks';
 import Profile from './pages/profile/Profile';
 import Settings from './pages/settings/Settings';
+import Quizzes from './pages/quizzes/Quizzes';
+import Notifications from './pages/notifications/Notifications';
+import Schedule from './pages/schedule/Schedule';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -59,6 +62,9 @@ function App() {
             <Route path="/attendance" element={<Attendance />} />
             <Route path="/homeworks" element={<Homeworks />} />
             <Route path="/classworks" element={<Classworks />} />
+            <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/schedule" element={<Schedule />} />
             <Route path="/courses/:id" element={<div className="text-white">Kurs Detalları (Tezliklə)</div>} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />

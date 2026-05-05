@@ -103,23 +103,23 @@ VITE_API_URL=https://api.cahanacademy.az/api
 VITE_GOOGLE_CLIENT_ID=your_production_google_client_id
 ```
 
-### Backend (`server` — Render/Railway/VPS panel)
+### Backend (Vercel / Render / VPS)
 
 ```env
 PORT=5000
 NODE_ENV=production
-MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/academy_prod
-JWT_SECRET=<64-simvollu-random-string>
-JWT_EXPIRE=15m
-JWT_REFRESH_SECRET=<başqa-64-simvollu-random-string>
+MONGO_URI=mongodb+srv://ismetcahangirov022_db_user:ik1ovQONyg82yuwS@lms-cluster.14rk6bn.mongodb.net/academy_db?retryWrites=true&w=majority&appName=Lms-cluster
+JWT_SECRET=your_super_secret_jwt_key
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_EXPIRE=7d
 JWT_REFRESH_EXPIRE=30d
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
-EMAIL_USER=academy@gmail.com
-EMAIL_PASS=xxxx-xxxx-xxxx-xxxx
-GOOGLE_CLIENT_ID=your_production_google_client_id
-GOOGLE_CLIENT_SECRET=your_production_google_client_secret
-CLIENT_URL=https://cahanacademy.az
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_password
+GOOGLE_CLIENT_ID=950170848378-mm3bbt4nf347i33essg5t6abtmf7kalh.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+CLIENT_URL=https://cahan-academy-dashboard.vercel.app
 ```
 
 ---
