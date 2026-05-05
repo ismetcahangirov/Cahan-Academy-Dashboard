@@ -80,17 +80,29 @@ export const getTeacherById = async (req, res) => {
  */
 export const updateTeacher = async (req, res) => {
   try {
-    const { name, isActive, status } = req.body;
+    const { name, email, status, password } = req.body;
 
-    const teacher = await User.findOneAndUpdate(
-      { _id: req.params.id, role: 'teacher' },
-      { name, isActive, status },
-      { new: true, runValidators: true }
-    );
+    const teacher = await User.findOne({ _id: req.params.id, role: 'teacher' });
 
     if (!teacher) {
       return sendError(res, 'Teacher not found', 404);
     }
+
+    if (email && email !== teacher.email) {
+      const emailExists = await User.findOne({ email });
+      if (emailExists) {
+        return sendError(res, 'Email already in use', 400);
+      }
+      teacher.email = email;
+    }
+
+    if (name) teacher.name = name;
+    if (status) teacher.status = status;
+    if (password) {
+      teacher.password = password;
+    }
+
+    await teacher.save();
 
     return sendSuccess(res, 'Teacher updated successfully', teacher);
   } catch (error) {
@@ -124,7 +136,7 @@ export const deleteTeacher = async (req, res) => {
  */
 export const inviteTeacher = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { name, email, password, status } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -132,12 +144,15 @@ export const inviteTeacher = async (req, res) => {
       return sendError(res, 'User with this email already exists', 400);
     }
 
-    // For now, we just return success. 
-    // Real invitation logic with tokens and emails will be in Stage 6.
-    return sendSuccess(res, 'Invitation sent successfully', {
+    const teacher = await User.create({
+      name,
       email,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      password,
+      status: status || 'active',
+      role: 'teacher'
     });
+
+    return sendSuccess(res, 'Teacher created successfully', teacher);
   } catch (error) {
     return sendError(res, error.message, 500);
   }

@@ -1,5 +1,7 @@
 import User from '../models/userModel.js';
-// Digər modellər (Course, Group və s.) yaradıldıqdan sonra bura əlavə ediləcək
+import Course from '../models/Course.js';
+import Group from '../models/Group.js';
+import Notification from '../models/Notification.js';
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
@@ -13,11 +15,12 @@ export const getStats = async (req, res) => {
     const teachers = await User.countDocuments({ role: 'teacher' });
     const students = await User.countDocuments({ role: 'student' });
 
-    // Mock data for models not yet implemented
-    // Bunlar gələcək mərhələlərdə real dataya bağlanacaq
-    const totalCourses = 42; 
-    const totalGroups = 18;
-    const learningHours = 2450;
+    // Real data from Course and Group models
+    const totalCourses = await Course.countDocuments(); 
+    const totalGroups = await Group.countDocuments();
+    
+    // As learning hours are not tracked directly yet, keeping a placeholder or simple calculation
+    const learningHours = totalGroups * 48; // e.g. 48 hours per group
 
     res.status(200).json({
       success: true,
@@ -56,27 +59,17 @@ export const getStats = async (req, res) => {
 // @access  Private
 export const getRecentActivities = async (req, res) => {
   try {
-    // Bu hissə üçün 'Activity' modeli yaradılana qədər mock data qaytarırıq
-    const activities = [
-      {
-        id: 1,
-        type: 'user_registered',
-        message: 'Yeni tələbə qeydiyyatdan keçdi: Əli Məmmədov',
-        time: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
-      },
-      {
-        id: 2,
-        type: 'course_added',
-        message: 'Yeni kurs əlavə edildi: Frontend Development',
-        time: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      },
-      {
-        id: 3,
-        type: 'exam_completed',
-        message: 'Riyaziyyat imtahanı nəticələri açıqlandı',
-        time: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-      }
-    ];
+    // Query recent notifications to act as activities
+    const notifications = await Notification.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+
+    const activities = notifications.map(notif => ({
+      id: notif._id,
+      type: notif.type,
+      message: notif.title + (notif.message ? ` - ${notif.message}` : ''),
+      time: notif.createdAt,
+    }));
 
     res.status(200).json({
       success: true,
