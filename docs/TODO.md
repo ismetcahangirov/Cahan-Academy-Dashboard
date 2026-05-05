@@ -12,10 +12,10 @@
 |---|---|
 | **Son tamamlanan tapşırıq** | Mərhələ 15 — Deploy & CI/CD (8/8) |
 | **Aktiv branch** | `main` |
-| **Növbəti branch** | - |
-| **Növbəti tapşırıq** | - |
+| **Növbəti branch** | `feature/missing-tasks` |
+| **Növbəti tapşırıq** | Yarımçıq qalmış taskların tamamlanması |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Layihə 100% tamamlandı. Bütün modullar, testlər və deploy hazırdır. |
+| **Qeyd** | Ümumi progress 93%. 2 task qaldı: Google Login, Qrup detalları/tələbə UI, Testlər. |
 
 ---
 
@@ -68,7 +68,7 @@
 ---
 
 ## Mərhələ 1 — Layihə Qurulumu
-**Status:** `[ ]` gözləyir — 0/26 tamamlandı
+**Status:** `[x]` tamamlandı — 26/26 tamamlandı
 
 ### 1.1 Frontend (Client)
 **Branch:** `feature/m01-frontend-setup`
@@ -109,7 +109,7 @@
 ---
 
 ## Mərhələ 2 — Autentifikasiya
-**Status:** `[ ]` gözləyir — 0/27 tamamlandı
+**Status:** `[~]` davam edir — 26/27 tamamlandı
 
 ### 2.1 Backend — Auth
 **Branch:** `feature/m02-auth-backend`
@@ -145,8 +145,8 @@
 - [ ] Google Login (frontend inteqrasiyası)
 - [x] Xəta mesajlarının göstərilməsi (Toast bildirişləri)
 - [x] Yüklənmə indikatorları (Spinners/Skeletons)
-- [ ] Role-based Route komponenti yaradıldı
-- [ ] Auth state persist edildi
+- [x] Role-based Route komponenti yaradıldı
+- [x] Auth state persist edildi
 
 ---
 
@@ -263,7 +263,7 @@
 ---
 
 ## Mərhələ 7 — Qruplar
-**Status:** `[x]` tamamlandı — 14/14 tamamlandı
+**Status:** `[~]` davam edir — 12/14 tamamlandı
 
 ### 7.1 Backend
 - [x] `Group` modeli yaradıldı (ad, müəllim, tələbələr, cədvəl)
@@ -280,8 +280,8 @@
 - [x] RTK Query `groupsApi` yaradıldı
 - [x] Qruplar səhifəsi yaradıldı
 - [x] Qrup yaratma modalı yaradıldı
-- [x] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
-- [x] Qrup detalları görünüşü yaradıldı (Kart daxilində)
+- [ ] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
+- [ ] Qrup detalları görünüşü yaradıldı (Kart daxilində)
 
 ---
 
@@ -412,26 +412,26 @@
 ---
 
 ## Mərhələ 14 — Testlər
-**Status:** `[x]` tamamlandı — 15/15 tamamlandı
+**Status:** `[~]` davam edir — 3/15 tamamlandı
 
 ### Backend Testlər
 - [x] Jest + Supertest quraşdırıldı (Vitest ilə əvəz olundu)
 - [x] Auth endpointləri test edildi
-- [x] User endpointləri test edildi
-- [x] Group endpointləri test edildi
-- [x] Schedule endpointləri test edildi
-- [x] Homework endpointləri test edildi
-- [x] Exam endpointləri test edildi
-- [x] Middleware testləri yazıldı
-- [x] Test coverage 80%+ çatdı
+- [ ] User endpointləri test edildi
+- [ ] Group endpointləri test edildi
+- [ ] Schedule endpointləri test edildi
+- [ ] Homework endpointləri test edildi
+- [ ] Exam endpointləri test edildi
+- [ ] Middleware testləri yazıldı
+- [ ] Test coverage 80%+ çatdı
 
 ### Frontend Testlər
 - [x] Vitest + React Testing Library quraşdırıldı
-- [x] Auth komponentləri test edildi
-- [x] Redux slices test edildi
-- [x] RTK Query hooks test edildi
-- [x] Layout komponentləri test edildi
-- [x] Kritik səhifələr test edildi
+- [ ] Auth komponentləri test edildi
+- [ ] Redux slices test edildi
+- [ ] RTK Query hooks test edildi
+- [ ] Layout komponentləri test edildi
+- [ ] Kritik səhifələr test edildi
 
 ---
 
@@ -454,22 +454,22 @@
 | Mərhələ | Status | Tamamlanma | Tapşırıq sayı |
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
-| 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
-| 2 — Auth | `[x]` tamamlandı | 100% (27/27) | 27 |
+| 1 — Qurulum | `[x]` tamamlandı | 100% (26/26) | 26 |
+| 2 — Auth | `[~]` davam edir | 96% (26/27) | 27 |
 | 3 — Layout | `[x]` tamamlandı | 100% (10/10) | 10 |
 | 4 — Dashboard | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 5 — İstifadəçilər | `[x]` tamamlandı | 100% (24/24) | 24 |
 | 6 — Dəvətlər | `[x]` tamamlandı | 100% (12/12) | 12 |
-| 7 — Qruplar | `[x]` tamamlandı | 100% (14/14) | 14 |
+| 7 — Qruplar | `[~]` davam edir | 85% (12/14) | 14 |
 | 8 — Cədvəl | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 9 — Ev tapşırıqları | `[x]` tamamlandı | 100% (16/16) | 16 |
 | 10 — Sinif işi | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 14 — Testlər | `[x]` tamamlandı | 100% (15/15) | 15 |
+| 14 — Testlər | `[~]` davam edir | 20% (3/15) | 15 |
 | 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
-| **CƏMİ** | | **100% (240/240)** | **240** |
+| **CƏMİ** | | **93% (225/240)** | **240** |
 
 ---
 
