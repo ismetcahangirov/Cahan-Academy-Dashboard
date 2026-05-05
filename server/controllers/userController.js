@@ -1,4 +1,72 @@
 import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
+
+// @desc    Get current user profile
+// @route   GET /api/users/profile
+// @access  Private
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    res.json({ success: true, data: user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update current user profile (name, avatar)
+// @route   PUT /api/users/profile
+// @access  Private
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+
+    user.name = req.body.name || user.name;
+    if (req.body.avatar !== undefined) user.avatar = req.body.avatar;
+
+    const updated = await user.save();
+    res.json({
+      success: true,
+      data: {
+        _id: updated._id,
+        name: updated.name,
+        email: updated.email,
+        role: updated.role,
+        avatar: updated.avatar,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Change current user password
+// @route   PUT /api/users/profile/password
+// @access  Private
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Bütün sahələr doldurulmalıdır' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Yeni şifrə ən az 6 simvol olmalıdır' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Cari şifrə yanlışdır' });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ success: true, message: 'Şifrə uğurla yeniləndi' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // @desc    Get all users
 // @route   GET /api/users

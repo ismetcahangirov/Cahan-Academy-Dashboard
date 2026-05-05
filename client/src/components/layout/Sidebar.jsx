@@ -51,13 +51,15 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       baseLinks.push(
         { name: 'Tələbələrim', path: '/students', icon: Users },
         { name: 'Dərslərim', path: '/courses', icon: BookOpen },
-        { name: 'Cədvəl', path: '/schedule', icon: Calendar }
+        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
+        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );
     } else {
       // student
       baseLinks.push(
         { name: 'Dərslərim', path: '/my-courses', icon: BookOpen },
-        { name: 'Cədvəlim', path: '/my-schedule', icon: Calendar }
+        { name: 'Cədvəlim', path: '/my-schedule', icon: Calendar },
+        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
       );
     }
 

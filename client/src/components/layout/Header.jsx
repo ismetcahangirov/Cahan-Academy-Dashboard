@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Menu, Bell, Search } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../features/auth/authSlice';
@@ -40,11 +41,13 @@ const Header = ({ setIsMobileOpen }) => {
             <span className="text-sm font-medium text-white">{user?.name || 'İstifadəçi'}</span>
             <span className="text-xs text-white/50 capitalize">{user?.role || 'Tələbə'}</span>
           </div>
-          <img
-            src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=7B001C&color=fff`}
-            alt="Profile"
-            className="w-9 h-9 rounded-full object-cover border border-white/20"
-          />
+          <Link to="/profile">
+            <img
+              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=7B001C&color=fff`}
+              alt="Profile"
+              className="w-9 h-9 rounded-full object-cover border border-white/20 cursor-pointer hover:border-bordo transition-colors"
+            />
+          </Link>
         </div>
       </div>
     </header>

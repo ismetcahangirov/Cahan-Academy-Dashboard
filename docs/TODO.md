@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 11 — Sinif İşləri (15/15) |
-| **Aktiv branch** | `feature/classworks-api` |
-| **Növbəti branch** | `feature/quizzes-api` |
-| **Növbəti tapşırıq** | Quiz Sistemi (Mərhələ 12) |
+| **Son tamamlanan tapşırıq** | Mərhələ 12 — Profil & Parametrlər (11/11) |
+| **Aktiv branch** | `feature/profile-api` |
+| **Növbəti branch** | `feature/exams-api` |
+| **Növbəti tapşırıq** | İmtahanlar (Mərhələ 11) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Sinif İşləri modulu (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Profil və Parametrlər bölməsi əlavə edildi. |
 
 ---
 
@@ -374,22 +374,22 @@
 ---
 
 ## Mərhələ 12 — Profil & Parametrlər
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
 ### 12.1 Backend
-- [ ] `GET /api/users/me` — öz profilini gör
-- [ ] `PUT /api/users/me` — profili yenilə
-- [ ] `PUT /api/users/me/password` — şifrəni dəyiş
-- [ ] `POST /api/users/me/avatar` — avatar yüklə (Multer)
+- [x] `GET /api/users/profile` — öz profilini gör
+- [x] `PUT /api/users/profile` — profili yenilə
+- [x] `PUT /api/users/profile/password` — şifrəni dəyiş
+- [x] `POST /api/users/profile/avatar` — avatar URL yüklə
 
 ### 12.2 Frontend
-- [ ] Profil səhifəsi yaradıldı
-- [ ] Profil redaktə forması yaradıldı
-- [ ] Avatar yükləmə funksionallığı tətbiq edildi
-- [ ] Şifrə dəyiş forması yaradıldı
-- [ ] Parametrlər səhifəsi yaradıldı
-- [ ] Dil dəyiştirmə parametrləri tətbiq edildi
-- [ ] Bildiriş parametrləri tətbiq edildi
+- [x] Profil səhifəsi yaradıldı
+- [x] Profil redaktə forması yaradıldı
+- [x] Avatar yükləmə funksionallığı tətbiq edildi
+- [x] Şifrə dəyiş forması yaradıldı
+- [x] Parametrlər səhifəsi yaradıldı
+- [x] Dil dəyiştirmə parametrləri (stub) tətbiq edildi
+- [x] Bildiriş parametrləri (stub) tətbiq edildi
 
 ---
 
