@@ -12,10 +12,10 @@
 |---|---|
 | **Son tamamlanan tapşırıq** | Mərhələ 15 — Deploy & CI/CD (8/8) |
 | **Aktiv branch** | `main` |
-| **Növbəti branch** | `feature/missing-tasks` |
-| **Növbəti tapşırıq** | Yarımçıq qalmış taskların tamamlanması |
+| **Növbəti branch** | `feature/m14-tests` |
+| **Növbəti tapşırıq** | Backend və frontend testlərinin genenişləndirilməsi |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Ümumi progress 93%. 2 task qaldı: Google Login, Qrup detalları/tələbə UI, Testlər. |
+| **Qeyd** | Ümumi progress 95%. Qalan: Testlər (Faza 14), Google Login. |
 
 ---
 
@@ -263,7 +263,7 @@
 ---
 
 ## Mərhələ 7 — Qruplar
-**Status:** `[~]` davam edir — 12/14 tamamlandı
+**Status:** `[x]` tamamlandı — 14/14 tamamlandı
 
 ### 7.1 Backend
 - [x] `Group` modeli yaradıldı (ad, müəllim, tələbələr, cədvəl)
@@ -280,8 +280,8 @@
 - [x] RTK Query `groupsApi` yaradıldı
 - [x] Qruplar səhifəsi yaradıldı
 - [x] Qrup yaratma modalı yaradıldı
-- [ ] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
-- [ ] Qrup detalları görünüşü yaradıldı (Kart daxilində)
+- [x] Qrupa tələbə əlavə etmə funksionallığı tətbiq edildi
+- [x] Qrup detalları görünüşü yaradıldı (Modal ilə)
 
 ---
 
@@ -460,7 +460,7 @@
 | 4 — Dashboard | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 5 — İstifadəçilər | `[x]` tamamlandı | 100% (24/24) | 24 |
 | 6 — Dəvətlər | `[x]` tamamlandı | 100% (12/12) | 12 |
-| 7 — Qruplar | `[~]` davam edir | 85% (12/14) | 14 |
+| 7 — Qruplar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 8 — Cədvəl | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 9 — Ev tapşırıqları | `[x]` tamamlandı | 100% (16/16) | 16 |
 | 10 — Sinif işi | `[x]` tamamlandı | 100% (11/11) | 11 |
@@ -469,7 +469,7 @@
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 14 — Testlər | `[~]` davam edir | 20% (3/15) | 15 |
 | 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
-| **CƏMİ** | | **93% (225/240)** | **240** |
+| **CƏMİ** | | **95% (227/240)** | **240** |
 
 ---
 
