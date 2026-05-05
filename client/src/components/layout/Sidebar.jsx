@@ -174,10 +174,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 custom-scrollbar">
           {links.map((link) => {
             const Icon = link.icon;
-            const isActive = location.pathname === link.path;
 
             return (
               <NavLink
@@ -186,21 +185,17 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 onClick={() => setIsMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center rounded-xl transition-all duration-200 group relative',
-                    isCollapsed && !isMobile ? 'justify-center h-12 w-12 mx-auto' : 'gap-3 px-3 py-3',
+                    'flex items-center rounded-xl transition-all duration-200 group relative min-h-[44px]',
+                    isCollapsed && !isMobile
+                      ? 'justify-center w-11 h-11 mx-auto'
+                      : 'gap-3 px-3 py-2.5',
                     isActive
                       ? 'bg-bordo text-white shadow-lg shadow-bordo/20'
                       : 'text-white/60 hover:text-white hover:bg-white/5'
                   )
                 }
               >
-                <Icon
-                  size={20}
-                  className={cn(
-                    'shrink-0 transition-colors',
-                    isActive ? 'text-white' : 'text-white/60 group-hover:text-white'
-                  )}
-                />
+                <Icon size={20} className="shrink-0 transition-colors" />
                 
                 <AnimatePresence mode="wait">
                   {(!isCollapsed || isMobile) && (
@@ -217,7 +212,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && !isMobile && (
-                  <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-800 border border-white/10 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
                     {link.name}
                   </div>
                 )}

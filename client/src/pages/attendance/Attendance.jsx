@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, 
@@ -6,11 +6,7 @@ import {
   CheckCircle2, 
   XCircle, 
   Clock, 
-  AlertCircle,
   Save,
-  ChevronLeft,
-  ChevronRight,
-  Search,
   BookOpen
 } from 'lucide-react';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
@@ -19,6 +15,7 @@ import {
   useMarkAttendanceMutation 
 } from '../../features/attendance/attendanceApi';
 import { toast } from 'react-hot-toast';
+import { cn } from '../../lib/utils';
 
 const Attendance = () => {
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -33,7 +30,6 @@ const Attendance = () => {
   );
   const [markAttendance, { isLoading: isSaving }] = useMarkAttendanceMutation();
 
-  // Selected group object to get students
   const currentGroup = groupsData?.data?.find(g => g._id === selectedGroup);
 
   useEffect(() => {
@@ -41,9 +37,8 @@ const Attendance = () => {
       setRecords(attendanceData.data.records);
       setTopic(attendanceData.data.topic || '');
     } else if (currentGroup) {
-      // Initialize with default values for each student in the group
       setRecords(currentGroup.students.map(student => ({
-        student: student._id || student, // student might be object or ID
+        student: student._id || student,
         status: 'present',
         note: ''
       })));
@@ -52,9 +47,9 @@ const Attendance = () => {
   }, [attendanceData, currentGroup]);
 
   const handleStatusChange = (studentId, status) => {
-    setRecords(prev => prev.map(rec => 
+    setRecords(prev => prev.map(rec =>
       rec.student === studentId || rec.student._id === studentId
-        ? { ...rec, status } 
+        ? { ...rec, status }
         : rec
     ));
   };
@@ -73,25 +68,26 @@ const Attendance = () => {
         topic
       }).unwrap();
       toast.success('Davamiyyət uğurla yadda saxlanıldı');
-    } catch (error) {
+    } catch {
       toast.error('Xəta baş verdi');
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Davamiyyət</h1>
-          <p className="text-slate-500 text-sm">Tələbələrin dərslərdə iştirakının qeydiyyatı</p>
+          <h1 className="text-2xl font-bold text-white">Davamiyyət</h1>
+          <p className="text-white/60 text-sm mt-1">Tələbələrin dərslərdə iştirakının qeydiyyatı.</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
-          <Calendar size={18} className="text-slate-400 ml-2" />
+        <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2.5 rounded-xl">
+          <Calendar size={16} className="text-white/40" />
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border-none outline-none text-sm font-medium text-slate-700 bg-transparent"
+            className="border-none outline-none text-sm font-medium text-white bg-transparent"
           />
         </div>
       </div>
@@ -99,128 +95,127 @@ const Attendance = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Group Selector */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-              <Users size={18} className="text-indigo-600" />
+          <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-4">
+            <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+              <Users size={16} className="text-bordo" />
               Qrup Seçin
             </h3>
-            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {groupsData?.data?.map(group => (
                 <button
                   key={group._id}
                   onClick={() => setSelectedGroup(group._id)}
-                  className={`w-full p-4 rounded-2xl text-left transition-all border ${
-                    selectedGroup === group._id 
-                      ? 'bg-indigo-50 border-indigo-200 shadow-sm shadow-indigo-100' 
-                      : 'bg-slate-50 border-transparent hover:bg-slate-100'
-                  }`}
+                  className={cn(
+                    'w-full p-4 rounded-xl text-left transition-all border',
+                    selectedGroup === group._id
+                      ? 'bg-bordo/10 border-bordo/30 text-white'
+                      : 'bg-white/[0.02] border-white/5 text-white/60 hover:bg-white/5 hover:text-white'
+                  )}
                 >
-                  <div className="font-bold text-slate-800 text-sm">{group.name}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-1">
-                    {group.course}
-                  </div>
+                  <div className="font-bold text-sm">{group.name}</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mt-1">{group.course}</div>
                 </button>
               ))}
             </div>
           </div>
 
           {selectedGroup && (
-            <div className="bg-indigo-600 p-5 rounded-3xl text-white shadow-xl shadow-indigo-200 space-y-3">
-              <h4 className="font-bold">Dərs Mövzusu</h4>
+            <div className="bg-bordo/10 border border-bordo/20 p-5 rounded-2xl space-y-3">
+              <h4 className="font-bold text-white text-sm flex items-center gap-2">
+                <BookOpen size={14} className="text-bordo" />
+                Dərs Mövzusu
+              </h4>
               <textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Bugünkü dərsdə nə keçildi?"
-                className="w-full bg-indigo-500/50 border border-indigo-400/50 rounded-xl p-3 text-sm placeholder:text-indigo-200 outline-none focus:ring-2 focus:ring-white/30 transition-all resize-none h-24"
-              ></textarea>
+                className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-bordo/50 transition-all resize-none h-24"
+              />
             </div>
           )}
         </div>
 
         {/* Attendance List */}
-        <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3">
           {!selectedGroup ? (
-            <div className="bg-white rounded-3xl border border-dashed border-slate-200 h-[500px] flex flex-col items-center justify-center text-center p-10">
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
+            <div className="bg-white/5 border border-dashed border-white/10 rounded-2xl h-[500px] flex flex-col items-center justify-center text-center p-10">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center text-white/20 mb-4">
                 <Users size={40} />
               </div>
-              <h3 className="text-xl font-bold text-slate-800 mb-2">Tələbə siyahısı üçün qrup seçin</h3>
-              <p className="text-slate-500 max-w-xs">Sol tərəfdəki siyahıdan müvafiq qrupu seçərək davamiyyəti qeyd etməyə başlaya bilərsiniz.</p>
+              <h3 className="text-lg font-bold text-white mb-2">Tələbə siyahısı üçün qrup seçin</h3>
+              <p className="text-white/40 max-w-xs text-sm">Sol tərəfdəki siyahıdan qrup seçərək davamiyyəti qeyd etməyə başlaya bilərsiniz.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-              <div className="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+            <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+              <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
                 <div>
-                  <h3 className="font-bold text-slate-800">{currentGroup?.name} — Tələbə Siyahısı</h3>
-                  <p className="text-xs text-slate-500 mt-1">{currentGroup?.students?.length} nəfər</p>
+                  <h3 className="font-bold text-white text-sm">{currentGroup?.name} — Tələbə Siyahısı</h3>
+                  <p className="text-xs text-white/40 mt-1">{currentGroup?.students?.length} nəfər</p>
                 </div>
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-all shadow-lg shadow-bordo/20 text-sm font-medium disabled:opacity-50"
                 >
-                  <Save size={18} />
-                  <span>Yadda Saxla</span>
+                  <Save size={16} />
+                  Yadda Saxla
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-50/30 text-slate-500 text-[11px] uppercase tracking-wider font-bold">
+                  <thead className="border-b border-white/10 bg-white/[0.01]">
                     <tr>
-                      <th className="px-6 py-4">Tələbə</th>
-                      <th className="px-6 py-4">İştirak Statusu</th>
-                      <th className="px-6 py-4">Qeyd</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Tələbə</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">İştirak Statusu</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Qeyd</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
+                  <tbody className="divide-y divide-white/5">
                     {records.map((rec) => {
                       const student = currentGroup?.students?.find(s => (s._id || s) === (rec.student._id || rec.student));
                       if (!student) return null;
-
                       return (
-                        <tr key={student._id || student} className="hover:bg-slate-50/50 transition-colors group">
+                        <tr key={student._id || student} className="hover:bg-white/[0.02] transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold border-2 border-white shadow-sm">
+                              <div className="w-9 h-9 rounded-full bg-bordo/20 flex items-center justify-center text-bordo font-bold border border-bordo/20 text-sm">
                                 {student.name?.charAt(0)}
                               </div>
                               <div>
-                                <div className="font-bold text-slate-800 text-sm group-hover:text-indigo-600 transition-colors">
-                                  {student.name}
-                                </div>
-                                <div className="text-[10px] text-slate-400 font-medium">{student.email}</div>
+                                <div className="font-medium text-white text-sm">{student.name}</div>
+                                <div className="text-[11px] text-white/40">{student.email}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-1 bg-slate-100/50 p-1 rounded-xl w-fit">
+                            <div className="flex items-center gap-1 bg-white/5 border border-white/10 p-1 rounded-xl w-fit">
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'present')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                  rec.status === 'present' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200' : 'text-slate-500 hover:bg-white'
-                                }`}
+                                className={cn(
+                                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+                                  rec.status === 'present' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/40 hover:bg-white/5'
+                                )}
                               >
-                                <CheckCircle2 size={14} />
-                                <span>İştirak</span>
+                                <CheckCircle2 size={13} /><span>İştirak</span>
                               </button>
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'absent')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                  rec.status === 'absent' ? 'bg-rose-500 text-white shadow-md shadow-rose-200' : 'text-slate-500 hover:bg-white'
-                                }`}
+                                className={cn(
+                                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+                                  rec.status === 'absent' ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-white/40 hover:bg-white/5'
+                                )}
                               >
-                                <XCircle size={14} />
-                                <span>İştirak etmir</span>
+                                <XCircle size={13} /><span>Yoxdur</span>
                               </button>
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'late')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                  rec.status === 'late' ? 'bg-amber-500 text-white shadow-md shadow-amber-200' : 'text-slate-500 hover:bg-white'
-                                }`}
+                                className={cn(
+                                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+                                  rec.status === 'late' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20' : 'text-white/40 hover:bg-white/5'
+                                )}
                               >
-                                <Clock size={14} />
-                                <span>Gecikir</span>
+                                <Clock size={13} /><span>Gecikir</span>
                               </button>
                             </div>
                           </td>
@@ -230,12 +225,12 @@ const Attendance = () => {
                               placeholder="Qeyd..."
                               value={rec.note}
                               onChange={(e) => {
-                                const newRecords = records.map(r => 
+                                const newRecords = records.map(r =>
                                   (r.student._id || r.student) === (student._id || student) ? { ...r, note: e.target.value } : r
                                 );
                                 setRecords(newRecords);
                               }}
-                              className="w-full bg-slate-50 border border-slate-100 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-indigo-500 transition-all"
+                              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-bordo/50 transition-all placeholder:text-white/20"
                             />
                           </td>
                         </tr>
