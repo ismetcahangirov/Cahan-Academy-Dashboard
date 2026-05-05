@@ -92,6 +92,21 @@ node server.js
 pm2 start server.js --name "academy-api" --env production
 ```
 
+### Vercel (Həm Frontend, həm Backend)
+
+Layihə Vercel platformasında serverless funksiyalar (backend) və statik hosting (frontend) kimi deploy olunmuşdur.
+
+**Frontend:**
+- Directory: `client`
+- Framework: `Vite`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+
+**Backend:**
+- Directory: `server`
+- Runtime: `Node.js`
+- Entry Point: `server.js` (Vercel serverless adapters vasitəsilə)
+
 ---
 
 ## 4. Environment Dəyişənləri — Production
