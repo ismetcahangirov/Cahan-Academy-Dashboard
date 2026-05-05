@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 8 — Cədvəl (Schedule) |
-| **Aktiv branch** | `feature/schedule-api` |
-| **Növbəti branch** | `feature/classworks-api` |
-| **Növbəti tapşırıq** | Sinif İşləri (Mərhələ 11) |
+| **Son tamamlanan tapşırıq** | Mərhələ 12 — Profil & Parametrlər (11/11) |
+| **Aktiv branch** | `feature/profile-api` |
+| **Növbəti branch** | `feature/exams-api` |
+| **Növbəti tapşırıq** | İmtahanlar (Mərhələ 11) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Cədvəl sistemi tamamlandı. Növbəti mərhələ: Sinif İşləri. |
+| **Qeyd** | Profil və Parametrlər bölməsi əlavə edildi. |
 
 ---
 
@@ -350,22 +350,46 @@
 
 ---
 
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+## Mərhələ 11 — İmtahanlar
+**Status:** `[ ]` gözləyir — 0/14 tamamlandı
+
+### 11.1 Backend
+- [ ] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
+- [ ] `GET /api/exams` — siyahı
+- [ ] `GET /api/exams/:id` — tək imtahan
+- [ ] `POST /api/exams` — yarat
+- [ ] `PUT /api/exams/:id` — yenilə
+- [ ] `DELETE /api/exams/:id` — sil
+- [ ] `POST /api/exams/:id/results` — nəticə əlavə et
+- [ ] `GET /api/exams/:id/results` — nəticələri gör
+
+### 11.2 Frontend
+- [ ] Redux `examsSlice` yaradıldı
+- [ ] RTK Query `examsApi` yaradıldı
+- [ ] İmtahanlar səhifəsi yaradıldı
+- [ ] İmtahan yaratma modalı yaradıldı
+- [ ] İmtahan nəticələri görünüşü yaradıldı
+- [ ] Rola görə fərqli görünüş tətbiq edildi
+
+---
+
+## Mərhələ 12 — Profil & Parametrlər
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
 ### 12.1 Backend
-- [ ] `GET /api/users/me` — öz profilini gör
-- [ ] `PUT /api/users/me` — profili yenilə
-- [ ] `PUT /api/users/me/password` — şifrəni dəyiş
-- [ ] `POST /api/users/me/avatar` — avatar yüklə (Multer)
+- [x] `GET /api/users/profile` — öz profilini gör
+- [x] `PUT /api/users/profile` — profili yenilə
+- [x] `PUT /api/users/profile/password` — şifrəni dəyiş
+- [x] `POST /api/users/profile/avatar` — avatar URL yüklə
 
 ### 12.2 Frontend
-- [ ] Profil səhifəsi yaradıldı
-- [ ] Profil redaktə forması yaradıldı
-- [ ] Avatar yükləmə funksionallığı tətbiq edildi
-- [ ] Şifrə dəyiş forması yaradıldı
-- [ ] Parametrlər səhifəsi yaradıldı
-- [ ] Dil dəyiştirmə parametrləri tətbiq edildi
-- [ ] Bildiriş parametrləri tətbiq edildi
+- [x] Profil səhifəsi yaradıldı
+- [x] Profil redaktə forması yaradıldı
+- [x] Avatar yükləmə funksionallığı tətbiq edildi
+- [x] Şifrə dəyiş forması yaradıldı
+- [x] Parametrlər səhifəsi yaradıldı
+- [x] Dil dəyiştirmə parametrləri (stub) tətbiq edildi
+- [x] Bildiriş parametrləri (stub) tətbiq edildi
 
 ---
 

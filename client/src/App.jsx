@@ -15,6 +15,8 @@ import Courses from './pages/courses/Courses';
 import Attendance from './pages/attendance/Attendance';
 import Homeworks from './pages/homeworks/Homeworks';
 import Classworks from './pages/classworks/Classworks';
+import Profile from './pages/profile/Profile';
+import Settings from './pages/settings/Settings';
 import Quizzes from './pages/quizzes/Quizzes';
 import Notifications from './pages/notifications/Notifications';
 import Schedule from './pages/schedule/Schedule';
@@ -64,7 +66,8 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/schedule" element={<Schedule />} />
             <Route path="/courses/:id" element={<div className="text-white">Kurs Detalları (Tezliklə)</div>} />
-            <Route path="/settings" element={<div className="text-white">Tənzimləmələr Səhifəsi (Tezliklə)</div>} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
       </Routes>
