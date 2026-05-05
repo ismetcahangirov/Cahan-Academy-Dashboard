@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 11 — İmtahanlar (14/14) |
-| **Aktiv branch** | `feature/exams-api` |
-| **Növbəti branch** | `feature/security` |
-| **Növbəti tapşırıq** | Təhlükəsizlik (Mərhələ 13) |
+| **Son tamamlanan tapşırıq** | Mərhələ 13 — Təhlükəsizlik (11/11) |
+| **Aktiv branch** | `feature/security` |
+| **Növbəti branch** | `feature/tests` |
+| **Növbəti tapşırıq** | Testlər (Mərhələ 14) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | İmtahanlar (Exams) modulu əlavə edildi. |
+| **Qeyd** | Təhlükəsizlik konfiqurasiyaları (XSS, NoSQL Injection, Rate Limiting, Password Strength) tətbiq edildi. |
 
 ---
 
@@ -394,19 +394,20 @@
 ---
 
 ## Mərhələ 13 — Təhlükəsizlik
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
-- [ ] Helmet middleware tətbiq edildi
-- [ ] CORS düzgün konfiqurasiya edildi
-- [ ] Rate limiting tətbiq edildi (auth endpointlərə)
-- [ ] Input sanitization tətbiq edildi
-- [ ] JWT token təhlükəsizliyi yoxlanıldı
-- [ ] Şifrə gücü validasiyası tətbiq edildi
-- [ ] SQL/NoSQL injection qoruması yoxlanıldı
-- [ ] XSS qoruması yoxlanıldı
-- [ ] Sensitive data loglarda maskalandı
-- [ ] `.env` faylları `.gitignore`-a əlavə edildi
-- [ ] Dependency audit keçirildi (`npm audit`)
+### 13.1 Təhlükəsizlik Tədbirləri
+- [x] Helmet middleware tətbiq edildi
+- [x] CORS düzgün konfiqurasiya edildi
+- [x] Rate limiting tətbiq edildi (auth endpointlərə)
+- [x] Input sanitization tətbiq edildi
+- [x] JWT token təhlükəsizliyi yoxlanıldı
+- [x] Şifrə gücü validasiyası tətbiq edildi
+- [x] SQL/NoSQL injection qoruması yoxlanıldı
+- [x] XSS qoruması yoxlanıldı
+- [x] Sensitive data loglarda maskalandı
+- [x] `.env` faylları `.gitignore`-a əlavə edildi
+- [x] Dependency audit keçirildi (`npm audit`)
 
 ---
 
@@ -465,7 +466,7 @@
 | 10 — Sinif işi | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
-| 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
 | 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
 | **CƏMI** | | **39% (93/237)** | **237** |
