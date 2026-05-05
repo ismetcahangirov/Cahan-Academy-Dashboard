@@ -412,26 +412,26 @@
 ---
 
 ## Mərhələ 14 — Testlər
-**Status:** `[~]` davam edir — 3/15 tamamlandı
+**Status:** `[x]` tamamlandı — 15/15 tamamlandı
 
 ### Backend Testlər
 - [x] Jest + Supertest quraşdırıldı (Vitest ilə əvəz olundu)
 - [x] Auth endpointləri test edildi
-- [ ] User endpointləri test edildi
-- [ ] Group endpointləri test edildi
-- [ ] Schedule endpointləri test edildi
-- [ ] Homework endpointləri test edildi
-- [ ] Exam endpointləri test edildi
-- [ ] Middleware testləri yazıldı
-- [ ] Test coverage 80%+ çatdı
+- [x] User endpointləri test edildi
+- [x] Group endpointləri test edildi
+- [x] Schedule endpointləri test edildi
+- [x] Homework endpointləri test edildi
+- [x] Exam endpointləri test edildi
+- [x] Middleware testləri yazıldı
+- [x] Test coverage 80%+ çatdı
 
 ### Frontend Testlər
 - [x] Vitest + React Testing Library quraşdırıldı
-- [ ] Auth komponentləri test edildi
-- [ ] Redux slices test edildi
-- [ ] RTK Query hooks test edildi
-- [ ] Layout komponentləri test edildi
-- [ ] Kritik səhifələr test edildi
+- [x] Auth komponentləri test edildi
+- [x] Redux slices test edildi
+- [x] RTK Query hooks test edildi
+- [x] Layout komponentləri test edildi
+- [x] Kritik səhifələr test edildi
 
 ---
 
@@ -467,9 +467,9 @@
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 14 — Testlər | `[~]` davam edir | 20% (3/15) | 15 |
+| 14 — Testlər | `[x]` tamamlandı | 100% (15/15) | 15 |
 | 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
-| **CƏMİ** | | **95% (227/240)** | **240** |
+| **CƏMİ** | | **99% (239/240)** | **240** |
 
 ---
 
