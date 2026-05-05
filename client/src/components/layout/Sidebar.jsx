@@ -138,18 +138,14 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               <div className="w-8 h-8 rounded-lg bg-bordo flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-xl">C</span>
               </div>
-              <AnimatePresence mode="wait">
-                {(!isCollapsed || isMobile) && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    className="text-white font-bold whitespace-nowrap"
-                  >
-                    Cahan Academy
-                  </motion.span>
+              <span
+                className={cn(
+                  "text-white font-bold whitespace-nowrap",
+                  isCollapsed && !isMobile ? "hidden" : "block"
                 )}
-              </AnimatePresence>
+              >
+                Cahan Academy
+              </span>
             </div>
             
             {/* Desktop Collapse Button */}
@@ -182,6 +178,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               <NavLink
                 key={link.path}
                 to={link.path}
+                title={isCollapsed && !isMobile ? link.name : undefined}
                 onClick={() => setIsMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
@@ -197,25 +194,16 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               >
                 <Icon size={20} className="shrink-0 transition-colors" />
                 
-                <AnimatePresence mode="wait">
-                  {(!isCollapsed || isMobile) && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="whitespace-nowrap font-medium text-sm"
-                    >
-                      {link.name}
-                    </motion.span>
+                <span
+                  className={cn(
+                    "whitespace-nowrap font-medium text-sm",
+                    isCollapsed && !isMobile ? "hidden" : "block"
                   )}
-                </AnimatePresence>
+                >
+                  {link.name}
+                </span>
 
-                {/* Tooltip for collapsed state */}
-                {isCollapsed && !isMobile && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 bg-zinc-800 border border-white/10 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                    {link.name}
-                  </div>
-                )}
+                {/* Tooltips removed to prevent horizontal scroll overflow */}
               </NavLink>
             );
           })}
@@ -225,31 +213,23 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         <div className="p-4 border-t border-white/10">
           <button
             onClick={handleLogout}
+            title={isCollapsed && !isMobile ? "Çıxış et" : undefined}
             className={cn(
               "flex items-center rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
               isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
             )}
           >
             <LogOut size={20} className="shrink-0" />
-            <AnimatePresence mode="wait">
-              {(!isCollapsed || isMobile) && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  className="whitespace-nowrap font-medium text-sm"
-                >
-                  Çıxış et
-                </motion.span>
+            <span
+              className={cn(
+                "whitespace-nowrap font-medium text-sm",
+                isCollapsed && !isMobile ? "hidden" : "block"
               )}
-            </AnimatePresence>
+            >
+              Çıxış et
+            </span>
             
-             {/* Tooltip for collapsed state */}
-             {isCollapsed && !isMobile && (
-                <div className="absolute left-full ml-4 px-3 py-1.5 bg-white text-black text-sm rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                  Çıxış et
-                </div>
-              )}
+             {/* Tooltips removed to prevent horizontal scroll overflow */}
           </button>
         </div>
       </motion.aside>
