@@ -4,13 +4,25 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  getProfile,
+  updateProfile,
+  updatePassword
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Bütün istifadəçi idarəetmə marşrutları adminlər üçün qorunur
 router.use(protect);
+
+// Profil marşrutları - Bütün daxil olmuş istifadəçilər üçündür
+router.route('/profile')
+  .get(getProfile)
+  .put(updateProfile);
+
+router.route('/profile/password')
+  .put(updatePassword);
+
+// Aşağıdakı marşrutlar ancaq adminlər üçündür
 router.use(authorize('admin'));
 
 router.route('/')
