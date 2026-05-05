@@ -10,6 +10,12 @@ import crypto from 'crypto';
 const register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
+  // Password strength validation
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return apiResponse.error(res, 'Şifrə ən azı 6 simvol, 1 hərf və 1 rəqəmdən ibarət olmalıdır', 400);
+  }
+
   const userExists = await User.findOne({ email });
 
   if (userExists) {
@@ -136,7 +142,13 @@ const resetPassword = async (req, res) => {
     return apiResponse.error(res, 'Invalid or expired token', 400);
   }
 
-  user.password = req.body.password;
+  const { password } = req.body;
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return apiResponse.error(res, 'Şifrə ən azı 6 simvol, 1 hərf və 1 rəqəmdən ibarət olmalıdır', 400);
+  }
+
+  user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
@@ -161,6 +173,11 @@ const registerViaInvitation = async (req, res) => {
     invitation.status = 'expired';
     await invitation.save();
     return apiResponse.error(res, 'Invitation has expired', 400);
+  }
+
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
+  if (!passwordRegex.test(password)) {
+    return apiResponse.error(res, 'Şifrə ən azı 6 simvol, 1 hərf və 1 rəqəmdən ibarət olmalıdır', 400);
   }
 
   // Create user

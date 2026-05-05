@@ -4,6 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
@@ -42,8 +44,21 @@ app.use(cors({
   credentials: true,
 }));
 
+// Sanitize data against NoSQL query injection
+app.use(mongoSanitize());
+
+// Sanitize data against XSS
+app.use(xss());
+
 if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
+  morgan.token('body', (req) => {
+    const body = { ...req.body };
+    if (body.password) body.password = '***';
+    if (body.token) body.token = '***';
+    if (body.refreshToken) body.refreshToken = '***';
+    return JSON.stringify(body);
+  });
+  app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body'));
 }
 
 // Rate Limiting
