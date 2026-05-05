@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 13 — Bildiriş Sistemi |
-| **Aktiv branch** | `feature/notifications-api` |
-| **Növbəti branch** | `feature/tests-backend` |
-| **Növbəti tapşırıq** | Testlər (Mərhələ 14) |
+| **Son tamamlanan tapşırıq** | Mərhələ 8 — Cədvəl (Schedule) |
+| **Aktiv branch** | `feature/schedule-api` |
+| **Növbəti branch** | `feature/classworks-api` |
+| **Növbəti tapşırıq** | Sinif İşləri (Mərhələ 11) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Bildiriş sistemi tamamlandı. Növbəti mərhələ: Testlər. |
+| **Qeyd** | Cədvəl sistemi tamamlandı. Növbəti mərhələ: Sinif İşləri. |
 
 ---
 
@@ -286,22 +286,22 @@
 ---
 
 ## Mərhələ 8 — Cədvəl
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
 ### 8.1 Backend
-- [ ] `Schedule` modeli yaradıldı (qrup, fənn, müəllim, gün, saat, otaq)
-- [ ] `GET /api/schedule` — cədvəl (qrupa / müəllimə / tələbəyə görə filter)
-- [ ] `POST /api/schedule` — dərs əlavə et
-- [ ] `PUT /api/schedule/:id` — dərsi yenilə
-- [ ] `DELETE /api/schedule/:id` — dərsi sil
+- [x] `Schedule` modeli yaradıldı (qrup, fənn, müəllim, gün, saat, otaq)
+- [x] `GET /api/schedule` — cədvəl (qrupa / müəllimə / tələbəyə görə filter)
+- [x] `POST /api/schedule` — dərs əlavə et
+- [x] `PUT /api/schedule/:id` — dərsi yenilə
+- [x] `DELETE /api/schedule/:id` — dərsi sil
 
 ### 8.2 Frontend
-- [ ] Redux `scheduleSlice` yaradıldı
-- [ ] RTK Query `scheduleApi` yaradıldı
-- [ ] Cədvəl səhifəsi yaradıldı (siyahı görünüşü)
-- [ ] Həftənin günləri üzrə qruplaşdırma tətbiq edildi
-- [ ] Dərs əlavə etmə modalı yaradıldı
-- [ ] Rola görə fərqli cədvəl görünüşü tətbiq edildi
+- [x] Redux `scheduleSlice` yaradıldı
+- [x] RTK Query `scheduleApi` yaradıldı
+- [x] Cədvəl səhifəsi yaradıldı (siyahı görünüşü)
+- [x] Həftənin günləri üzrə qruplaşdırma tətbiq edildi
+- [x] Dərs əlavə etmə modalı yaradıldı
+- [x] Rola görə fərqli cədvəl görünüşü tətbiq edildi
 
 ---
 

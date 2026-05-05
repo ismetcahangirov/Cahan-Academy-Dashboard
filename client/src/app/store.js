@@ -12,6 +12,8 @@ import { attendanceApi } from '../features/attendance/attendanceApi';
 import { homeworksApi } from '../features/homeworks/homeworksApi';
 import { classworksApi } from '../features/classworks/classworksApi';
 import { quizzesApi } from '../features/quizzes/quizzesApi';
+import { scheduleApi } from '../features/schedule/scheduleApi';
+import { notificationsApi } from '../features/notifications/notificationsApi';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({
@@ -28,6 +30,8 @@ export const store = configureStore({
     [homeworksApi.reducerPath]: homeworksApi.reducer,
     [classworksApi.reducerPath]: classworksApi.reducer,
     [quizzesApi.reducerPath]: quizzesApi.reducer,
+    [scheduleApi.reducerPath]: scheduleApi.reducer,
+    [notificationsApi.reducerPath]: notificationsApi.reducer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>
@@ -43,7 +47,9 @@ export const store = configureStore({
       attendanceApi.middleware,
       homeworksApi.middleware,
       classworksApi.middleware,
-      quizzesApi.middleware
+      quizzesApi.middleware,
+      scheduleApi.middleware,
+      notificationsApi.middleware
     ),
 });
 
