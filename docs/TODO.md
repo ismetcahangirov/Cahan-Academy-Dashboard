@@ -331,22 +331,22 @@
 ---
 
 ## Mərhələ 11 — Sinif İşləri (Classworks)
-**Status:** `[ ]` gözləyir — 0/11 tamamlandı
+**Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
 ### 10.1 Backend
-- [ ] `Classwork` modeli yaradıldı
-- [ ] `GET /api/classworks` — siyahı
-- [ ] `GET /api/classworks/:id` — tək sinif işi
-- [ ] `POST /api/classworks` — yarat
-- [ ] `PUT /api/classworks/:id` — yenilə
-- [ ] `DELETE /api/classworks/:id` — sil
+- [x] `Classwork` modeli yaradıldı
+- [x] `GET /api/classworks` — siyahı
+- [x] `GET /api/classworks/:id` — tək sinif işi
+- [x] `POST /api/classworks` — yarat
+- [x] `PUT /api/classworks/:id` — yenilə
+- [x] `DELETE /api/classworks/:id` — sil
 
 ### 10.2 Frontend
-- [ ] Redux `classworksSlice` yaradıldı
-- [ ] RTK Query `classworksApi` yaradıldı
-- [ ] Sinif işləri səhifəsi yaradıldı
-- [ ] Sinif işi yaratma forması yaradıldı
-- [ ] Sinif işi detalları görünüşü yaradıldı
+- [x] Redux `classworksSlice` yaradıldı
+- [x] RTK Query `classworksApi` yaradıldı
+- [x] Sinif işləri səhifəsi yaradıldı
+- [x] Sinif işi yaratma forması yaradıldı
+- [x] Sinif işi detalları görünüşü yaradıldı
 
 ---
 
