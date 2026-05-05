@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 12 — Profil & Parametrlər (11/11) |
-| **Aktiv branch** | `feature/profile-api` |
-| **Növbəti branch** | `feature/exams-api` |
-| **Növbəti tapşırıq** | İmtahanlar (Mərhələ 11) |
+| **Son tamamlanan tapşırıq** | Mərhələ 11 — İmtahanlar (14/14) |
+| **Aktiv branch** | `feature/exams-api` |
+| **Növbəti branch** | `feature/security` |
+| **Növbəti tapşırıq** | Təhlükəsizlik (Mərhələ 13) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Profil və Parametrlər bölməsi əlavə edildi. |
+| **Qeyd** | İmtahanlar (Exams) modulu əlavə edildi. |
 
 ---
 
@@ -354,22 +354,22 @@
 **Status:** `[ ]` gözləyir — 0/14 tamamlandı
 
 ### 11.1 Backend
-- [ ] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
-- [ ] `GET /api/exams` — siyahı
-- [ ] `GET /api/exams/:id` — tək imtahan
-- [ ] `POST /api/exams` — yarat
-- [ ] `PUT /api/exams/:id` — yenilə
-- [ ] `DELETE /api/exams/:id` — sil
-- [ ] `POST /api/exams/:id/results` — nəticə əlavə et
-- [ ] `GET /api/exams/:id/results` — nəticələri gör
+- [x] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
+- [x] `GET /api/exams` — siyahı
+- [x] `GET /api/exams/:id` — tək imtahan
+- [x] `POST /api/exams` — yarat
+- [x] `PUT /api/exams/:id` — yenilə
+- [x] `DELETE /api/exams/:id` — sil
+- [x] `POST /api/exams/:id/results` — nəticə əlavə et
+- [x] `GET /api/exams/:id/results` — nəticələri gör (Ayrı route ehtiyac qalmadı, tək imtahan içində gətirilir)
 
 ### 11.2 Frontend
-- [ ] Redux `examsSlice` yaradıldı
-- [ ] RTK Query `examsApi` yaradıldı
-- [ ] İmtahanlar səhifəsi yaradıldı
-- [ ] İmtahan yaratma modalı yaradıldı
-- [ ] İmtahan nəticələri görünüşü yaradıldı
-- [ ] Rola görə fərqli görünüş tətbiq edildi
+- [x] Redux `examsSlice` yaradıldı (RTK Query)
+- [x] RTK Query `examsApi` yaradıldı
+- [x] İmtahanlar səhifəsi yaradıldı
+- [x] İmtahan yaratma modalı yaradıldı
+- [x] İmtahan nəticələri görünüşü yaradıldı
+- [x] Rola görə fərqli görünüş tətbiq edildi
 
 ---
 
@@ -463,7 +463,7 @@
 | 8 — Cədvəl | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 9 — Ev tapşırıqları | `[ ]` gözləyir | 0% (0/16) | 16 |
 | 10 — Sinif işi | `[ ]` gözləyir | 0% (0/11) | 11 |
-| 11 — İmtahanlar | `[ ]` gözləyir | 0% (0/14) | 14 |
+| 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
 | 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 13 — Təhlükəsizlik | `[ ]` gözləyir | 0% (0/11) | 11 |
 | 14 — Testlər | `[ ]` gözləyir | 0% (0/15) | 15 |
