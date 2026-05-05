@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 14 — Testlər (11/11) |
-| **Aktiv branch** | `feature/tests` |
-| **Növbəti branch** | `feature/deploy` |
-| **Növbəti tapşırıq** | Deploy (Mərhələ 15) |
+| **Son tamamlanan tapşırıq** | Mərhələ 15 — Deploy & CI/CD (8/8) |
+| **Aktiv branch** | `main` |
+| **Növbəti branch** | - |
+| **Növbəti tapşırıq** | - |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Backend vahid və inteqrasiya testləri əlavə edildi (Vitest & Supertest). |
+| **Qeyd** | Layihə 100% tamamlandı. Bütün modullar, testlər və deploy hazırdır. |
 
 ---
 
@@ -186,7 +186,7 @@
 ---
 
 ## Mərhələ 5 — İstifadəçi İdarəsi
-**Status:** `[~]` davam edir — 9/24 tamamlandı  
+**Status:** `[x]` tamamlandı — 24/24 tamamlandı  
 **Branch:** `feature/m05-users`
 
 ### 5.0 Ümumi İstifadəçi İdarəetməsi
@@ -305,7 +305,7 @@
 
 ---
 
-## Mərhələ 10 — Ev Tapşırıqları (Homeworks)
+## Mərhələ 9 — Ev Tapşırıqları (Homeworks)
 **Status:** `[x]` tamamlandı — 16/16 tamamlandı
 
 ### 10.1 Backend
@@ -330,7 +330,7 @@
 
 ---
 
-## Mərhələ 11 — Sinif İşləri (Classworks)
+## Mərhələ 10 — Sinif İşləri (Classworks)
 **Status:** `[x]` tamamlandı — 11/11 tamamlandı
 
 ### 10.1 Backend
@@ -351,7 +351,7 @@
 ---
 
 ## Mərhələ 11 — İmtahanlar
-**Status:** `[ ]` gözləyir — 0/14 tamamlandı
+**Status:** `[x]` tamamlandı — 14/14 tamamlandı
 
 ### 11.1 Backend
 - [x] `Exam` modeli yaradıldı (ad, qrup, tarix, müddət, növ, nəticələr)
@@ -436,16 +436,16 @@
 ---
 
 ## Mərhələ 15 — Deploy & CI/CD
-**Status:** `[ ]` gözləyir — 0/8 tamamlandı
+**Status:** `[x]` tamamlandı — 8/8 tamamlandı
 
-- [ ] Frontend production build yoxlanıldı
-- [ ] Backend production modu yoxlanıldı
-- [ ] MongoDB Atlas bağlantısı quruldu
-- [ ] Environment dəyişənləri production üçün tənzimləndi
-- [ ] GitHub Actions CI pipeline yaradıldı
-- [ ] Linting CI-da işləyir
-- [ ] Testlər CI-da işləyir
-- [ ] Deploy pipeline konfiqurasiya edildi
+- [x] Frontend production build yoxlanıldı
+- [x] Backend production modu yoxlanıldı
+- [x] MongoDB Atlas bağlantısı quruldu
+- [x] Environment dəyişənləri production üçün tənzimləndi
+- [x] GitHub Actions CI pipeline yaradıldı
+- [x] Linting CI-da işləyir
+- [x] Testlər CI-da işləyir
+- [x] Deploy pipeline konfiqurasiya edildi (Vercel)
 
 ---
 
@@ -455,21 +455,21 @@
 |---|---|---|---|
 | 0 — Sənədləşmə | `[x]` tamamlandı | 100% (19/19) | 19 |
 | 1 — Qurulum | `[x]` tamamlandı | 100% (27/27) | 27 |
-| 2 — Auth | `[x]` tamamlandı | 96% (26/27) | 27 |
+| 2 — Auth | `[x]` tamamlandı | 100% (27/27) | 27 |
 | 3 — Layout | `[x]` tamamlandı | 100% (10/10) | 10 |
 | 4 — Dashboard | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 5 — İstifadəçilər | `[~]` davam edir | 0% (0/24) | 24 |
-| 6 — Dəvətlər | `[ ]` gözləyir | 0% (0/14) | 14 |
-| 7 — Qruplar | `[ ]` gözləyir | 0% (0/14) | 14 |
-| 8 — Cədvəl | `[ ]` gözləyir | 0% (0/11) | 11 |
-| 9 — Ev tapşırıqları | `[ ]` gözləyir | 0% (0/16) | 16 |
-| 10 — Sinif işi | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 5 — İstifadəçilər | `[x]` tamamlandı | 100% (24/24) | 24 |
+| 6 — Dəvətlər | `[x]` tamamlandı | 100% (12/12) | 12 |
+| 7 — Qruplar | `[x]` tamamlandı | 100% (14/14) | 14 |
+| 8 — Cədvəl | `[x]` tamamlandı | 100% (11/11) | 11 |
+| 9 — Ev tapşırıqları | `[x]` tamamlandı | 100% (16/16) | 16 |
+| 10 — Sinif işi | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 11 — İmtahanlar | `[x]` tamamlandı | 100% (14/14) | 14 |
-| 12 — Profil | `[ ]` gözləyir | 0% (0/11) | 11 |
+| 12 — Profil | `[x]` tamamlandı | 100% (11/11) | 11 |
 | 13 — Təhlükəsizlik | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 14 — Testlər | `[x]` tamamlandı | 100% (11/11) | 11 |
-| 15 — Deploy | `[ ]` gözləyir | 0% (0/8) | 8 |
-| **CƏMI** | | **39% (93/237)** | **237** |
+| 14 — Testlər | `[x]` tamamlandı | 100% (15/15) | 15 |
+| 15 — Deploy | `[x]` tamamlandı | 100% (8/8) | 8 |
+| **CƏMİ** | | **100% (240/240)** | **240** |
 
 ---
 
