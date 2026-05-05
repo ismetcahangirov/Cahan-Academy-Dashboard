@@ -24,6 +24,7 @@ import Schedule from './pages/schedule/Schedule';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
+import RoleRoute from './components/RoleRoute';
 
 function App() {
   return (
@@ -53,11 +54,20 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Dashboard />} />
-            {/* Other protected routes will go here */}
-            <Route path="/users" element={<Users />} />
-            <Route path="/teachers" element={<Teachers />} />
+
+            {/* Admin only */}
+            <Route element={<RoleRoute roles={['admin']} />}>
+              <Route path="/users" element={<Users />} />
+              <Route path="/invitations" element={<Invitations />} />
+            </Route>
+
+            {/* Admin + Teacher */}
+            <Route element={<RoleRoute roles={['admin', 'teacher']} />}>
+              <Route path="/teachers" element={<Teachers />} />
+            </Route>
+
+            {/* All authenticated users */}
             <Route path="/students" element={<Students />} />
-            <Route path="/invitations" element={<Invitations />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/attendance" element={<Attendance />} />
