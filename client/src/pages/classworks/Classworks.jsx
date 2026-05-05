@@ -1,119 +1,243 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import { 
-  Plus, Search, MoreVertical, Calendar, 
-  Users, FileText
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock
 } from 'lucide-react';
-import { 
-  useGetClassworksQuery, 
+import {
+  useGetClassworksQuery,
+  useCreateClassworkMutation,
+  useDeleteClassworkMutation,
 } from '../../features/classworks/classworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { format } from 'date-fns';
+import { az } from 'date-fns/locale';
+import toast from 'react-hot-toast';
 
-const Classworks = () => {
-  const user = useSelector(selectCurrentUser);
-  const [selectedGroup, setSelectedGroup] = useState('');
-  
-  const { data: classworksResponse, isLoading } = useGetClassworksQuery(selectedGroup || undefined);
-  const { data: groupsResponse } = useGetGroupsQuery();
-  
-  const classworks = classworksResponse || [];
-  const groups = groupsResponse?.data || [];
+// ─── Create Modal ────────────────────────────────────────────────
+const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
+  const [form, setForm] = useState({ title: '', description: '', group: '' });
+
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.title || !form.description || !form.group) {
+      toast.error('Bütün sahələri doldurun');
+      return;
+    }
+    onSubmit(form);
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Sinif İşləri</h1>
-          <p className="text-gray-400 mt-1">
-            Dərs zamanı yerinə yetirilən tapşırıqlar
-          </p>
-        </div>
-
-        {['admin', 'teacher'].includes(user.role) && (
-          <button className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors">
-            <Plus size={20} />
-            <span>Yeni Sinif İşi</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold text-white">Yeni Sinif İşi</h2>
+          <button onClick={onClose} className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors">
+            <X size={18} />
           </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Sinif işi axtar..."
-            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
-          />
         </div>
-        
-        {['admin', 'teacher'].includes(user.role) && (
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="w-full px-4 py-2 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
-          >
-            <option value="">Bütün Qruplar</option>
-            {groups.map(group => (
-              <option key={group._id} value={group._id}>{group.name}</option>
-            ))}
-          </select>
-        )}
-      </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Başlıq *</label>
+            <input name="title" value={form.title} onChange={handleChange} required
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+              placeholder="Sinif işinin başlığı..." />
+          </div>
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Qrup *</label>
+            <select name="group" value={form.group} onChange={handleChange} required
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
+              <option value="" className="bg-[#111]">Qrup seçin...</option>
+              {groups.map((g) => (
+                <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Təsvir *</label>
+            <textarea name="description" value={form.description} onChange={handleChange} required rows={3}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo resize-none"
+              placeholder="Tapşırığın təsviri..." />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="px-4 py-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors">
+              İmtina
+            </button>
+            <button type="submit" disabled={isLoading}
+              className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
+              {isLoading ? 'Yaradılır...' : 'Yarat'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {classworks.map((cw) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              key={cw._id}
-              className="bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/[0.07] transition-all group"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-white line-clamp-1">{cw.title}</h3>
-                <button className="text-gray-400 hover:text-white transition-colors">
-                  <MoreVertical size={20} />
-                </button>
-              </div>
-              
-              <p className="text-gray-400 mb-6 line-clamp-2 text-sm">{cw.description}</p>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <Users size={16} className="text-bordo" />
-                  <span>Qrup: {cw.group?.name || 'Bilinmir'}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
-                  <Calendar size={16} className="text-bordo" />
-                  <span>Tarix: {format(new Date(cw.date), 'dd MMM yyyy')}</span>
-                </div>
-              </div>
+// ─── Status Badge ────────────────────────────────────────────────
+const StatusBadge = ({ count, total }) => {
+  if (total === 0) return <span className="text-xs text-white/30">Hələ ki, təhvil yoxdur</span>;
+  const pct = Math.round((count / total) * 100);
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full ${pct === 100 ? 'bg-green-500/20 text-green-400' : 'bg-bordo/20 text-bordo'}`}>
+      {count}/{total} təhvil
+    </span>
+  );
+};
 
-              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                <button className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium">
-                  Detallara Bax
-                </button>
-              </div>
-            </motion.div>
-          ))}
-          
-          {classworks.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-400">
-              <FileText size={48} className="mb-4 opacity-50" />
-              <p>Hələ ki sinif işi yoxdur</p>
-            </div>
+// ─── Main Page ────────────────────────────────────────────────────
+const Classworks = () => {
+  const user = useSelector(selectCurrentUser);
+  const [search, setSearch] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+
+  const { data: classworks = [], isLoading } = useGetClassworksQuery(selectedGroup || undefined);
+  const { data: groupsResponse } = useGetGroupsQuery();
+  const [createClasswork, { isLoading: isCreating }] = useCreateClassworkMutation();
+  const [deleteClasswork] = useDeleteClassworkMutation();
+
+  const groups = groupsResponse?.data || [];
+  const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
+
+  const filtered = classworks.filter((cw) =>
+    cw.title?.toLowerCase().includes(search.toLowerCase()) ||
+    cw.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleCreate = async (data) => {
+    try {
+      await createClasswork(data).unwrap();
+      toast.success('Sinif işi yaradıldı');
+      setShowCreate(false);
+    } catch (err) {
+      toast.error(err?.data?.message || 'Xəta baş verdi');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteClasswork(id).unwrap();
+      toast.success('Sinif işi silindi');
+    } catch (err) {
+      toast.error(err?.data?.message || 'Xəta baş verdi');
+    }
+  };
+
+  return (
+    <>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              <BookOpen className="text-bordo" />
+              Sinif İşləri
+            </h1>
+            <p className="text-white/40 text-sm mt-1">Dərs zamanı yerinə yetirilən tapşırıqlar</p>
+          </div>
+          {isAdminOrTeacher && (
+            <button onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-bordo hover:bg-bordo/80 text-white rounded-xl text-sm transition-colors">
+              <Plus size={16} />
+              Yeni Sinif İşi
+            </button>
           )}
         </div>
-      )}
-    </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} />
+            <input type="text" placeholder="Sinif işi axtar..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-bordo transition-colors" />
+          </div>
+          {isAdminOrTeacher && (
+            <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}
+              className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-bordo transition-colors">
+              <option value="" className="bg-[#111]">Bütün Qruplar</option>
+              {groups.map((g) => (
+                <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        {/* Content */}
+        {isLoading ? (
+          <div className="flex justify-center py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bordo" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-white/30">
+            <FileText size={48} className="mb-4 opacity-40" />
+            <p className="text-lg font-medium">Sinif işi tapılmadı</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((cw, i) => (
+              <motion.div key={cw._id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="group bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all flex flex-col"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-base font-semibold text-white line-clamp-1 flex-1 mr-2">{cw.title}</h3>
+                  {isAdminOrTeacher && (
+                    <button onClick={() => handleDelete(cw._id)}
+                      className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all">
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-white/50 text-sm line-clamp-2 mb-4 flex-1">{cw.description}</p>
+
+                <div className="space-y-2 text-xs text-white/50 border-t border-white/5 pt-3">
+                  <div className="flex items-center gap-2">
+                    <Users size={13} className="text-bordo shrink-0" />
+                    <span>Qrup: {cw.group?.name || '—'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={13} className="text-bordo shrink-0" />
+                    <span>{cw.date ? format(new Date(cw.date), 'd MMM yyyy', { locale: az }) : '—'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {(cw.submissions?.length || 0) === 0 ? (
+                      <Clock size={13} className="text-white/30" />
+                    ) : (
+                      <CheckCircle size={13} className="text-green-400" />
+                    )}
+                    <StatusBadge count={cw.submissions?.length || 0} total={0} />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {showCreate && (
+          <CreateModal
+            groups={groups}
+            onClose={() => setShowCreate(false)}
+            onSubmit={handleCreate}
+            isLoading={isCreating}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
