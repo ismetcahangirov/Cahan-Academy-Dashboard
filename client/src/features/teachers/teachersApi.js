@@ -1,17 +1,9 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
+import { createBaseQuery } from '../../utils/baseQuery';
 
 export const teachersApi = createApi({
   reducerPath: 'teachersApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_API_URL || ''}/teachers`,
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: createBaseQuery('/teachers'),
   tagTypes: ['Teacher'],
   endpoints: (builder) => ({
     getTeachers: builder.query({
