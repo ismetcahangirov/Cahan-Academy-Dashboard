@@ -25,39 +25,63 @@ import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
 
-// Connect to Database
+// ------------------------------------------------------------
+// Database & seed data
+// ------------------------------------------------------------
 connectDB();
-
-// Seed Admin User
 seedAdmin();
 
 const app = express();
 
-// Middleware
+// ------------------------------------------------------------
+// Core middle‑wares
+// ------------------------------------------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+
+// ------------------------------------------------------------
+// CORS configuration
+// ------------------------------------------------------------
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://cahan-academy-dashboard.vercel.app',  // ← hardcode əlavə et
   process.env.CLIENT_URL
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non‑browser requests (no origin)
+      if (!origin) return callback(null, true);
 
-// Sanitize data against NoSQL query injection
-// Custom sanitizer compatible with Express 5 (req.query is read-only)
+      // Production mode – only allow the explicit CLIENT_URL.
+      if (process.env.NODE_ENV === 'production') {
+        const prodOrigin = process.env.CLIENT_URL;
+        // If CLIENT_URL is missing we fall back to allowing any origin
+        // (ideally it should always be set in production)
+        if (!prodOrigin || prodOrigin === '*' || prodOrigin === origin) {
+          return callback(null, true);
+        }
+      }
+
+      // Development mode – whitelist array
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      const msg =
+        'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    },
+    credentials: true,
+  })
+);
+
+// ------------------------------------------------------------
+// Security – NoSQL injection sanitiser (Express 5 compatible)
+// ------------------------------------------------------------
 app.use((req, res, next) => {
   const sanitize = (obj) => {
     if (obj && typeof obj === 'object') {
@@ -76,6 +100,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// ------------------------------------------------------------
+// Logging (development only)
+// ------------------------------------------------------------
 if (process.env.NODE_ENV === 'development') {
   morgan.token('body', (req) => {
     const body = { ...req.body };
@@ -84,17 +111,25 @@ if (process.env.NODE_ENV === 'development') {
     if (body.refreshToken) body.refreshToken = '***';
     return JSON.stringify(body);
   });
-  app.use(morgan(':method :url :status :response-time ms - :res[content-length] :body'));
+  app.use(
+    morgan(
+      ':method :url :status :response-time ms - :res[content-length] :body'
+    )
+  );
 }
 
-// Rate Limiting
+// ------------------------------------------------------------
+// Rate limiting
+// ------------------------------------------------------------
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 100, // limit each IP
 });
 app.use('/api', limiter);
 
-// Routes
+// ------------------------------------------------------------
+// API routes (all prefixed with /api)
+// ------------------------------------------------------------
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', userRoutes);
@@ -111,21 +146,25 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/exams', examRoutes);
 
-// Root Route
+// ------------------------------------------------------------
+// Root route & error handling
+// ------------------------------------------------------------
 app.get('/', (req, res) => {
   res.send('Cahan Academy API is running...');
 });
 
-// Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
 
+// ------------------------------------------------------------
+// Server start (only when run directly)
+// ------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
-
-// Yalnız lokalda və ya birbaşa işə salındıqda listen etsin
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+    console.log(
+      `Server running in ${process.env.NODE_ENV} mode on port ${PORT}`
+    );
   });
 }
 
