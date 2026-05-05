@@ -10,12 +10,12 @@
 
 | Sahə | Dəyər |
 |---|---|
-| **Son tamamlanan tapşırıq** | Mərhələ 12 — Quiz Sistemi (15/15) |
-| **Aktiv branch** | `feature/quizzes-api` |
-| **Növbəti branch** | `feature/notifications-api` |
-| **Növbəti tapşırıq** | Bildiriş Sistemi (Mərhələ 13) |
+| **Son tamamlanan tapşırıq** | Mərhələ 13 — Bildiriş Sistemi |
+| **Aktiv branch** | `feature/notifications-api` |
+| **Növbəti branch** | `feature/tests-backend` |
+| **Növbəti tapşırıq** | Testlər (Mərhələ 14) |
 | **Bloklanmış tapşırıq** | Yoxdur |
-| **Qeyd** | Quiz sistemi (Backend API + Frontend UI) tamamlandı. |
+| **Qeyd** | Bildiriş sistemi tamamlandı. Növbəti mərhələ: Testlər. |
 
 ---
 
