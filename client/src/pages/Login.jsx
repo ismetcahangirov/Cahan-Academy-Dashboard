@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { Mail, Lock, LogIn, Loader2, Globe, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRef } from 'react';
+import { motion } from 'framer-motion';
 
 import { GoogleLogin } from '@react-oauth/google';
 import { useGoogleLoginMutation } from '../features/auth/authApi';
@@ -201,7 +202,6 @@ const Login = () => {
               theme="filled_black"
               shape="pill"
               text="signin_with"
-              width="100%"
             />
           </div>
         </div>
