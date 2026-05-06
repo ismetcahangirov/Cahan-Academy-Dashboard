@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { Mail, Lock, User as UserIcon, LogIn, Loader2, Globe, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRef } from 'react';
+import { motion } from 'framer-motion';
 
 const registerSchema = (t) => z.object({
   name: z.string().min(2, t('auth.nameShort')),
