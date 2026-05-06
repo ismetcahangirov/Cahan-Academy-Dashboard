@@ -1,5 +1,51 @@
 import Group from '../models/Group.js';
+import Schedule from '../models/Schedule.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+
+const syncGroupSchedule = async (group) => {
+  try {
+    // First, delete existing schedule entries for this group
+    await Schedule.deleteMany({ group: group._id });
+
+    if (!group.schedule) return;
+
+    const { repetitionType, days, specificDate, startTime, endTime, type, note } = group.schedule;
+
+    if (repetitionType === 'weekly' && days && days.length > 0) {
+      const DAYS_AZ = ['Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 'Cümə axşamı', 'Cümə', 'Şənbə', 'Bazar'];
+      for (const dayStr of days) {
+        const dayOfWeek = DAYS_AZ.indexOf(dayStr);
+        if (dayOfWeek !== -1) {
+          await Schedule.create({
+            group: group._id,
+            subject: group.name,
+            teacher: group.teacher,
+            dayOfWeek,
+            startTime,
+            endTime,
+            type,
+            note,
+            repetitionType: 'weekly'
+          });
+        }
+      }
+    } else if (repetitionType === 'once' && specificDate) {
+      await Schedule.create({
+        group: group._id,
+        subject: group.name,
+        teacher: group.teacher,
+        specificDate,
+        startTime,
+        endTime,
+        type,
+        note,
+        repetitionType: 'once'
+      });
+    }
+  } catch (error) {
+    console.error('Schedule sync error:', error);
+  }
+};
 
 /**
  * @desc    Get all groups
@@ -64,6 +110,7 @@ export const getGroupById = async (req, res) => {
 export const createGroup = async (req, res) => {
   try {
     const group = await Group.create(req.body);
+    await syncGroupSchedule(group);
 
     return sendSuccess(res, 'Group created successfully', group, 201);
   } catch (error) {
@@ -83,6 +130,10 @@ export const updateGroup = async (req, res) => {
       runValidators: true,
     });
 
+    if (group) {
+      await syncGroupSchedule(group);
+    }
+
     if (!group) {
       return sendError(res, 'Group not found', 404);
     }
@@ -101,6 +152,10 @@ export const updateGroup = async (req, res) => {
 export const deleteGroup = async (req, res) => {
   try {
     const group = await Group.findByIdAndDelete(req.params.id);
+
+    if (group) {
+      await Schedule.deleteMany({ group: group._id });
+    }
 
     if (!group) {
       return sendError(res, 'Group not found', 404);
