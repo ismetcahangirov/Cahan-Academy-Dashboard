@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Schedule from '../models/Schedule.js';
+import Group from '../models/Group.js';
 
 // @desc    Get schedule (filter by group, teacher, or student)
 // @route   GET /api/schedule
@@ -11,6 +12,15 @@ export const getSchedule = asyncHandler(async (req, res) => {
   if (groupId) query.group = groupId;
   if (teacherId) query.teacher = teacherId;
   if (dayOfWeek !== undefined) query.dayOfWeek = dayOfWeek;
+
+  // Role-based access control
+  if (req.user.role === 'teacher') {
+    query.teacher = req.user._id;
+  } else if (req.user.role === 'student') {
+    const studentGroups = await Group.find({ students: req.user._id }).select('_id');
+    const groupIds = studentGroups.map(g => g._id);
+    query.group = { $in: groupIds };
+  }
 
   const schedule = await Schedule.find(query)
     .populate('group', 'name')
