@@ -7,6 +7,7 @@ import { X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Users, Plus, Trash
 import { useCreateExamMutation, useUpdateExamMutation } from '../../features/exams/examsApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const questionSchema = z.object({
   text: z.string().min(1, 'Sual mətni boş ola bilməz'),
@@ -28,6 +29,7 @@ const examSchema = z.object({
 });
 
 const ExamModal = ({ isOpen, onClose, exam }) => {
+  const { t } = useTranslation();
   const isEditing = !!exam;
   const { data: groupsResponse, isLoading: isLoadingGroups } = useGetGroupsQuery();
   const groups = groupsResponse?.data || [];
@@ -112,14 +114,14 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
 
       if (isEditing) {
         await updateExam({ id: exam._id, data: payload }).unwrap();
-        toast.success('İmtahan uğurla yeniləndi');
+        toast.success(t('exams.updateSuccess'));
       } else {
         await createExam(payload).unwrap();
-        toast.success('İmtahan uğurla yaradıldı');
+        toast.success(t('exams.createSuccess'));
       }
       onClose();
     } catch (error) {
-      toast.error(error.data?.message || 'Xəta baş verdi');
+      toast.error(error.data?.message || t('students.error'));
     }
   };
 
@@ -144,7 +146,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">
-              {isEditing ? 'İmtahanı Redaktə Et' : 'Yeni İmtahan'}
+              {isEditing ? t('exams.modalTitleEdit') : t('exams.modalTitleAdd')}
             </h2>
             <button
               onClick={onClose}
@@ -158,7 +160,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Başlıq
+                {t('exams.examTitle')}
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -179,7 +181,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Group */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Qrup
+                {t('common.group')}
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -189,7 +191,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   {...register('group')}
                   className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
                 >
-                  <option value="">Qrup seçin</option>
+                  <option value="">{t('groups.selectGroup')}</option>
                   {!isLoadingGroups && groups.map((g) => (
                     <option key={g._id} value={g._id}>
                       {g.name}
@@ -205,7 +207,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Type */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                İmtahan Növü
+                {t('exams.type')}
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -215,9 +217,9 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   {...register('type')}
                   className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
                 >
-                  <option value="practice">Sınaq İmtahanı</option>
-                  <option value="midterm">Aralıq İmtahanı (Midterm)</option>
-                  <option value="final">Yekun İmtahan (Final)</option>
+                  <option value="practice">{t('exams.practice')}</option>
+                  <option value="midterm">{t('exams.midterm')}</option>
+                  <option value="final">{t('exams.final')}</option>
                 </select>
               </div>
               {errors.type && (
@@ -229,7 +231,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  Tarix
+                  {t('exams.date')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -247,7 +249,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  Saat
+                  {t('exams.time')}
                 </label>
                 <div className="relative">
                   <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -268,7 +270,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Duration */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Müddət (dəqiqə)
+                {t('exams.duration')} ({t('exams.minute')})
               </label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -278,7 +280,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   type="number"
                   {...register('duration')}
                   className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
-                  placeholder="60"
+                  placeholder={t('exams.durationPlaceholder')}
                 />
               </div>
               {errors.duration && (
@@ -289,13 +291,13 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                Əlavə Məlumat (İstəyə bağlı)
+                {t('exams.infoOptional')}
               </label>
               <textarea
                 {...register('description')}
                 rows={3}
                 className="w-full px-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all resize-none"
-                placeholder="İmtahan haqqında qeydlər..."
+                placeholder={t('exams.notesPlaceholder')}
               />
             </div>
 
@@ -304,7 +306,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                   <MessageSquare size={20} className="text-bordo" />
-                  İmtahan Sualları ({fields.length})
+                  {t('exams.questions')} ({fields.length})
                 </h3>
                 <button
                   type="button"
@@ -315,7 +317,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo/10 text-bordo hover:bg-bordo/20 rounded-lg transition-all text-xs font-semibold border border-bordo/20"
                 >
                   <Plus size={14} />
-                  Sual Əlavə Et
+                  {t('exams.addQuestion')}
                 </button>
               </div>
 
@@ -335,11 +337,11 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           {index + 1}
                         </span>
                         <span className="text-sm font-medium text-white truncate max-w-[200px]">
-                          {watch(`questions.${index}.text`) || 'Yeni Sual'}
+                          {watch(`questions.${index}.text`) || t('exams.newQuestion')}
                         </span>
                         <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-white/40 uppercase tracking-wider">
-                          {watch(`questions.${index}.type`) === 'multiple-choice' ? 'Variantlı' : 
-                           watch(`questions.${index}.type`) === 'true-false' ? 'Bəli/Xeyr' : 'Açıq'}
+                          {watch(`questions.${index}.type`) === 'multiple-choice' ? t('exams.multipleChoice') : 
+                           watch(`questions.${index}.type`) === 'true-false' ? t('exams.trueFalse') : t('exams.openEnded')}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -368,12 +370,12 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           {/* Question Text */}
                           <div>
                             <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                              Sualın Mətni
+                              {t('exams.questionText')}
                             </label>
                             <textarea
                               {...register(`questions.${index}.text`)}
                               className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all resize-none h-20"
-                              placeholder="Sualı bura daxil edin..."
+                              placeholder={t('exams.questionPlaceholder')}
                             />
                           </div>
 
@@ -381,7 +383,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           <div className="grid grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                Tip
+                                {t('exams.type')}
                               </label>
                               <select
                                 {...register(`questions.${index}.type`)}
@@ -397,14 +399,14 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                   }
                                 }}
                               >
-                                <option value="multiple-choice">Variantlı</option>
-                                <option value="true-false">Bəli/Xeyr</option>
-                                <option value="open-ended">Açıq Tipli</option>
+                                <option value="multiple-choice">{t('exams.multipleChoice')}</option>
+                                <option value="true-false">{t('exams.trueFalse')}</option>
+                                <option value="open-ended">{t('exams.openEnded')}</option>
                               </select>
                             </div>
                             <div>
                               <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                Bal
+                                {t('exams.points')}
                               </label>
                               <input
                                 type="number"
@@ -419,7 +421,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           {watch(`questions.${index}.type`) === 'multiple-choice' && (
                             <div className="space-y-2">
                               <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                Variantlar (Düzgün variantı seçin)
+                                {t('exams.options')} ({t('exams.correctOption')})
                               </label>
                               {[0, 1, 2, 3].map((optIndex) => (
                                 <div key={optIndex} className="flex items-center gap-2">
@@ -456,7 +458,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                     : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
                                 }`}
                               >
-                                Düzdür (True)
+                                {t('exams.true')}
                               </button>
                               <button
                                 type="button"
@@ -467,7 +469,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                     : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
                                 }`}
                               >
-                                Səhvdir (False)
+                                {t('exams.false')}
                               </button>
                             </div>
                           )}
@@ -485,7 +487,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                 onClick={onClose}
                 className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
               >
-                Ləğv et
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -495,7 +497,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  isEditing ? 'Yenilə' : 'Yarat'
+                  isEditing ? t('common.update') : t('common.create')
                 )}
               </button>
             </div>

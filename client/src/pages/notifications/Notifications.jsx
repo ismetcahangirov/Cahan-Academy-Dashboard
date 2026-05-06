@@ -2,7 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Check, Trash2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
-import { az } from 'date-fns/locale';
+import { az, enUS, ru } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
+
+const dateLocales = {
+  az: az,
+  en: enUS,
+  ru: ru
+};
 import {
   useGetNotificationsQuery,
   useMarkAsReadMutation,
@@ -12,6 +19,7 @@ import {
 import toast from 'react-hot-toast';
 
 const Notifications = () => {
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useGetNotificationsQuery({ page: 1, limit: 50 });
   const [markAsRead] = useMarkAsReadMutation();
   const [markAllAsRead] = useMarkAllAsReadMutation();
@@ -23,25 +31,25 @@ const Notifications = () => {
     try {
       await markAsRead(id).unwrap();
     } catch (error) {
-      toast.error('Bildiriş işarələnərkən xəta baş verdi');
+      toast.error(t('notifications.markAsReadError'));
     }
   };
 
   const handleMarkAllAsRead = async () => {
     try {
       await markAllAsRead().unwrap();
-      toast.success('Bütün bildirişlər oxunmuş olaraq işarələndi');
+      toast.success(t('notifications.markAllAsReadSuccess'));
     } catch (error) {
-      toast.error('Xəta baş verdi');
+      toast.error(t('students.error'));
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteNotification(id).unwrap();
-      toast.success('Bildiriş silindi');
+      toast.success(t('notifications.deleteSuccess'));
     } catch (error) {
-      toast.error('Bildiriş silinərkən xəta baş verdi');
+      toast.error(t('notifications.deleteError'));
     }
   };
 
@@ -58,7 +66,7 @@ const Notifications = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
           <Bell className="text-bordo" />
-          Bildirişlər
+          {t('notifications.title')}
         </h1>
         {notifications.some((n) => !n.isRead) && (
           <button
@@ -66,7 +74,7 @@ const Notifications = () => {
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm"
           >
             <Check size={16} />
-            Hamısını oxunmuş işarələ
+            {t('notifications.markAllAsRead')}
           </button>
         )}
       </div>
@@ -75,7 +83,7 @@ const Notifications = () => {
         {notifications.length === 0 ? (
           <div className="text-center py-12 text-white/50">
             <Bell className="mx-auto h-12 w-12 mb-4 opacity-20" />
-            <p>Hələ ki, heç bir bildirişiniz yoxdur.</p>
+            <p>{t('notifications.noNotifications')}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -101,7 +109,7 @@ const Notifications = () => {
                   <p className="text-white/60 text-sm mt-1">{notification.message}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-white/40">
                     <Clock size={12} />
-                    {format(new Date(notification.createdAt), 'd MMM yyyy HH:mm', { locale: az })}
+                    {format(new Date(notification.createdAt), 'd MMM yyyy HH:mm', { locale: dateLocales[i18n.language] || az })}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -109,7 +117,7 @@ const Notifications = () => {
                     <button
                       onClick={() => handleMarkAsRead(notification._id)}
                       className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-lg transition-colors tooltip"
-                      title="Oxunmuş işarələ"
+                      title={t('notifications.markAsReadBtn')}
                     >
                       <Check size={16} />
                     </button>
@@ -117,7 +125,7 @@ const Notifications = () => {
                   <button
                     onClick={() => handleDelete(notification._id)}
                     className="p-2 text-white/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors tooltip"
-                    title="Sil"
+                    title={t('notifications.deleteBtn')}
                   >
                     <Trash2 size={16} />
                   </button>
