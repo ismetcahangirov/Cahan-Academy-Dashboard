@@ -40,14 +40,24 @@ export const getScheduleById = asyncHandler(async (req, res) => {
 // @route   POST /api/schedule
 // @access  Private (Admin, Teacher)
 export const createScheduleEntry = asyncHandler(async (req, res) => {
-  const { group, subject, teacher, dayOfWeek, startTime, endTime, room } = req.body;
+  const { group, subject, teacher, dayOfWeek, startTime, endTime, room, type, note, repetitionType, specificDate } = req.body;
 
-  if (!group || !subject || !teacher || dayOfWeek === undefined || !startTime || !endTime) {
+  if (!group || !subject || !teacher || !startTime || !endTime) {
     res.status(400);
     throw new Error('Bütün məcburi sahələri doldurun');
   }
 
-  const entry = await Schedule.create({ group, subject, teacher, dayOfWeek, startTime, endTime, room });
+  if (repetitionType === 'weekly' && dayOfWeek === undefined) {
+    res.status(400);
+    throw new Error('Gün seçilməlidir');
+  }
+
+  if (repetitionType === 'once' && !specificDate) {
+    res.status(400);
+    throw new Error('Tarix seçilməlidir');
+  }
+
+  const entry = await Schedule.create({ group, subject, teacher, dayOfWeek, startTime, endTime, room, type, note, repetitionType, specificDate });
   const populated = await entry.populate([
     { path: 'group', select: 'name' },
     { path: 'teacher', select: 'name avatar' },

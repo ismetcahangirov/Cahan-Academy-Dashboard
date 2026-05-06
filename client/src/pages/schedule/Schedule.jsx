@@ -29,6 +29,10 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
     startTime: '',
     endTime: '',
     room: '',
+    type: 'offline',
+    note: '',
+    repetitionType: 'weekly',
+    specificDate: '',
   });
 
   const handleChange = (e) => {
@@ -67,21 +71,68 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
               placeholder="Riyaziyyat, İngilis dili..." required />
           </div>
           <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-white/70">Təkrar növü</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, repetitionType: 'weekly' })}
+                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
+                  form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
+                }`}
+              >
+                Hər həftə
+              </button>
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, repetitionType: 'once' })}
+                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
+                  form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
+                }`}
+              >
+                Bir dəfəlik
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {form.repetitionType === 'weekly' ? (
+              <div>
+                <label className="block text-sm text-white/70 mb-1">Gün *</label>
+                <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
+                  {DAYS.map((d, i) => (
+                    <option key={i} value={i} className="bg-[#111]">{d.label}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm text-white/70 mb-1">Tarix *</label>
+                <input 
+                  type="date" 
+                  name="specificDate" 
+                  value={form.specificDate} 
+                  onChange={handleChange}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+                  required 
+                />
+              </div>
+            )}
             <div>
-              <label className="block text-sm text-white/70 mb-1">Gün *</label>
-              <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
+              <label className="block text-sm text-white/70 mb-1">Dərs formatı</label>
+              <select name="type" value={form.type} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-                {DAYS.map((d, i) => (
-                  <option key={i} value={i} className="bg-[#111]">{d.label}</option>
-                ))}
+                <option value="offline" className="bg-[#111]">Offline</option>
+                <option value="online" className="bg-[#111]">Online</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm text-white/70 mb-1">Otaq</label>
-              <input name="room" value={form.room} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-                placeholder="101, A-2..." />
-            </div>
+          </div>
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Otaq / Link</label>
+            <input name="room" value={form.room} onChange={handleChange}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+              placeholder={form.type === 'online' ? "Meet linki..." : "101, A-2..."} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -96,6 +147,12 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Qeyd</label>
+            <textarea name="note" value={form.note} onChange={handleChange}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo resize-none h-20"
+              placeholder="Dərs haqqında əlavə qeyd..." />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose}
@@ -124,16 +181,34 @@ const Schedule = () => {
 
   // Group lessons by day
   const byDay = DAYS.map((_, i) =>
-    schedule.filter((s) => s.dayOfWeek === i).sort((a, b) => a.startTime.localeCompare(b.startTime))
+    schedule.filter((s) => {
+      if (s.repetitionType === 'once' && s.specificDate) {
+        // Map specific date to day of week (0-6)
+        // Adjust for Azerbaijani week if necessary (Monday=0 in DAYS)
+        const date = new Date(s.specificDate);
+        let day = date.getDay(); // 0 is Sunday, 1 is Monday...
+        day = day === 0 ? 6 : day - 1; // Map Sunday to 6, others shift by 1 to make Monday=0
+        return day === i;
+      }
+      return s.dayOfWeek === i;
+    }).sort((a, b) => a.startTime.localeCompare(b.startTime))
   );
 
   const handleAdd = async (data) => {
     try {
-      await createEntry({
+      const payload = {
         ...data,
-        dayOfWeek: Number(data.dayOfWeek),
         teacher: user?._id,
-      }).unwrap();
+      };
+
+      if (data.repetitionType === 'weekly') {
+        payload.dayOfWeek = Number(data.dayOfWeek);
+        delete payload.specificDate;
+      } else {
+        delete payload.dayOfWeek;
+      }
+
+      await createEntry(payload).unwrap();
       toast.success('Dərs əlavə edildi');
       setShowModal(false);
     } catch (error) {
@@ -208,11 +283,23 @@ const Schedule = () => {
                           <BookOpen size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate">{entry.subject}</p>
+                          <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                            {entry.subject}
+                            {entry.repetitionType === 'once' && entry.specificDate && (
+                              <span className="text-[10px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded font-normal">
+                                {new Date(entry.specificDate).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
+                          </p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="flex items-center gap-1 text-xs text-white/50">
                               <Clock size={11} />
                               {entry.startTime} – {entry.endTime}
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border ${
+                              entry.type === 'online' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                            }`}>
+                              {entry.type === 'online' ? 'Online' : 'Offline'}
                             </span>
                             {entry.room && (
                               <span className="flex items-center gap-1 text-xs text-white/50">
@@ -221,6 +308,9 @@ const Schedule = () => {
                               </span>
                             )}
                           </div>
+                          {entry.note && (
+                            <p className="text-[10px] text-white/30 mt-1 italic line-clamp-1">{entry.note}</p>
+                          )}
                           {entry.teacher && (
                             <p className="text-xs text-white/40 mt-1 truncate">{entry.teacher.name}</p>
                           )}
