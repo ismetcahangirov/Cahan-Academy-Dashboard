@@ -17,11 +17,18 @@ const scheduleSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    repetitionType: {
+      type: String,
+      enum: ['weekly', 'once'],
+      default: 'weekly',
+    },
     dayOfWeek: {
       type: Number,
-      required: true,
       min: 0, // 0 = Bazar ertəsi
       max: 6, // 6 = Bazar
+    },
+    specificDate: {
+      type: Date,
     },
     startTime: {
       type: String, // "09:00"
@@ -32,6 +39,15 @@ const scheduleSchema = new mongoose.Schema(
       required: true,
     },
     room: {
+      type: String,
+      trim: true,
+    },
+    type: {
+      type: String,
+      enum: ['online', 'offline'],
+      default: 'offline',
+    },
+    note: {
       type: String,
       trim: true,
     },
