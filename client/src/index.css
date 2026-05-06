@@ -9,26 +9,45 @@
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f0f0f;
+  --background: #f8fafc;
+  --foreground: #020617;
+  --card: #ffffff;
+  --card-foreground: #020617;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: #ffffff;
+  --primary: #7B001C;
+  --primary-foreground: #ffffff;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f0f0f;
-    --foreground: #ffffff;
-  }
+.dark {
+  --background: #0F0F0F;
+  --foreground: #FFFFFF;
+  --card: #1A1A1A;
+  --card-foreground: #FFFFFF;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: #000000;
+  --primary: #7B001C;
+  --primary-foreground: #ffffff;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer base {
   * {
-    @apply border-white/10;
+    border-color: var(--border);
   }
   body {
     @apply antialiased;
@@ -38,7 +57,7 @@ body {
 /* Global Scrollbar (body) */
 html {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: var(--border) transparent;
 }
 
 html::-webkit-scrollbar {
@@ -50,18 +69,18 @@ html::-webkit-scrollbar-track {
 }
 
 html::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
   border-radius: 10px;
 }
 
 html::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--muted-foreground);
 }
 
 /* Custom Scrollbar (components) */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: var(--border) transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -74,10 +93,10 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--muted-foreground);
 }

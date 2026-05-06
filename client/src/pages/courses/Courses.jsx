@@ -3,74 +3,177 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
   Search, 
+  Filter, 
   Plus, 
-  Layers, 
+  MoreHorizontal,
+  Clock,
+  Users,
+  Star,
   ChevronRight,
-  Edit2,
-  Trash2,
   X,
-  PlayCircle,
-  BarChart,
-  MoreHorizontal
+  Trash2,
+  Edit2,
+  Image as ImageIcon,
+  Loader2,
+  CheckCircle2,
+  BookMarked
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { 
   useGetCoursesQuery, 
   useCreateCourseMutation, 
-  useDeleteCourseMutation 
+  useDeleteCourseMutation, 
+  useUpdateCourseMutation 
 } from '../../features/courses/coursesApi';
 import { toast } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
-const getLevelConfig = (t) => ({
-  Beginner: { label: t('courses.levels.Beginner'), cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  Intermediate: { label: t('courses.levels.Intermediate'), cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  Advanced: { label: t('courses.levels.Advanced'), cls: 'bg-red-500/10 text-red-400 border-red-500/20' },
-});
+const CourseModal = ({ isOpen, onClose, onSubmit, course, isLoading }) => {
+  const { t } = useTranslation();
+  const isEdit = !!course;
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    duration: '',
+    level: 'beginner',
+    price: '',
+    status: 'active'
+  });
 
-const DarkInput = ({ label, ...props }) => (
-  <div className="space-y-1.5">
-    {label && <label className="text-sm font-medium text-white/70">{label}</label>}
-    <input
-      {...props}
-      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all"
-    />
-  </div>
-);
+  useState(() => {
+    if (course) {
+      setFormData({
+        name: course.name,
+        description: course.description,
+        duration: course.duration,
+        level: course.level,
+        price: course.price,
+        status: course.status
+      });
+    }
+  }, [course]);
 
-const DarkSelect = ({ label, children, ...props }) => (
-  <div className="space-y-1.5">
-    {label && <label className="text-sm font-medium text-white/70">{label}</label>}
-    <select
-      {...props}
-      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
-    >
-      {children}
-    </select>
-  </div>
-);
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-[var(--card)] border border-[var(--border)] rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden"
+      >
+        <div className="flex items-center justify-between p-8 border-b border-[var(--border)] bg-[var(--muted)]/20">
+          <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight">
+            {isEdit ? t('courses.editCourse') : t('courses.newCourse')}
+          </h3>
+          <button onClick={onClose} className="p-2 hover:bg-[var(--muted)] rounded-xl transition-colors">
+            <X size={20} className="text-[var(--muted-foreground)]" />
+          </button>
+        </div>
+
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="p-8 space-y-6">
+          <div className="space-y-2">
+            <label className="text-xs font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">{t('courses.tableName')}</label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
+              placeholder={t('courses.namePlaceholder')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">{t('courses.tableDescription')}</label>
+            <textarea
+              required
+              rows={3}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all resize-none"
+              placeholder={t('courses.descPlaceholder')}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">{t('courses.tableDuration')}</label>
+              <input
+                type="text"
+                required
+                value={formData.duration}
+                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
+                placeholder="3 months"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">{t('courses.tableLevel')}</label>
+              <select
+                value={formData.level}
+                onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all appearance-none"
+              >
+                <option value="beginner">{t('courses.level_beginner')}</option>
+                <option value="intermediate">{t('courses.level_intermediate')}</option>
+                <option value="advanced">{t('courses.level_advanced')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-4 pt-6 mt-4 border-t border-[var(--border)]">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 py-4 rounded-2xl text-sm font-bold text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              disabled={isLoading}
+              type="submit"
+              className="flex items-center gap-3 bg-bordo hover:bg-bordo/90 text-white px-10 py-4 rounded-2xl font-black text-sm tracking-wider transition-all shadow-xl shadow-bordo/20 hover:shadow-bordo/40 disabled:opacity-50"
+            >
+              {isLoading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle2 size={20} />}
+              {isEdit ? t('common.save') : t('common.create')}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+};
 
 const Courses = () => {
   const { t } = useTranslation();
-  const levelConfig = getLevelConfig(t);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
   const [search, setSearch] = useState('');
-  const [formData, setFormData] = useState({ title: '', description: '', category: '', level: 'Beginner' });
 
-  const { data: coursesData, isLoading } = useGetCoursesQuery();
+  const { data, isLoading: isTableLoading } = useGetCoursesQuery({ search });
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
+  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const handleCreate = async (formData) => {
     try {
       await createCourse(formData).unwrap();
-      toast.success(t('courses.addSuccess'));
+      toast.success(t('courses.createSuccess'));
       setIsModalOpen(false);
-      setFormData({ title: '', description: '', category: '', level: 'Beginner' });
-    } catch (error) {
-      toast.error(error.data?.message || t('students.error'));
+    } catch (err) {
+      toast.error(err.data?.message || t('common.error'));
+    }
+  };
+
+  const handleUpdate = async (formData) => {
+    try {
+      await updateCourse({ id: selectedCourse._id, ...formData }).unwrap();
+      toast.success(t('courses.updateSuccess'));
+      setIsModalOpen(false);
+    } catch (err) {
+      toast.error(err.data?.message || t('common.error'));
     }
   };
 
@@ -79,172 +182,186 @@ const Courses = () => {
       try {
         await deleteCourse(id).unwrap();
         toast.success(t('courses.deleteSuccess'));
-      } catch {
-        toast.error(t('students.error'));
+      } catch (err) {
+        toast.error(t('common.error'));
       }
     }
   };
 
-  const filteredCourses = coursesData?.data?.filter(course => 
-    course.title.toLowerCase().includes(search.toLowerCase()) ||
-    course.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const stats = [
+    { label: t('courses.totalCourses'), value: data?.pagination?.total || 0, icon: BookOpen, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: t('courses.activeCourses'), value: data?.data?.filter(c => c.status === 'active').length || 0, icon: BookMarked, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: t('courses.avgRating'), value: '4.8', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('courses.title')}</h1>
-          <p className="text-white/60 text-sm mt-1">{t('courses.subtitle')}</p>
+          <h1 className="text-3xl font-black text-[var(--foreground)] tracking-tight">{t('sidebar.courses')}</h1>
+          <p className="text-[var(--muted-foreground)]/60 text-sm mt-1 font-medium">{t('courses.subtitle')}</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
+          onClick={() => { setSelectedCourse(null); setIsModalOpen(true); }}
+          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-8 py-4 rounded-2xl transition-all shadow-xl shadow-bordo/20 font-black text-sm hover:-translate-y-0.5 active:translate-y-0"
         >
-          <Plus size={18} />
+          <Plus size={22} />
           {t('courses.newCourse')}
         </button>
       </div>
 
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {stats.map((stat, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+            className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-[32px] shadow-sm hover:border-bordo/20 transition-all group"
+          >
+            <div className="flex items-center gap-5">
+              <div className={cn("p-4 rounded-2xl transition-all duration-500 group-hover:scale-110", stat.bg, stat.color)}>
+                <stat.icon size={26} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-[var(--muted-foreground)]/30 uppercase tracking-[0.2em]">{stat.label}</p>
+                <h3 className="text-3xl font-black text-[var(--foreground)] mt-0.5">{stat.value}</h3>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
       {/* Search & Filter */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+      <div className="bg-[var(--card)] border border-[var(--border)] p-4 rounded-[28px] shadow-sm flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30 group-focus-within:text-bordo transition-colors" size={20} />
           <input
             type="text"
             placeholder={t('courses.searchPlaceholder')}
+            className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 pl-12 pr-4 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto">
-          {['All', 'Frontend', 'Backend', 'Design', 'Mobile'].map(cat => (
-            <button
-              key={cat}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10"
-            >
-              {t(`courses.categories.${cat}`)}
-            </button>
-          ))}
-        </div>
+        <button className="flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-sm font-bold hover:text-bordo hover:border-bordo/30 transition-all group">
+          <Filter size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+          {t('common.filter')}
+        </button>
       </div>
 
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
-          Array(6).fill(0).map((_, idx) => (
-            <div key={idx} className="bg-white/5 border border-white/10 h-64 rounded-2xl animate-pulse" />
+      {/* Course Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {isTableLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-[var(--card)] border border-[var(--border)] rounded-[40px] h-[420px] animate-pulse"></div>
           ))
-        ) : filteredCourses?.length > 0 ? (
-          filteredCourses.map((course) => (
+        ) : data?.data?.length > 0 ? (
+          data.data.map((course, idx) => (
             <motion.div
               key={course._id}
-              layout
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden group hover:border-bordo/30 transition-all"
+              transition={{ delay: idx * 0.1 }}
+              className="bg-[var(--card)] border border-[var(--border)] rounded-[40px] overflow-hidden group hover:border-bordo/30 transition-all shadow-sm hover:shadow-2xl hover:shadow-bordo/5"
             >
-              <div className="relative h-40 overflow-hidden bg-white/5">
+              <div className="h-52 bg-[var(--muted)] relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 opacity-60"></div>
                 <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80"
+                  src={course.image || `https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop`}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  alt={course.name}
                 />
-                <div className="absolute top-3 left-3">
-                  <span className={cn('px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border', levelConfig[course.level]?.cls)}>
-                    {levelConfig[course.level]?.label || course.level}
+                <div className="absolute top-6 left-6 z-20">
+                  <span className={cn(
+                    "px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border backdrop-blur-md",
+                    course.level === 'beginner' ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
+                    course.level === 'intermediate' ? "bg-blue-500/20 text-blue-400 border-blue-500/30" :
+                    "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  )}>
+                    {t(`courses.level_${course.level}`)}
                   </span>
                 </div>
-                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 bg-black/50 backdrop-blur-sm rounded-lg text-white/70 hover:text-white"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(course._id)} className="p-1.5 bg-black/50 backdrop-blur-sm rounded-lg text-white/70 hover:text-red-400"><Trash2 size={14} /></button>
+                
+                {/* Overlay Controls */}
+                <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 z-30 transition-all duration-300 scale-90 group-hover:scale-100">
+                  <button 
+                    onClick={() => { setSelectedCourse(course); setIsModalOpen(true); }}
+                    className="w-12 h-12 bg-white text-bordo rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all"
+                  >
+                    <Edit2 size={20} />
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(course._id)}
+                    className="w-12 h-12 bg-bordo text-white rounded-2xl flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all"
+                  >
+                    <Trash2 size={20} />
+                  </button>
                 </div>
               </div>
 
-              <div className="p-5 space-y-3">
+              <div className="p-8 space-y-6">
                 <div>
-                  <span className="text-[10px] font-bold text-bordo uppercase tracking-widest">{course.category}</span>
-                  <h3 className="text-base font-bold text-white line-clamp-1">{course.title}</h3>
+                  <h3 className="text-2xl font-black text-[var(--foreground)] tracking-tight line-clamp-1 group-hover:text-bordo transition-colors">
+                    {course.name}
+                  </h3>
+                  <p className="text-[var(--muted-foreground)]/60 text-sm mt-2 line-clamp-2 leading-relaxed font-medium">
+                    {course.description}
+                  </p>
                 </div>
-                <p className="text-white/50 text-sm line-clamp-2 min-h-[40px]">{course.description}</p>
-                <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-white/40 text-xs">
-                      <PlayCircle size={14} />
-                      <span>{course.lessons?.length || 0} {t('courses.lessons')}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-white/40 text-xs">
-                      <BarChart size={14} />
-                      <span>{course.status === 'published' ? t('groups.statusActive') : t('groups.statusCompleted')}</span>
+
+                <div className="flex items-center justify-between py-6 border-y border-[var(--border)]">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black text-[var(--muted-foreground)]/30 uppercase tracking-[0.2em]">{t('courses.tableDuration')}</span>
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
+                      <Clock size={16} className="text-bordo/50" />
+                      {course.duration}
                     </div>
                   </div>
-                  <Link to={`/courses/${course._id}`} className="flex items-center gap-1 text-bordo text-sm font-medium hover:gap-2 transition-all">
-                    {t('courses.content')} <ChevronRight size={16} />
-                  </Link>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-[10px] font-black text-[var(--muted-foreground)]/30 uppercase tracking-[0.2em]">{t('courses.tableStudents')}</span>
+                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--foreground)]">
+                      <Users size={16} className="text-bordo/50" />
+                      {course.studentCount || 0}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-[var(--muted-foreground)]/30 uppercase tracking-[0.2em]">{t('courses.tablePrice')}</span>
+                    <p className="text-2xl font-black text-bordo tracking-tighter">₼ {course.price || 0}</p>
+                  </div>
+                  <button className="flex items-center gap-2 text-xs font-black text-bordo uppercase tracking-widest hover:translate-x-1 transition-transform">
+                    {t('common.details')}
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
               </div>
             </motion.div>
           ))
         ) : (
-          <div className="col-span-full py-16 text-center">
-            <BookOpen size={48} className="mx-auto mb-3 text-white/20" />
-            <p className="text-white/40">{t('courses.noCourses')}</p>
+          <div className="col-span-full py-24 bg-[var(--card)] border border-dashed border-[var(--border)] rounded-[40px] flex flex-col items-center justify-center text-center">
+            <div className="w-24 h-24 bg-[var(--muted)] rounded-[40px] flex items-center justify-center mb-8">
+              <BookOpen size={48} className="text-[var(--muted-foreground)]/20" />
+            </div>
+            <h3 className="text-2xl font-black text-[var(--foreground)] mb-2">{t('courses.noCourses')}</h3>
+            <p className="text-sm text-[var(--muted-foreground)]/60 max-w-sm">{t('courses.noCoursesDesc')}</p>
           </div>
         )}
       </div>
 
-      {/* New Course Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10"
-            >
-              <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
-                <h2 className="text-xl font-semibold text-white">{t('courses.createCourse')}</h2>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
-              </div>
-              <form onSubmit={handleCreate} className="p-6 space-y-5">
-                <DarkInput label={t('courses.courseName')} required type="text" placeholder="Məs: React Native Mastery" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('courses.description')}</label>
-                  <textarea
-                    required rows="3"
-                    placeholder={t('courses.descriptionPlaceholder')}
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 resize-none transition-all"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <DarkSelect label={t('courses.category')} required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                    <option value="">{t('common.select') || 'Seçin...'}</option>
-                    <option value="Frontend">Frontend</option>
-                    <option value="Backend">Backend</option>
-                    <option value="Design">Design</option>
-                    <option value="Mobile">Mobile</option>
-                  </DarkSelect>
-                  <DarkSelect label={t('courses.level')} value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })}>
-                    <option value="Beginner">{t('courses.levels.Beginner')}</option>
-                    <option value="Intermediate">{t('courses.levels.Intermediate')}</option>
-                    <option value="Advanced">{t('courses.levels.Advanced')}</option>
-                  </DarkSelect>
-                </div>
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">{t('users.cancelBtn')}</button>
-                  <button type="submit" disabled={isCreating} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating ? t('groups.creating') : t('courses.newCourse')}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+          <CourseModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={selectedCourse ? handleUpdate : handleCreate}
+            course={selectedCourse}
+            isLoading={isCreating || isUpdating}
+          />
         )}
       </AnimatePresence>
     </div>

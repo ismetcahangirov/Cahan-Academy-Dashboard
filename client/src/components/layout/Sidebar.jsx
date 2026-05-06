@@ -1,240 +1,221 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectCurrentUser, logout } from '../../features/auth/authSlice';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  LayoutDashboard,
-  Users,
-  BookOpen,
-  Calendar,
-  Settings,
-  LogOut,
+import { 
+  LayoutDashboard, 
+  Users, 
+  UserSquare2, 
+  GraduationCap, 
+  BookOpen, 
+  Calendar, 
+  FileText, 
+  CheckSquare, 
+  Bell, 
+  Settings, 
+  LogOut, 
   ChevronLeft,
   ChevronRight,
   Menu,
-  GraduationCap,
+  X,
+  CreditCard,
   Mail,
-  CheckCircle,
-  FileText,
-  ClipboardList,
-  Trophy,
-  PenTool
+  Home,
+  MessageSquare
 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { logout } from '../../features/auth/authSlice';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../../lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
-  const user = useSelector(selectCurrentUser);
-  const dispatch = useDispatch();
-  const location = useLocation();
+const Sidebar = () => {
   const { t } = useTranslation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { userInfo } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const getLinksByRole = (role) => {
-    const baseLinks = [
-      { name: t('sidebar.dashboard'), path: '/', icon: LayoutDashboard },
-    ];
-
-    if (role === 'admin') {
-      baseLinks.push(
-        { name: t('sidebar.teachers'), path: '/teachers', icon: GraduationCap },
-        { name: t('sidebar.students'), path: '/students', icon: Users },
-        { name: t('sidebar.courses'), path: '/courses', icon: BookOpen },
-        { name: t('sidebar.attendance'), path: '/attendance', icon: CheckCircle },
-        { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
-        { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },
-        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
-        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
-        { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
-        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
-        { name: t('sidebar.invitations'), path: '/invitations', icon: Mail },
-        { name: t('sidebar.users'), path: '/users', icon: Users },
-        { name: t('sidebar.groups'), path: '/groups', icon: BookOpen },
-        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
-      );
-    } else if (role === 'teacher') {
-      baseLinks.push(
-        { name: t('sidebar.myStudents'), path: '/students', icon: Users },
-        { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
-        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
-        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
-        { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
-        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
-        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
-      );
-    } else {
-      baseLinks.push(
-        { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
-        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
-        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
-        { name: t('sidebar.mySchedule'), path: '/schedule', icon: Calendar },
-        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
-        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
-      );
-    }
-
-    return baseLinks;
-  };
-
-  const links = getLinksByRole(user?.role || 'student');
+    setIsMobileOpen(false);
+  }, [location]);
 
   const handleLogout = () => {
-    if (window.confirm(t('common.logoutConfirm'))) {
-      dispatch(logout());
-    }
+    dispatch(logout());
+    navigate('/login');
   };
 
-  const isMobile = windowWidth < 1024;
+  const menuItems = [
+    { icon: LayoutDashboard, label: t('sidebar.dashboard'), path: '/dashboard', roles: ['admin', 'teacher', 'student'] },
+    { icon: Users, label: t('sidebar.students'), path: '/students', roles: ['admin', 'teacher'] },
+    { icon: UserSquare2, label: t('sidebar.teachers'), path: '/teachers', roles: ['admin'] },
+    { icon: GraduationCap, label: t('sidebar.groups'), path: '/groups', roles: ['admin', 'teacher'] },
+    { icon: BookOpen, label: t('sidebar.courses'), path: '/courses', roles: ['admin'] },
+    { icon: Calendar, label: t('sidebar.schedule'), path: '/schedule', roles: ['admin', 'teacher', 'student'] },
+    { icon: FileText, label: t('sidebar.exams'), path: '/exams', roles: ['admin', 'teacher', 'student'] },
+    { icon: CheckSquare, label: t('sidebar.classworks'), path: '/classworks', roles: ['admin', 'teacher', 'student'] },
+    { icon: MessageSquare, label: t('sidebar.quizzes'), path: '/quizzes', roles: ['admin', 'teacher', 'student'] },
+    { icon: Mail, label: t('sidebar.invitations'), path: '/invitations', roles: ['admin'] },
+    { icon: CreditCard, label: t('sidebar.payments'), path: '/payments', roles: ['admin', 'student'] },
+  ];
 
-  const sidebarVariants = {
-    expanded: { width: '256px', x: 0, opacity: 1, transition: { duration: 0.3 } },
-    collapsed: { width: '80px', x: 0, opacity: 1, transition: { duration: 0.3 } },
-    mobileOpen: { x: 0, opacity: 1, transition: { duration: 0.3 } },
-    mobileClosed: { x: '-100%', opacity: 1, transition: { duration: 0.3 } },
+  const filteredMenuItems = menuItems.filter(item => 
+    item.roles.includes(userInfo?.role)
+  );
+
+  const NavItem = ({ item, isCollapsed }) => {
+    const isActive = location.pathname === item.path;
+    return (
+      <Link
+        to={item.path}
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group relative",
+          isActive 
+            ? "bg-bordo text-white shadow-lg shadow-bordo/20 font-bold" 
+            : "text-[var(--muted-foreground)]/60 hover:text-bordo hover:bg-bordo/5"
+        )}
+      >
+        <item.icon size={22} className={cn("shrink-0", isActive ? "animate-pulse" : "")} />
+        {!isCollapsed && <span className="text-sm tracking-wide truncate">{item.label}</span>}
+        {isCollapsed && (
+          <div className="absolute left-full ml-4 px-3 py-2 bg-[var(--foreground)] text-[var(--background)] text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-xl font-bold">
+            {item.label}
+          </div>
+        )}
+      </Link>
+    );
   };
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-40 p-3 bg-[var(--card)] border border-[var(--border)] rounded-2xl text-bordo shadow-lg"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
-        {isMobileOpen && isMobile && (
+        {isMobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-background/60 backdrop-blur-md z-40 lg:hidden"
           />
         )}
       </AnimatePresence>
 
-      {/* Sidebar Content */}
-      <motion.aside
-        initial={false}
-        animate={
-          isMobile
-            ? isMobileOpen ? 'mobileOpen' : 'mobileClosed'
-            : isCollapsed ? 'collapsed' : 'expanded'
-        }
-        variants={sidebarVariants}
+      {/* Sidebar Container */}
+      <aside
         className={cn(
-          'fixed lg:sticky top-0 left-0 h-screen z-50 bg-black border-r border-white/10 flex flex-col',
-          !isMobile && 'translate-x-0 opacity-100' // Force visible on desktop
+          "fixed top-0 left-0 z-50 h-full bg-[var(--card)] border-r border-[var(--border)] transition-all duration-500 ease-in-out lg:static",
+          isCollapsed ? "w-24" : "w-72",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Logo Area */}
-        <div className="h-16 flex items-center px-4 border-b border-white/10">
-          <div className={cn(
-            "flex items-center gap-3 overflow-hidden w-full",
-            isCollapsed && !isMobile ? "justify-center" : "justify-between"
-          )}>
+        <div className="flex flex-col h-full p-4">
+          {/* Logo Section */}
+          <div className="flex items-center justify-between mb-10 px-2 h-14">
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-lg bg-bordo flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-xl">C</span>
+              <div className="w-10 h-10 bg-bordo rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-bordo/20">
+                <span className="text-white text-xl font-black">C</span>
               </div>
-              <span
-                className={cn(
-                  "text-white font-bold whitespace-nowrap",
-                  isCollapsed && !isMobile ? "hidden" : "block"
-                )}
-              >
-                Cahan Academy
-              </span>
-            </div>
-            
-            {/* Desktop Collapse Button */}
-            {!isCollapsed && !isMobile && (
-              <button
-                onClick={() => setIsCollapsed(true)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-            )}
-          </div>
-          
-          {isCollapsed && !isMobile && (
-            <button
-              onClick={() => setIsCollapsed(false)}
-              className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-bordo border border-white/10 flex items-center justify-center text-white shadow-lg z-50 transition-transform hover:scale-110"
-            >
-              <ChevronRight size={16} />
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 custom-scrollbar">
-          {links.map((link) => {
-            const Icon = link.icon;
-
-            return (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                title={isCollapsed && !isMobile ? link.name : undefined}
-                onClick={() => setIsMobileOpen(false)}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center rounded-xl transition-all duration-200 group relative min-h-[44px]',
-                    isCollapsed && !isMobile
-                      ? 'justify-center w-11 h-11 mx-auto'
-                      : 'gap-3 px-3 py-2.5',
-                    isActive
-                      ? 'bg-bordo text-white shadow-lg shadow-bordo/20'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  )
-                }
-              >
-                <Icon size={20} className="shrink-0 transition-colors" />
-                
-                <span
-                  className={cn(
-                    "whitespace-nowrap font-medium text-sm",
-                    isCollapsed && !isMobile ? "hidden" : "block"
-                  )}
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="flex flex-col"
                 >
-                  {link.name}
-                </span>
+                  <span className="text-lg font-black text-[var(--foreground)] leading-none tracking-tight">CAHAN</span>
+                  <span className="text-[10px] font-bold text-bordo uppercase tracking-[0.2em] mt-1">Academy</span>
+                </motion.div>
+              )}
+            </div>
+            <button
+              onClick={() => setIsMobileOpen(false)}
+              className="lg:hidden p-2 hover:bg-[var(--muted)] rounded-xl transition-colors text-[var(--muted-foreground)]"
+            >
+              <X size={20} />
+            </button>
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden lg:flex p-2 hover:bg-[var(--muted)] rounded-xl transition-colors text-[var(--muted-foreground)]/40 hover:text-bordo"
+            >
+              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </button>
+          </div>
 
-                {/* Tooltips removed to prevent horizontal scroll overflow */}
-              </NavLink>
-            );
-          })}
-        </div>
+          {/* Navigation Links */}
+          <nav className="flex-1 space-y-2 overflow-y-auto custom-scrollbar px-2 pb-6">
+            <div className={cn("text-[10px] font-black text-[var(--muted-foreground)]/20 uppercase tracking-[0.3em] mb-4 mt-2 px-2", isCollapsed && "text-center")}>
+              {isCollapsed ? "•" : t('sidebar.menu')}
+            </div>
+            {filteredMenuItems.map((item) => (
+              <NavItem key={item.path} item={item} isCollapsed={isCollapsed} />
+            ))}
+          </nav>
 
-        {/* Bottom Profile / Logout */}
-        <div className="p-4 border-t border-white/10">
-          <button
-            onClick={handleLogout}
-            title={isCollapsed && !isMobile ? t('common.logout') : undefined}
-            className={cn(
-              "flex items-center rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
-              isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
-            )}
-          >
-            <LogOut size={20} className="shrink-0" />
-            <span
+          {/* User Profile & Logout */}
+          <div className="mt-auto border-t border-[var(--border)] pt-6 px-2 space-y-4">
+            <Link
+              to="/profile"
               className={cn(
-                "whitespace-nowrap font-medium text-sm",
-                isCollapsed && !isMobile ? "hidden" : "block"
+                "flex items-center gap-3 p-3 rounded-2xl hover:bg-[var(--muted)]/50 transition-all group",
+                location.pathname === '/profile' && "bg-[var(--muted)]/80"
               )}
             >
-              {t('common.logout')}
-            </span>
-            
-             {/* Tooltips removed to prevent horizontal scroll overflow */}
-          </button>
+              <div className="relative shrink-0">
+                <img
+                  src={userInfo?.avatar || `https://ui-avatars.com/api/?name=${userInfo?.name}&background=7B001C&color=fff`}
+                  alt=""
+                  className="w-10 h-10 rounded-xl object-cover ring-2 ring-transparent group-hover:ring-bordo/20 transition-all"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-[var(--card)] rounded-full"></span>
+              </div>
+              {!isCollapsed && (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-bold text-[var(--foreground)] truncate">{userInfo?.name}</span>
+                  <span className="text-[10px] font-medium text-[var(--muted-foreground)]/60 uppercase tracking-wider">{userInfo?.role}</span>
+                </div>
+              )}
+            </Link>
+
+            <div className="space-y-1">
+              <Link
+                to="/settings"
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--muted-foreground)]/60 hover:text-bordo hover:bg-bordo/5 transition-all group relative",
+                  location.pathname === '/settings' && "text-bordo bg-bordo/5"
+                )}
+              >
+                <Settings size={20} className="shrink-0" />
+                {!isCollapsed && <span className="text-sm font-medium">{t('sidebar.settings')}</span>}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-4 px-3 py-2 bg-[var(--foreground)] text-[var(--background)] text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 font-bold">
+                    {t('sidebar.settings')}
+                  </div>
+                )}
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[var(--muted-foreground)]/60 hover:text-red-500 hover:bg-red-500/5 transition-all group relative"
+              >
+                <LogOut size={20} className="shrink-0" />
+                {!isCollapsed && <span className="text-sm font-medium">{t('sidebar.logout')}</span>}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-4 px-3 py-2 bg-red-500 text-white text-xs rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 font-bold">
+                    {t('sidebar.logout')}
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 };
