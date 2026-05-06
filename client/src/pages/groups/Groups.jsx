@@ -27,10 +27,12 @@ import { useGetTeachersQuery } from '../../features/teachers/teachersApi';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 // ─── Group Detail Modal ──────────────────────────────────────────────────────
 const GroupDetailModal = ({ groupId, onClose }) => {
+  const { t, i18n } = useTranslation();
   const [studentSearch, setStudentSearch] = useState('');
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -47,11 +49,11 @@ const GroupDetailModal = ({ groupId, onClose }) => {
     if (!selectedStudentId) return;
     try {
       await addStudentToGroup({ groupId, studentId: selectedStudentId }).unwrap();
-      toast.success('Tələbə qrupa əlavə edildi');
+      toast.success(t('groups.studentAdded'));
       setSelectedStudentId('');
       setShowAddStudent(false);
     } catch (err) {
-      toast.error(err?.data?.message || 'Xəta baş verdi');
+      toast.error(err?.data?.message || t('students.error'));
     }
   };
 
@@ -101,8 +103,8 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     <GraduationCap size={18} className="text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-white/40">Müəllim</p>
-                    <p className="font-semibold text-white text-sm">{group?.teacher?.name || 'Təyin edilməyib'}</p>
+                    <p className="text-xs text-white/40">{t('groups.teacher')}</p>
+                    <p className="font-semibold text-white text-sm">{group?.teacher?.name || t('teachers.noTeachers')}</p>
                   </div>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
@@ -110,8 +112,8 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     <Users size={18} className="text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-white/40">Tələbə sayı</p>
-                    <p className="font-semibold text-white text-sm">{group?.students?.length || 0} nəfər</p>
+                    <p className="text-xs text-white/40">{t('groups.totalStudents')}</p>
+                    <p className="font-semibold text-white text-sm">{group?.students?.length || 0} {t('common.user').toLowerCase()}</p>
                   </div>
                 </div>
               </div>
@@ -120,20 +122,20 @@ const GroupDetailModal = ({ groupId, onClose }) => {
               {(group?.schedule?.days?.length > 0 || group?.schedule?.specificDate) && (
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
                   <p className="text-xs text-white/40 flex items-center gap-1 mb-1">
-                    <Calendar size={13} /> Cədvəl ({group.schedule.type === 'online' ? 'Online' : 'Offline'})
+                    <Calendar size={13} /> {t('groups.schedule')} ({group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')})
                     <span className="ml-auto px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
-                      {group.schedule.repetitionType === 'weekly' ? 'Hər həftə' : 'Bir dəfə'}
+                      {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
                     </span>
                   </p>
                   <p className="text-sm font-medium text-white">
                     {group.schedule.repetitionType === 'weekly' 
                       ? group.schedule.days.join(', ')
-                      : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString('az-AZ') : ''}
+                      : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                     {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
                   </p>
                   {group.schedule.note && (
                     <p className="text-xs text-white/60 bg-black/20 p-2 rounded-lg mt-2 border border-white/5">
-                      Qeyd: {group.schedule.note}
+                      {t('groups.note')}: {group.schedule.note}
                     </p>
                   )}
                 </div>
@@ -142,13 +144,13 @@ const GroupDetailModal = ({ groupId, onClose }) => {
               {/* Students List */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-white text-sm">Tələbələr</h4>
+                  <h4 className="font-semibold text-white text-sm">{t('sidebar.students')}</h4>
                   <button
                     onClick={() => setShowAddStudent(!showAddStudent)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo hover:bg-bordo/90 text-white text-xs font-semibold rounded-lg transition-all"
                   >
                     <UserPlus size={13} />
-                    Tələbə əlavə et
+                    {t('groups.addStudent')}
                   </button>
                 </div>
 
@@ -162,25 +164,25 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                       className="overflow-hidden mb-3"
                     >
                       <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 space-y-3">
-                        <p className="text-xs font-medium text-white/70">Tələbə seçin:</p>
+                        <p className="text-xs font-medium text-white/70">{t('groups.selectStudent')}:</p>
                         <select
                           value={selectedStudentId}
                           onChange={(e) => setSelectedStudentId(e.target.value)}
                           className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-sm text-white focus:border-bordo/50 outline-none"
                         >
-                          <option value="">Seçin...</option>
+                          <option value="">{t('common.select') || 'Seçin...'}</option>
                           {availableStudents.map((s) => (
                             <option key={s._id} value={s._id}>{s.name} — {s.email}</option>
                           ))}
                         </select>
                         <div className="flex gap-2">
-                          <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-white/10 text-white/60 rounded-xl text-sm hover:bg-white/5">Ləğv et</button>
+                          <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-white/10 text-white/60 rounded-xl text-sm hover:bg-white/5">{t('users.cancelBtn')}</button>
                           <button
                             onClick={handleAddStudent}
                             disabled={!selectedStudentId || isAdding}
                             className="flex-1 py-2 bg-bordo text-white rounded-xl text-sm font-semibold hover:bg-bordo/90 disabled:opacity-50"
                           >
-                            {isAdding ? 'Əlavə edilir...' : 'Əlavə et'}
+                            {isAdding ? t('groups.adding') : t('groups.addBtn')}
                           </button>
                         </div>
                       </div>
@@ -193,7 +195,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={15} />
                   <input
                     type="text"
-                    placeholder="Tələbə axtar..."
+                    placeholder={t('groups.searchStudents')}
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-bordo/50 transition-all placeholder:text-white/30"
@@ -203,7 +205,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                 {filteredStudents?.length === 0 ? (
                   <div className="text-center py-8 text-white/40 text-sm">
                     <Users size={32} className="mx-auto mb-2 opacity-30" />
-                    Bu qrupda hələ tələbə yoxdur
+                    {t('groups.noStudentsGroup')}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -231,6 +233,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
 
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
+  const { t, i18n } = useTranslation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -266,14 +269,14 @@ const Groups = () => {
     try {
       if (editingGroupId) {
         await updateGroup({ id: editingGroupId, ...formData }).unwrap();
-        toast.success('Qrup uğurla yeniləndi');
+        toast.success(t('groups.updateSuccess'));
       } else {
         await createGroup(formData).unwrap();
-        toast.success('Qrup uğurla yaradıldı');
+        toast.success(t('groups.addSuccess'));
       }
       handleCloseModal();
     } catch (error) {
-      toast.error(error.data?.message || 'Xəta baş verdi');
+      toast.error(error.data?.message || t('students.error'));
     }
   };
 
@@ -318,12 +321,12 @@ const Groups = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu qrupu silmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('groups.deleteConfirm'))) {
       try {
         await deleteGroup(id).unwrap();
-        toast.success('Qrup silindi');
+        toast.success(t('groups.deleteSuccess'));
       } catch {
-        toast.error('Xəta baş verdi');
+        toast.error(t('students.error'));
       }
     }
   };
@@ -334,15 +337,23 @@ const Groups = () => {
       group.course?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const DAYS = ['B.ertəsi', 'Çərşənbə A.', 'Çərşənbə', 'Cümə A.', 'Cümə', 'Şənbə', 'Bazar'];
+  const DAYS = [
+    t('schedule.days.monday'),
+    t('schedule.days.tuesday'),
+    t('schedule.days.wednesday'),
+    t('schedule.days.thursday'),
+    t('schedule.days.friday'),
+    t('schedule.days.saturday'),
+    t('schedule.days.sunday')
+  ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Qruplar</h1>
-          <p className="text-white/60 text-sm mt-1">Akademiyanın tədris qrupları.</p>
+          <h1 className="text-2xl font-bold text-white">{t('groups.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('groups.subtitle')}</p>
         </div>
         {isAdmin && (
           <button
@@ -350,7 +361,7 @@ const Groups = () => {
             className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
           >
             <Plus size={18} />
-            Yeni Qrup
+            {t('groups.newGroup')}
           </button>
         )}
       </div>
@@ -361,7 +372,7 @@ const Groups = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input
             type="text"
-            placeholder="Qrup və ya kurs axtar..."
+            placeholder={t('groups.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
@@ -410,15 +421,15 @@ const Groups = () => {
                   <p className="text-white/50 text-sm">{group.course}</p>
                 </div>
 
-                <div className="space-y-2 pt-3 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-sm text-white/50">
-                    <User size={14} className="text-white/30" />
-                    <span>{group.teacher?.name || 'Müəllim təyin edilməyib'}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-white/50">
-                    <Users size={14} className="text-white/30" />
-                    <span>{group.students?.length || 0} Tələbə</span>
-                  </div>
+                  <div className="space-y-2 pt-3 border-t border-white/10">
+                    <div className="flex items-center gap-2 text-sm text-white/50">
+                      <User size={14} className="text-white/30" />
+                      <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-white/50">
+                      <Users size={14} className="text-white/30" />
+                      <span>{group.students?.length || 0} {t('sidebar.students')}</span>
+                    </div>
                   {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
                     <div className="flex flex-col gap-1 text-sm text-white/50">
                       <div className="flex items-center gap-2">
@@ -426,10 +437,10 @@ const Groups = () => {
                         <span>
                           {group.schedule.repetitionType === 'weekly' 
                             ? group.schedule.days.join(', ')
-                            : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString('az-AZ') : ''}
+                            : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                         </span>
                         <span className="text-[10px] text-white/20 ml-auto">
-                          {group.schedule.repetitionType === 'weekly' ? 'Haftəlik' : 'Bir dəfə'}
+                          {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
                         </span>
                       </div>
                       {(group.schedule.startTime || group.schedule.endTime) && (
@@ -438,7 +449,7 @@ const Groups = () => {
                           <span className={cn(
                             "px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border",
                             group.schedule.type === 'online' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                          )}>{group.schedule.type === 'online' ? 'Online' : 'Offline'}</span>
+                          )}>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</span>
                         </div>
                       )}
                     </div>
@@ -452,13 +463,13 @@ const Groups = () => {
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                       : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
                   )}>
-                    {group.status === 'active' ? 'Aktiv' : 'Tamamlanıb'}
+                    {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
                   </span>
                   <button
                     onClick={() => setSelectedGroupId(group._id)}
                     className="flex items-center gap-1 text-bordo text-sm font-semibold hover:gap-2 transition-all"
                   >
-                    Detallar <ChevronRight size={15} />
+                    {t('groups.details')} <ChevronRight size={15} />
                   </button>
                 </div>
               </motion.div>
@@ -484,31 +495,31 @@ const Groups = () => {
               className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
-                <h3 className="text-xl font-semibold text-white">{editingGroupId ? 'Qrupu Redaktə Et' : 'Yeni Qrup Yarat'}</h3>
+                <h3 className="text-xl font-semibold text-white">{editingGroupId ? t('groups.editGroup') : t('groups.newGroup')}</h3>
                 <button onClick={handleCloseModal} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleCreate} className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Qrup Adı</label>
-                    <input required type="text" placeholder="Məs: FE-202" value={formData.name}
+                    <label className="text-sm font-medium text-white/70">{t('groups.groupName')}</label>
+                    <input required type="text" placeholder={t('groups.groupNamePlaceholder')} value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Kurs</label>
-                    <input required type="text" placeholder="Məs: Frontend Development" value={formData.course}
+                    <label className="text-sm font-medium text-white/70">{t('groups.course')}</label>
+                    <input required type="text" placeholder={t('groups.coursePlaceholder')} value={formData.course}
                       onChange={(e) => setFormData({ ...formData, course: e.target.value })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Müəllim Seçin</label>
+                  <label className="text-sm font-medium text-white/70">{t('groups.selectTeacher')}</label>
                   <select required value={formData.teacher} onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
-                    <option value="">Seçin...</option>
+                    <option value="">{t('common.select') || 'Seçin...'}</option>
                     {teachersData?.data?.map((teacher) => (
                       <option key={teacher._id} value={teacher._id}>{teacher.name}</option>
                     ))}
@@ -516,7 +527,7 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Tələbələr</label>
+                  <label className="text-sm font-medium text-white/70">{t('sidebar.students')}</label>
                   <div className="space-y-3">
                     <select
                       onChange={(e) => {
@@ -528,7 +539,7 @@ const Groups = () => {
                       }}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
                     >
-                      <option value="">Tələbə əlavə edin...</option>
+                      <option value="">{t('groups.addStudentsDesc')}</option>
                       {studentsData?.data?.filter(s => !formData.students.includes(s._id)).map((student) => (
                         <option key={student._id} value={student._id}>{student.name}</option>
                       ))}
@@ -539,7 +550,7 @@ const Groups = () => {
                         const student = studentsData?.data?.find(s => s._id === studentId);
                         return (
                           <div key={studentId} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white">
-                            <span>{student?.name || 'Yüklənir...'}</span>
+                            <span>{student?.name || t('common.loading')}</span>
                             <button
                               type="button"
                               onClick={() => setFormData({ ...formData, students: formData.students.filter(id => id !== studentId) })}
@@ -555,7 +566,7 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Təkrar növü</label>
+                  <label className="text-sm font-medium text-white/70">{t('groups.repetitionType')}</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -567,7 +578,7 @@ const Groups = () => {
                           : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                       )}
                     >
-                      Hər həftə
+                      {t('groups.repetitionWeekly')}
                     </button>
                     <button
                       type="button"
@@ -579,14 +590,14 @@ const Groups = () => {
                           : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                       )}
                     >
-                      Bir dəfəlik
+                      {t('groups.repetitionOnce')}
                     </button>
                   </div>
                 </div>
 
                 {formData.schedule.repetitionType === 'weekly' ? (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Günlər</label>
+                    <label className="text-sm font-medium text-white/70">{t('groups.days')}</label>
                     <div className="flex flex-wrap gap-2">
                       {DAYS.map((day) => (
                         <button
@@ -612,7 +623,7 @@ const Groups = () => {
                   </div>
                 ) : (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Konkret Tarix</label>
+                    <label className="text-sm font-medium text-white/70">{t('groups.specificDate')}</label>
                     <input 
                       type="date" 
                       value={formData.schedule.specificDate}
@@ -624,13 +635,13 @@ const Groups = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Başlama saatı</label>
+                    <label className="text-sm font-medium text-white/70">{t('groups.startTime')}</label>
                     <input type="time" value={formData.schedule.startTime}
                       onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, startTime: e.target.value } })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">Bitmə saatı</label>
+                    <label className="text-sm font-medium text-white/70">{t('groups.endTime')}</label>
                     <input type="time" value={formData.schedule.endTime}
                       onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, endTime: e.target.value } })}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
@@ -638,25 +649,25 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Dərs formatı</label>
+                  <label className="text-sm font-medium text-white/70">{t('groups.format')}</label>
                   <select value={formData.schedule.type} onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, type: e.target.value } })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
-                    <option value="offline">Offline</option>
-                    <option value="online">Online</option>
+                    <option value="offline">{t('groups.formatOffline')}</option>
+                    <option value="online">{t('groups.formatOnline')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Cədvəl üçün qeyd</label>
-                  <textarea placeholder="Məs: Həftəsonu əlavə dərslər ola bilər" value={formData.schedule.note}
+                  <label className="text-sm font-medium text-white/70">{t('groups.note')}</label>
+                  <textarea placeholder={t('groups.notePlaceholder')} value={formData.schedule.note}
                     onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, note: e.target.value } })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all resize-none h-20" />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">Ləğv et</button>
+                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">{t('users.cancelBtn')}</button>
                   <button type="submit" disabled={isCreating || isUpdating} className="bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating || isUpdating ? (editingGroupId ? 'Yenilənir...' : 'Yaradılır...') : (editingGroupId ? 'Yadda Saxla' : 'Qrupu Yarat')}
+                    {isCreating || isUpdating ? (editingGroupId ? t('groups.updating') : t('groups.creating')) : (editingGroupId ? t('users.saveBtn') : t('groups.newGroup'))}
                   </button>
                 </div>
               </form>

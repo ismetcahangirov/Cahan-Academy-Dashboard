@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Save } from 'lucide-react';
 import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [resultsData, setResultsData] = useState({});
 
@@ -65,7 +67,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
         }));
 
       if (formattedResults.length === 0) {
-        toast.error('Heç bir nəticə daxil edilməyib');
+        toast.error(t('exams.noResultsEntered'));
         return;
       }
 
@@ -74,10 +76,10 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
         data: { results: formattedResults }
       }).unwrap();
       
-      toast.success('Nəticələr uğurla yadda saxlanıldı');
+      toast.success(t('exams.resultsSavedSuccess'));
       onClose();
     } catch (error) {
-      toast.error(error.data?.message || 'Xəta baş verdi');
+      toast.error(error.data?.message || t('students.error'));
     }
   };
 
@@ -109,10 +111,10 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           <div className="flex items-center justify-between p-6 border-b border-white/10">
             <div>
               <h2 className="text-xl font-bold text-white mb-1">
-                İmtahan Nəticələri: {exam.title}
+                {t('exams.resultsModalTitle')}: {exam.title}
               </h2>
               <p className="text-sm text-gray-400">
-                {examDetails?.group?.name} • Qrupdakı tələbə sayı: {students.length}
+                {examDetails?.group?.name} • {t('exams.studentCount')}: {students.length}
               </p>
             </div>
             <button
@@ -129,7 +131,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Tələbə axtar..."
+                placeholder={t('exams.studentSearch')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
@@ -145,16 +147,16 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center text-gray-400 py-12">
-                Tələbə tapılmadı
+                {t('exams.noStudentsFound')}
               </div>
             ) : (
               <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-white/5 text-gray-400 text-sm border-b border-white/10">
-                      <th className="p-4 font-medium w-1/3">Tələbə</th>
-                      <th className="p-4 font-medium w-1/4">Bal (0-100)</th>
-                      <th className="p-4 font-medium">Rəy / Qeyd</th>
+                      <th className="p-4 font-medium w-1/3">{t('exams.tableStudent')}</th>
+                      <th className="p-4 font-medium w-1/4">{t('exams.tableScore')}</th>
+                      <th className="p-4 font-medium">{t('exams.tableFeedback')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
@@ -191,7 +193,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                               type="text"
                               value={result.feedback}
                               onChange={(e) => handleFeedbackChange(student._id, e.target.value)}
-                              placeholder="Rəy əlavə et..."
+                              placeholder={t('exams.feedbackPlaceholder')}
                               className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-bordo transition-colors text-sm"
                             />
                           </td>
@@ -210,7 +212,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               onClick={onClose}
               className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
             >
-              Bağla
+              {t('common.close')}
             </button>
             <button
               onClick={handleSubmit}
@@ -222,7 +224,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               ) : (
                 <>
                   <Save size={18} />
-                  <span>Yadda Saxla</span>
+                  <span>{t('common.saveBtn')}</span>
                 </>
               )}
             </button>

@@ -4,16 +4,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { Lock, Loader2, Save } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-const resetPasswordSchema = z.object({
-  password: z.string().min(6, 'Şifrə ən azı 6 simvoldan ibarət olmalıdır'),
+const resetPasswordSchema = (t) => z.object({
+  password: z.string().min(6, t('auth.passwordShort')),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Şifrələr uyğun gəlmir',
+  message: t('auth.passwordsDoNotMatch'),
   path: ['confirmPassword'],
 });
 
 const ResetPassword = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { token } = useParams();
   const isLoading = false;
@@ -23,13 +25,13 @@ const ResetPassword = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(resetPasswordSchema(t)),
   });
 
   const onSubmit = async (data) => {
     // This will be connected to the backend later
     console.log(data, token);
-    toast.success('Şifrə uğurla yeniləndi');
+    toast.success(t('auth.passwordResetSuccess'));
     navigate('/login');
   };
 
@@ -41,13 +43,13 @@ const ResetPassword = () => {
 
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Yeni şifrə</h1>
-          <p className="text-white/60 text-sm">Lütfən yeni şifrənizi daxil edin</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{t('auth.newPassword')}</h1>
+          <p className="text-white/60 text-sm">{t('auth.enterNewPassword')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80 block">Yeni şifrə</label>
+            <label className="text-sm font-medium text-white/80 block">{t('auth.newPassword')}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
               <input
@@ -61,7 +63,7 @@ const ResetPassword = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80 block">Şifrəni təsdiqləyin</label>
+            <label className="text-sm font-medium text-white/80 block">{t('auth.confirmPassword')}</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
               <input
@@ -84,7 +86,7 @@ const ResetPassword = () => {
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                Şifrəni yadda saxla
+                {t('auth.savePassword')}
               </>
             )}
           </button>

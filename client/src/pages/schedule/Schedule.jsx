@@ -10,18 +10,21 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
-const DAYS = [
-  { label: 'Bazar ertəsi', short: 'B.E' },
-  { label: 'Çərşənbə axşamı', short: 'Ç.A' },
-  { label: 'Çərşənbə', short: 'Ç' },
-  { label: 'Cümə axşamı', short: 'C.A' },
-  { label: 'Cümə', short: 'C' },
-  { label: 'Şənbə', short: 'Ş' },
-  { label: 'Bazar', short: 'B' },
+const getDays = (t) => [
+  { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
+  { label: t('schedule.days.tuesday'), short: t('schedule.days.tue') },
+  { label: t('schedule.days.wednesday'), short: t('schedule.days.wed') },
+  { label: t('schedule.days.thursday'), short: t('schedule.days.thu') },
+  { label: t('schedule.days.friday'), short: t('schedule.days.fri') },
+  { label: t('schedule.days.saturday'), short: t('schedule.days.sat') },
+  { label: t('schedule.days.sunday'), short: t('schedule.days.sun') },
 ];
 
 const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
+  const { t } = useTranslation();
+  const DAYS = getDays(t);
   const [form, setForm] = useState({
     subject: '',
     group: '',
@@ -56,7 +59,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.subject || !form.startTime || !form.endTime) {
-      toast.error('Bütün məcburi sahələri doldurun');
+      toast.error(t('groups.fillAllFields'));
       return;
     }
     onSubmit(form);
@@ -71,30 +74,30 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
         className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-white">Yeni Dərs Əlavə Et</h2>
+          <h2 className="text-lg font-semibold text-white">{t('schedule.addNew')}</h2>
           <button onClick={onClose} className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors">
             <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
           <div>
-            <label className="block text-sm text-white/70 mb-1">Qrup (Könüllü)</label>
+            <label className="block text-sm text-white/70 mb-1">{t('common.group')} ({t('common.optional')})</label>
             <select name="group" value={form.group} onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-              <option value="" className="bg-[#111]">Qrup seçin</option>
+              <option value="" className="bg-[#111]">{t('groups.selectGroup')}</option>
               {groups.map((g) => (
                 <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">Fənn *</label>
+            <label className="block text-sm text-white/70 mb-1">{t('schedule.subject')} *</label>
             <input name="subject" value={form.subject} onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-              placeholder="Riyaziyyat, İngilis dili..." required />
+              placeholder={t('schedule.subjectPlaceholder')} required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white/70">Təkrar növü</label>
+            <label className="text-sm font-medium text-white/70">{t('schedule.repetition')}</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -103,7 +106,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
                   form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
                 }`}
               >
-                Hər həftə
+                {t('schedule.weekly')}
               </button>
               <button
                 type="button"
@@ -112,7 +115,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
                   form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
                 }`}
               >
-                Bir dəfəlik
+                {t('schedule.once')}
               </button>
             </div>
           </div>
@@ -120,7 +123,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
           <div className="grid grid-cols-2 gap-4">
             {form.repetitionType === 'weekly' ? (
               <div>
-                <label className="block text-sm text-white/70 mb-1">Gün *</label>
+                <label className="block text-sm text-white/70 mb-1">{t('schedule.day')} *</label>
                 <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
                   {DAYS.map((d, i) => (
@@ -130,7 +133,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
               </div>
             ) : (
               <div>
-                <label className="block text-sm text-white/70 mb-1">Tarix *</label>
+                <label className="block text-sm text-white/70 mb-1">{t('schedule.date')} *</label>
                 <input 
                   type="date" 
                   name="specificDate" 
@@ -142,7 +145,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
               </div>
             )}
             <div>
-              <label className="block text-sm text-white/70 mb-1">Dərs formatı</label>
+              <label className="block text-sm text-white/70 mb-1">{t('schedule.format')}</label>
               <select name="type" value={form.type} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
                 <option value="offline" className="bg-[#111]">Offline</option>
@@ -151,39 +154,39 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
             </div>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">Otaq / Link</label>
+            <label className="block text-sm text-white/70 mb-1">{t('schedule.room')}</label>
             <input name="room" value={form.room} onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-              placeholder={form.type === 'online' ? "Meet linki..." : "101, A-2..."} />
+              placeholder={form.type === 'online' ? t('schedule.linkPlaceholder') : t('schedule.roomPlaceholder')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-white/70 mb-1">Başlanğıc *</label>
+              <label className="block text-sm text-white/70 mb-1">{t('schedule.startTime')} *</label>
               <input type="time" name="startTime" value={form.startTime} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
             <div>
-              <label className="block text-sm text-white/70 mb-1">Bitmə *</label>
+              <label className="block text-sm text-white/70 mb-1">{t('schedule.endTime')} *</label>
               <input type="time" name="endTime" value={form.endTime} onChange={handleChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">Qeyd</label>
+            <label className="block text-sm text-white/70 mb-1">{t('groups.note')}</label>
             <textarea name="note" value={form.note} onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo resize-none h-20"
-              placeholder="Dərs haqqında əlavə qeyd..." />
+              placeholder={t('schedule.notePlaceholder')} />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose}
               className="px-4 py-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors">
-              İmtina
+              {t('common.cancel')}
             </button>
             <button type="submit" disabled={isLoading}
               className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
-              {isLoading ? 'Əlavə edilir...' : 'Əlavə et'}
+              {isLoading ? t('schedule.adding') : t('common.add')}
             </button>
           </div>
         </form>
@@ -193,6 +196,8 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
 };
 
 const Schedule = () => {
+  const { t } = useTranslation();
+  const DAYS = getDays(t);
   const user = useSelector(selectCurrentUser);
   const [showModal, setShowModal] = useState(false);
   const { data: schedule = [], isLoading } = useGetScheduleQuery({});
@@ -233,19 +238,19 @@ const Schedule = () => {
       }
 
       await createEntry(payload).unwrap();
-      toast.success('Dərs əlavə edildi');
+      toast.success(t('schedule.addSuccess'));
       setShowModal(false);
     } catch (error) {
-      toast.error(error?.data?.message || 'Xəta baş verdi');
+      toast.error(error?.data?.message || t('students.error'));
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await deleteEntry(id).unwrap();
-      toast.success('Dərs silindi');
+      toast.success(t('schedule.deleteSuccess'));
     } catch (error) {
-      toast.error(error?.data?.message || 'Xəta baş verdi');
+      toast.error(error?.data?.message || t('students.error'));
     }
   };
 
@@ -260,11 +265,20 @@ const Schedule = () => {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Calendar className="text-bordo" />
-            Cədvəl
+            {t('schedule.title')}
           </h1>
+          {isAdminOrTeacher && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
+            >
+              <Plus size={18} />
+              {t('schedule.addNew')}
+            </button>
+          )}
         </div>
 
         <div className="grid gap-4">
@@ -280,13 +294,13 @@ const Schedule = () => {
                 <span className="text-sm font-semibold text-bordo">{day.short}</span>
                 <h2 className="text-sm font-medium text-white">{day.label}</h2>
                 {byDay[dayIndex].length > 0 && (
-                  <span className="ml-auto text-xs text-white/40">{byDay[dayIndex].length} dərs</span>
+                  <span className="ml-auto text-xs text-white/40">{byDay[dayIndex].length} {t('schedule.lessonCount')}</span>
                 )}
               </div>
 
               <div className="p-4">
                 {byDay[dayIndex].length === 0 ? (
-                  <p className="text-sm text-white/30 text-center py-3">Bu gün dərs yoxdur</p>
+                  <p className="text-sm text-white/30 text-center py-3">{t('schedule.noLessons')}</p>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {byDay[dayIndex].map((entry) => (
@@ -302,7 +316,7 @@ const Schedule = () => {
                             {entry.subject}
                             {entry.repetitionType === 'once' && entry.specificDate && (
                               <span className="text-[10px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded font-normal">
-                                {new Date(entry.specificDate).toLocaleDateString('az-AZ', { day: 'numeric', month: 'short' })}
+                                {new Date(entry.specificDate).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' })}
                               </span>
                             )}
                           </p>
@@ -314,7 +328,7 @@ const Schedule = () => {
                             <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border ${
                               entry.type === 'online' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
                             }`}>
-                              {entry.type === 'online' ? 'Online' : 'Offline'}
+                              {entry.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}
                             </span>
                             {entry.room && (
                               <span className="flex items-center gap-1 text-xs text-white/50">

@@ -15,9 +15,11 @@ import {
   useMarkAttendanceMutation 
 } from '../../features/attendance/attendanceApi';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
 const Attendance = () => {
+  const { t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [records, setRecords] = useState([]);
@@ -55,7 +57,7 @@ const Attendance = () => {
   };
 
   const handleSave = async () => {
-    if (!selectedGroup) return toast.error('Qrup seçin');
+    if (!selectedGroup) return toast.error(t('attendance.errorGroup'));
     try {
       await markAttendance({
         group: selectedGroup,
@@ -67,9 +69,9 @@ const Attendance = () => {
         })),
         topic
       }).unwrap();
-      toast.success('Davamiyyət uğurla yadda saxlanıldı');
+      toast.success(t('attendance.saveSuccess'));
     } catch {
-      toast.error('Xəta baş verdi');
+      toast.error(t('students.error'));
     }
   };
 
@@ -78,8 +80,8 @@ const Attendance = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Davamiyyət</h1>
-          <p className="text-white/60 text-sm mt-1">Tələbələrin dərslərdə iştirakının qeydiyyatı.</p>
+          <h1 className="text-2xl font-bold text-white">{t('attendance.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('attendance.subtitle')}</p>
         </div>
         <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2.5 rounded-xl">
           <Calendar size={16} className="text-white/40" />
@@ -98,7 +100,7 @@ const Attendance = () => {
           <div className="bg-white/5 border border-white/10 p-5 rounded-2xl space-y-4">
             <h3 className="font-bold text-white flex items-center gap-2 text-sm">
               <Users size={16} className="text-bordo" />
-              Qrup Seçin
+              {t('attendance.selectGroup')}
             </h3>
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
               {groupsData?.data?.map(group => (
@@ -123,12 +125,12 @@ const Attendance = () => {
             <div className="bg-bordo/10 border border-bordo/20 p-5 rounded-2xl space-y-3">
               <h4 className="font-bold text-white text-sm flex items-center gap-2">
                 <BookOpen size={14} className="text-bordo" />
-                Dərs Mövzusu
+                {t('attendance.lessonTopic')}
               </h4>
               <textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="Bugünkü dərsdə nə keçildi?"
+                placeholder={t('attendance.topicPlaceholder')}
                 className="w-full bg-black/30 border border-white/10 rounded-xl p-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-bordo/50 transition-all resize-none h-24"
               />
             </div>
@@ -142,15 +144,15 @@ const Attendance = () => {
               <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center text-white/20 mb-4">
                 <Users size={40} />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Tələbə siyahısı üçün qrup seçin</h3>
-              <p className="text-white/40 max-w-xs text-sm">Sol tərəfdəki siyahıdan qrup seçərək davamiyyəti qeyd etməyə başlaya bilərsiniz.</p>
+              <h3 className="text-lg font-bold text-white mb-2">{t('attendance.selectGroupDesc')}</h3>
+              <p className="text-white/40 max-w-xs text-sm">{t('attendance.selectGroupHint')}</p>
             </div>
           ) : (
             <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
               <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
                 <div>
-                  <h3 className="font-bold text-white text-sm">{currentGroup?.name} — Tələbə Siyahısı</h3>
-                  <p className="text-xs text-white/40 mt-1">{currentGroup?.students?.length} nəfər</p>
+                  <h3 className="font-bold text-white text-sm">{currentGroup?.name} — {t('attendance.studentList')}</h3>
+                  <p className="text-xs text-white/40 mt-1">{currentGroup?.students?.length} {t('common.user').toLowerCase()}</p>
                 </div>
                 <button
                   onClick={handleSave}
@@ -158,7 +160,7 @@ const Attendance = () => {
                   className="flex items-center gap-2 px-5 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-all shadow-lg shadow-bordo/20 text-sm font-medium disabled:opacity-50"
                 >
                   <Save size={16} />
-                  Yadda Saxla
+                  {t('users.saveBtn')}
                 </button>
               </div>
 
@@ -166,9 +168,9 @@ const Attendance = () => {
                 <table className="w-full text-left">
                   <thead className="border-b border-white/10 bg-white/[0.01]">
                     <tr>
-                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Tələbə</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">İştirak Statusu</th>
-                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Qeyd</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('sidebar.students')}</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('attendance.status')}</th>
+                      <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('groups.note')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -197,7 +199,7 @@ const Attendance = () => {
                                   rec.status === 'present' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-white/40 hover:bg-white/5'
                                 )}
                               >
-                                <CheckCircle2 size={13} /><span>İştirak</span>
+                                <CheckCircle2 size={13} /><span>{t('attendance.present')}</span>
                               </button>
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'absent')}
@@ -206,7 +208,7 @@ const Attendance = () => {
                                   rec.status === 'absent' ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-white/40 hover:bg-white/5'
                                 )}
                               >
-                                <XCircle size={13} /><span>Yoxdur</span>
+                                <XCircle size={13} /><span>{t('attendance.absent')}</span>
                               </button>
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'late')}
@@ -215,14 +217,14 @@ const Attendance = () => {
                                   rec.status === 'late' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20' : 'text-white/40 hover:bg-white/5'
                                 )}
                               >
-                                <Clock size={13} /><span>Gecikir</span>
+                                <Clock size={13} /><span>{t('attendance.late')}</span>
                               </button>
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <input
                               type="text"
-                              placeholder="Qeyd..."
+                              placeholder={`${t('groups.note')}...`}
                               value={rec.note}
                               onChange={(e) => {
                                 const newRecords = records.map(r =>
