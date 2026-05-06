@@ -21,18 +21,20 @@ import {
 } from '../../features/invitations/invitationsApi';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
+import { useTranslation } from 'react-i18next';
 
-const getStatusConfig = (status) => {
+const getStatusConfig = (status, t) => {
   switch (status) {
-    case 'pending': return { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: <Clock size={12} />, label: 'Gözləyir' };
-    case 'accepted': return { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: <CheckCircle size={12} />, label: 'Qəbul edildi' };
-    case 'expired': return { cls: 'bg-red-500/10 text-red-400 border-red-500/20', icon: <AlertCircle size={12} />, label: 'Vaxtı keçib' };
-    case 'cancelled': return { cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: <XCircle size={12} />, label: 'Ləğv edilib' };
+    case 'pending': return { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: <Clock size={12} />, label: t('invitations.statusPending') };
+    case 'accepted': return { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: <CheckCircle size={12} />, label: t('invitations.statusAccepted') };
+    case 'expired': return { cls: 'bg-red-500/10 text-red-400 border-red-500/20', icon: <AlertCircle size={12} />, label: t('invitations.statusExpired') };
+    case 'cancelled': return { cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: <XCircle size={12} />, label: t('invitations.statusCancelled') };
     default: return { cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: null, label: status };
   }
 };
 
 const Invitations = () => {
+  const { t, i18n } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ email: '', role: 'student' });
 
@@ -44,21 +46,21 @@ const Invitations = () => {
     e.preventDefault();
     try {
       await sendInvitation(formData).unwrap();
-      toast.success('Dəvət uğurla göndərildi');
+      toast.success(t('invitations.sendSuccess'));
       setIsModalOpen(false);
       setFormData({ email: '', role: 'student' });
     } catch (error) {
-      toast.error(error.data?.message || 'Xəta baş verdi');
+      toast.error(error.data?.message || t('students.error'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu dəvəti ləğv etmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('invitations.deleteConfirm'))) {
       try {
         await deleteInvitation(id).unwrap();
-        toast.success('Dəvət ləğv edildi');
+        toast.success(t('invitations.deleteSuccess'));
       } catch {
-        toast.error('Xəta baş verdi');
+        toast.error(t('students.error'));
       }
     }
   };
@@ -68,15 +70,15 @@ const Invitations = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dəvətlər Sistemi</h1>
-          <p className="text-white/60 text-sm mt-1">Müəllim və tələbələrə göndərilən qeydiyyat dəvətləri.</p>
+          <h1 className="text-2xl font-bold text-white">{t('invitations.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('invitations.subtitle')}</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
         >
           <Plus size={18} />
-          Yeni Dəvət
+          {t('invitations.addNew')}
         </button>
       </div>
 
@@ -86,12 +88,12 @@ const Invitations = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">E-poçt</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Göndərən</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Bitmə Tarixi</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">Əməliyyat</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('invitations.tableEmail')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('invitations.tableRole')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('invitations.tableStatus')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('invitations.tableInvitedBy')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('invitations.tableExpiresAt')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">{t('invitations.tableActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -108,7 +110,7 @@ const Invitations = () => {
                 ))
               ) : data?.data?.length > 0 ? (
                 data.data.map((inv) => {
-                  const statusConfig = getStatusConfig(inv.status);
+                  const statusConfig = getStatusConfig(inv.status, t);
                   return (
                     <motion.tr
                       key={inv._id}
@@ -131,7 +133,7 @@ const Invitations = () => {
                             ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                             : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                         )}>
-                          {inv.role === 'teacher' ? 'Müəllim' : 'Tələbə'}
+                          {inv.role === 'teacher' ? t('common.teacher') : t('common.student')}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -140,11 +142,11 @@ const Invitations = () => {
                           <span>{statusConfig.label}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-white/50 text-sm">{inv.invitedBy?.name || 'Sistem'}</td>
+                      <td className="px-6 py-4 text-white/50 text-sm">{inv.invitedBy?.name || t('common.admin')}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-white/50 text-sm">
                           <Calendar size={13} />
-                          {new Date(inv.expiresAt).toLocaleDateString('az-AZ')}
+                          {new Date(inv.expiresAt).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -165,7 +167,7 @@ const Invitations = () => {
                   <td colSpan="6" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-white/40">
                       <Mail size={40} className="mb-2 opacity-20" />
-                      <p>Hələ heç bir dəvət göndərilməyib</p>
+                      <p>{t('invitations.noInvitations')}</p>
                     </div>
                   </td>
                 </tr>
@@ -187,26 +189,26 @@ const Invitations = () => {
               className="relative w-full max-w-md bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10"
             >
               <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
-                <h2 className="text-xl font-semibold text-white">Yeni Dəvət Göndər</h2>
+                <h2 className="text-xl font-semibold text-white">{t('invitations.modalTitle')}</h2>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
               </div>
               <form onSubmit={handleSend} className="p-6 space-y-5">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">E-poçt ünvanı</label>
+                  <label className="text-sm font-medium text-white/70">{t('invitations.emailLabel')}</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
                     <input
                       required type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="nümunə@email.com"
+                      placeholder={t('auth.emailPlaceholder')}
                       className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Rol seçin</label>
+                  <label className="text-sm font-medium text-white/70">{t('invitations.roleLabel')}</label>
                   <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
@@ -216,7 +218,7 @@ const Invitations = () => {
                         formData.role === 'teacher' ? 'border-bordo/50 bg-bordo/10 text-white' : 'border-white/10 bg-white/5 text-white/50 hover:text-white'
                       )}
                     >
-                      <UserCheck size={18} /><span>Müəllim</span>
+                      <UserCheck size={18} /><span>{t('common.teacher')}</span>
                     </button>
                     <button
                       type="button"
@@ -226,16 +228,16 @@ const Invitations = () => {
                         formData.role === 'student' ? 'border-emerald-500/50 bg-emerald-500/10 text-white' : 'border-white/10 bg-white/5 text-white/50 hover:text-white'
                       )}
                     >
-                      <GraduationCap size={18} /><span>Tələbə</span>
+                      <GraduationCap size={18} /><span>{t('common.student')}</span>
                     </button>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">Ləğv et</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">{t('common.cancel')}</button>
                   <button type="submit" disabled={isSending} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
                     <Send size={16} />
-                    {isSending ? 'Göndərilir...' : 'Göndər'}
+                    {isSending ? t('invitations.sendingBtn') : t('invitations.sendBtn')}
                   </button>
                 </div>
               </form>

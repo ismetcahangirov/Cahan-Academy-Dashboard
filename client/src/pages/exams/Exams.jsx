@@ -14,8 +14,10 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import ExamModal from './ExamModal';
 import ExamResultsModal from './ExamResultsModal';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const Exams = () => {
+  const { t } = useTranslation();
   const user = useSelector(selectCurrentUser);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,12 +53,12 @@ const Exams = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu imtahanı silmək istədiyinizə əminsiniz? Bütün nəticələr də silinəcək.')) {
+    if (window.confirm(t('exams.deleteConfirm'))) {
       try {
         await deleteExam(id).unwrap();
-        toast.success('İmtahan uğurla silindi');
+        toast.success(t('exams.deleteSuccess'));
       } catch (err) {
-        toast.error(err.data?.message || 'İmtahan silinərkən xəta baş verdi');
+        toast.error(err.data?.message || t('students.error'));
       }
     }
   };
@@ -68,9 +70,9 @@ const Exams = () => {
 
   const formatExamType = (type) => {
     const types = {
-      midterm: 'Aralıq İmtahanı (Midterm)',
-      final: 'Yekun İmtahan (Final)',
-      practice: 'Sınaq İmtahanı'
+      midterm: t('exams.midterm'),
+      final: t('exams.final'),
+      practice: t('exams.practice')
     };
     return types[type] || type;
   };
@@ -79,9 +81,9 @@ const Exams = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">İmtahanlar</h1>
+          <h1 className="text-2xl font-bold text-white">{t('exams.title')}</h1>
           <p className="text-gray-400 mt-1">
-            Müxtəlif imtahanlar və nəticələr
+            {t('exams.subtitle')}
           </p>
         </div>
 
@@ -91,7 +93,7 @@ const Exams = () => {
             className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
           >
             <Plus size={20} />
-            <span>Yeni İmtahan</span>
+            <span>{t('exams.addNew')}</span>
           </button>
         )}
       </div>
@@ -101,7 +103,7 @@ const Exams = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="İmtahan axtar..."
+            placeholder={t('exams.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
@@ -114,7 +116,7 @@ const Exams = () => {
             onChange={(e) => setSelectedGroup(e.target.value)}
             className="w-full px-4 py-2 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
           >
-            <option value="">Bütün Qruplar</option>
+            <option value="">{t('exams.allGroups')}</option>
             {groups.map(group => (
               <option key={group._id} value={group._id}>{group.name}</option>
             ))}
@@ -138,16 +140,16 @@ const Exams = () => {
               {['admin', 'teacher'].includes(user.role) && (
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                   <button 
-                    onClick={() => handleEdit(exam)}
+                    onClick={handleEdit}
                     className="p-1.5 bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 rounded-lg transition-colors"
                   >
-                    Edit
+                    {t('exams.edit')}
                   </button>
                   <button 
                     onClick={() => handleDelete(exam._id)}
                     className="p-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/40 rounded-lg transition-colors"
                   >
-                    Sil
+                    {t('exams.delete')}
                   </button>
                 </div>
               )}
@@ -156,24 +158,24 @@ const Exams = () => {
                 <h3 className="text-xl font-bold text-white line-clamp-2">{exam.title}</h3>
               </div>
               
-              <p className="text-gray-400 mb-6 line-clamp-2 text-sm flex-grow">{exam.description || 'Təsvir yoxdur'}</p>
+              <p className="text-gray-400 mb-6 line-clamp-2 text-sm flex-grow">{exam.description || t('exams.noDescription')}</p>
               
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <Users size={16} className="text-bordo" />
-                  <span>Qrup: {exam.group?.name || 'Bilinmir'}</span>
+                  <span>{t('common.group')}: {exam.group?.name || t('common.unknown')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <Calendar size={16} className="text-bordo" />
-                  <span>Tarix: {new Date(exam.date).toLocaleDateString('az-AZ')} {new Date(exam.date).toLocaleTimeString('az-AZ', {hour: '2-digit', minute:'2-digit'})}</span>
+                  <span>{t('schedule.date')}: {new Date(exam.date).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US')} {new Date(exam.date).toLocaleTimeString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <Clock size={16} className="text-bordo" />
-                  <span>Müddət: {exam.duration} dəqiqə</span>
+                  <span>{t('exams.duration')}: {exam.duration} {t('exams.minute')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <HelpCircle size={16} className="text-bordo" />
-                  <span>Növ: {formatExamType(exam.type)}</span>
+                  <span>{t('exams.type')}: {formatExamType(exam.type)}</span>
                 </div>
               </div>
 
@@ -183,10 +185,10 @@ const Exams = () => {
                     {exam.results && exam.results.length > 0 ? (
                       <div className="text-sm font-medium text-green-400 bg-green-400/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
                         <PenTool size={16} />
-                        Nəticə: {exam.results[0].score}/100
+                        {t('exams.result')}: {exam.results[0].score}/100
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-400 italic">Nəticə yoxdur</div>
+                      <div className="text-sm text-gray-400 italic">{t('exams.noResult')}</div>
                     )}
                   </div>
                 ) : (
@@ -194,7 +196,7 @@ const Exams = () => {
                     onClick={() => handleOpenResults(exam)}
                     className="w-full flex justify-center items-center gap-2 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium"
                   >
-                    Nəticələri İdarə Et ({exam.results?.length || 0})
+                    {t('exams.manageResults')} ({exam.results?.length || 0})
                   </button>
                 )}
               </div>
@@ -204,7 +206,7 @@ const Exams = () => {
           {filteredExams.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-400">
               <PenTool size={48} className="mb-4 opacity-50" />
-              <p>Hələ ki imtahan yoxdur</p>
+              <p>{t('exams.noExams')}</p>
             </div>
           )}
         </div>

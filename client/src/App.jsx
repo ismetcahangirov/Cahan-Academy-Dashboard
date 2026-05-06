@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 // Layout and Route Guards (Keep these synchronous to prevent UI flashes)
 import AppLayout from './components/layout/AppLayout';
@@ -32,14 +33,17 @@ const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 const Schedule = lazy(() => import('./pages/schedule/Schedule'));
 
 // Fallback Loading Component
-const PageLoader = () => (
-  <div className="flex h-screen items-center justify-center bg-black">
-    <div className="flex flex-col items-center gap-4">
-      <div className="w-10 h-10 border-4 border-white/10 border-t-bordo rounded-full animate-spin"></div>
-      <p className="text-white/50 text-sm font-medium animate-pulse">Səhifə yüklənir...</p>
+const PageLoader = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex h-screen items-center justify-center bg-black">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-10 h-10 border-4 border-white/10 border-t-bordo rounded-full animate-spin"></div>
+        <p className="text-white/50 text-sm font-medium animate-pulse">{t('common.loading')}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   return (

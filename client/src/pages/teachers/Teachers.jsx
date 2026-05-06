@@ -11,6 +11,7 @@ import {
   BookOpen,
   MoreHorizontal
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { 
   useGetTeachersQuery, 
   useDeleteTeacherMutation,
@@ -22,6 +23,7 @@ import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 
 const StatusBadge = ({ status }) => {
+  const { t } = useTranslation();
   const isActive = status === 'active';
   return (
     <span className={cn(
@@ -31,12 +33,13 @@ const StatusBadge = ({ status }) => {
         : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
     )}>
       <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-zinc-500')}></span>
-      {isActive ? 'Aktiv' : 'Deaktiv'}
+      {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
 };
 
 const Teachers = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,12 +56,12 @@ const Teachers = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu müəllimi silmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('teachers.deleteConfirm'))) {
       try {
         await deleteTeacher(id).unwrap();
-        toast.success('Müəllim uğurla silindi');
+        toast.success(t('teachers.deleteSuccess'));
       } catch (error) {
-        toast.error('Xəta baş verdi');
+        toast.error(t('students.error'));
       }
     }
   };
@@ -67,21 +70,21 @@ const Teachers = () => {
     try {
       if (selectedTeacher) {
         await updateTeacher({ id: selectedTeacher._id, ...formData }).unwrap();
-        toast.success('Müəllim məlumatları yeniləndi');
+        toast.success(t('teachers.updateSuccess'));
       } else {
         await inviteTeacher({ ...formData, role: 'teacher' }).unwrap();
-        toast.success('Yeni müəllim yaradıldı');
+        toast.success(t('teachers.createSuccess'));
       }
       setIsModalOpen(false);
     } catch (err) {
-      toast.error(err.data?.message || 'Xəta baş verdi');
+      toast.error(err.data?.message || t('students.error'));
     }
   };
 
   const stats = [
-    { title: 'Ümumi Müəllimlər', value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { title: 'Aktiv Müəllimlər', value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { title: 'Ümumi Qruplar', value: 0, icon: BookOpen, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { title: t('teachers.totalTeachers'), value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { title: t('teachers.activeTeachers'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { title: t('students.tableGroup'), value: 0, icon: BookOpen, color: 'text-amber-400', bg: 'bg-amber-500/10' },
   ];
 
   return (
@@ -89,15 +92,15 @@ const Teachers = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Müəllimlər</h1>
-          <p className="text-white/60 text-sm mt-1">Sistemdəki müəllimlərin idarə edilməsi.</p>
+          <h1 className="text-2xl font-bold text-white">{t('teachers.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('teachers.subtitle')}</p>
         </div>
         <button
           onClick={() => { setSelectedTeacher(null); setIsModalOpen(true); }}
           className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
         >
           <Plus size={18} />
-          Yeni Müəllim
+          {t('teachers.newTeacher')}
         </button>
       </div>
 
@@ -128,7 +131,7 @@ const Teachers = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input
             type="text"
-            placeholder="Müəllim axtar..."
+            placeholder={t('teachers.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
@@ -136,7 +139,7 @@ const Teachers = () => {
         </div>
         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm hover:text-white hover:bg-white/10 transition-all flex-1 md:flex-none">
           <Filter size={16} />
-          Filtrlər
+          {t('settings.notifications')}
         </button>
       </div>
 
@@ -146,11 +149,11 @@ const Teachers = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Müəllim</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Qruplar</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">Əməliyyatlar</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('teachers.tableTeacher')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableEmail')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableStatus')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('teachers.tableGroups')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">{t('students.tableActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -213,7 +216,7 @@ const Teachers = () => {
                   <td colSpan="5" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-white/40">
                       <GraduationCap size={40} className="mb-2 opacity-20" />
-                      <p>Müəllim tapılmadı</p>
+                      <p>{t('teachers.noTeachers')}</p>
                     </div>
                   </td>
                 </tr>

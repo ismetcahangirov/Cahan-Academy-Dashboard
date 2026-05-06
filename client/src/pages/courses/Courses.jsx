@@ -20,13 +20,14 @@ import {
 } from '../../features/courses/coursesApi';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 
-const levelConfig = {
-  Beginner: { label: 'Başlanğıc', cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  Intermediate: { label: 'Orta', cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
-  Advanced: { label: 'Yüksək', cls: 'bg-red-500/10 text-red-400 border-red-500/20' },
-};
+const getLevelConfig = (t) => ({
+  Beginner: { label: t('courses.levels.Beginner'), cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  Intermediate: { label: t('courses.levels.Intermediate'), cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  Advanced: { label: t('courses.levels.Advanced'), cls: 'bg-red-500/10 text-red-400 border-red-500/20' },
+});
 
 const DarkInput = ({ label, ...props }) => (
   <div className="space-y-1.5">
@@ -51,6 +52,8 @@ const DarkSelect = ({ label, children, ...props }) => (
 );
 
 const Courses = () => {
+  const { t } = useTranslation();
+  const levelConfig = getLevelConfig(t);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [formData, setFormData] = useState({ title: '', description: '', category: '', level: 'Beginner' });
@@ -63,21 +66,21 @@ const Courses = () => {
     e.preventDefault();
     try {
       await createCourse(formData).unwrap();
-      toast.success('Kurs uğurla yaradıldı');
+      toast.success(t('courses.addSuccess'));
       setIsModalOpen(false);
       setFormData({ title: '', description: '', category: '', level: 'Beginner' });
     } catch (error) {
-      toast.error(error.data?.message || 'Xəta baş verdi');
+      toast.error(error.data?.message || t('students.error'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu kursu silmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('courses.deleteConfirm'))) {
       try {
         await deleteCourse(id).unwrap();
-        toast.success('Kurs silindi');
+        toast.success(t('courses.deleteSuccess'));
       } catch {
-        toast.error('Xəta baş verdi');
+        toast.error(t('students.error'));
       }
     }
   };
@@ -92,15 +95,15 @@ const Courses = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Kurslar</h1>
-          <p className="text-white/60 text-sm mt-1">Akademiyanın təhsil proqramları və materialları.</p>
+          <h1 className="text-2xl font-bold text-white">{t('courses.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('courses.subtitle')}</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
         >
           <Plus size={18} />
-          Yeni Kurs
+          {t('courses.newCourse')}
         </button>
       </div>
 
@@ -110,19 +113,19 @@ const Courses = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input
             type="text"
-            placeholder="Kurs və ya kateqoriya axtar..."
+            placeholder={t('courses.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
         <div className="flex gap-2 overflow-x-auto">
-          {['Hamısı', 'Frontend', 'Backend', 'Design', 'Mobile'].map(cat => (
+          {['All', 'Frontend', 'Backend', 'Design', 'Mobile'].map(cat => (
             <button
               key={cat}
               className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10"
             >
-              {cat}
+              {t(`courses.categories.${cat}`)}
             </button>
           ))}
         </div>
@@ -170,15 +173,15 @@ const Courses = () => {
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1 text-white/40 text-xs">
                       <PlayCircle size={14} />
-                      <span>{course.lessons?.length || 0} Dərs</span>
+                      <span>{course.lessons?.length || 0} {t('courses.lessons')}</span>
                     </div>
                     <div className="flex items-center gap-1 text-white/40 text-xs">
                       <BarChart size={14} />
-                      <span>{course.status === 'published' ? 'Aktiv' : 'Qaralama'}</span>
+                      <span>{course.status === 'published' ? t('groups.statusActive') : t('groups.statusCompleted')}</span>
                     </div>
                   </div>
                   <Link to={`/courses/${course._id}`} className="flex items-center gap-1 text-bordo text-sm font-medium hover:gap-2 transition-all">
-                    Məzmun <ChevronRight size={16} />
+                    {t('courses.content')} <ChevronRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -187,7 +190,7 @@ const Courses = () => {
         ) : (
           <div className="col-span-full py-16 text-center">
             <BookOpen size={48} className="mx-auto mb-3 text-white/20" />
-            <p className="text-white/40">Kurs tapılmadı</p>
+            <p className="text-white/40">{t('courses.noCourses')}</p>
           </div>
         )}
       </div>
@@ -204,39 +207,39 @@ const Courses = () => {
               className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10"
             >
               <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
-                <h2 className="text-xl font-semibold text-white">Yeni Kurs Yarat</h2>
+                <h2 className="text-xl font-semibold text-white">{t('courses.createCourse')}</h2>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
               </div>
               <form onSubmit={handleCreate} className="p-6 space-y-5">
-                <DarkInput label="Kursun Adı" required type="text" placeholder="Məs: React Native Mastery" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
+                <DarkInput label={t('courses.courseName')} required type="text" placeholder="Məs: React Native Mastery" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Təsvir</label>
+                  <label className="text-sm font-medium text-white/70">{t('courses.description')}</label>
                   <textarea
                     required rows="3"
-                    placeholder="Kurs haqqında qısa məlumat..."
+                    placeholder={t('courses.descriptionPlaceholder')}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 resize-none transition-all"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <DarkSelect label="Kateqoriya" required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                    <option value="">Seçin...</option>
+                  <DarkSelect label={t('courses.category')} required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
+                    <option value="">{t('common.select') || 'Seçin...'}</option>
                     <option value="Frontend">Frontend</option>
                     <option value="Backend">Backend</option>
                     <option value="Design">Design</option>
                     <option value="Mobile">Mobile</option>
                   </DarkSelect>
-                  <DarkSelect label="Dərəcə" value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })}>
-                    <option value="Beginner">Başlanğıc</option>
-                    <option value="Intermediate">Orta</option>
-                    <option value="Advanced">Yüksək</option>
+                  <DarkSelect label={t('courses.level')} value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })}>
+                    <option value="Beginner">{t('courses.levels.Beginner')}</option>
+                    <option value="Intermediate">{t('courses.levels.Intermediate')}</option>
+                    <option value="Advanced">{t('courses.levels.Advanced')}</option>
                   </DarkSelect>
                 </div>
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">Ləğv et</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">{t('users.cancelBtn')}</button>
                   <button type="submit" disabled={isCreating} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating ? 'Yaradılır...' : 'Kursu Yarat'}
+                    {isCreating ? t('groups.creating') : t('courses.newCourse')}
                   </button>
                 </div>
               </form>

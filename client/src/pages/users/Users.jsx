@@ -13,6 +13,7 @@ import {
   ChevronRight,
   MoreHorizontal
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { 
   useGetUsersQuery, 
   useDeleteUserMutation,
@@ -24,20 +25,28 @@ import toast from 'react-hot-toast';
 import UserModal from './UserModal';
 
 const RoleBadge = ({ role }) => {
+  const { t } = useTranslation();
   const styles = {
     admin: 'bg-red-500/10 text-red-500 border-red-500/20',
     teacher: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
     student: 'bg-green-500/10 text-green-500 border-green-500/20',
   };
 
+  const roleLabel = {
+    admin: t('common.admin'),
+    teacher: t('common.teacher'),
+    student: t('common.student'),
+  };
+
   return (
     <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize', styles[role] || styles.student)}>
-      {role}
+      {roleLabel[role] || role}
     </span>
   );
 };
 
 const StatusBadge = ({ status }) => {
+  const { t } = useTranslation();
   const isActive = status === 'active';
   return (
     <span className={cn(
@@ -47,12 +56,13 @@ const StatusBadge = ({ status }) => {
         : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
     )}>
       <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-zinc-500')}></span>
-      {isActive ? 'Aktiv' : 'Deaktiv'}
+      {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
 };
 
 const Users = () => {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -76,12 +86,12 @@ const Users = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu istifadəçini silmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('students.deleteConfirm'))) {
       try {
         await deleteUser(id).unwrap();
-        toast.success('İstifadəçi uğurla silindi');
+        toast.success(t('users.deleteSuccess'));
       } catch (err) {
-        toast.error(err.data?.message || 'Xəta baş verdi');
+        toast.error(err.data?.message || t('students.error'));
       }
     }
   };
@@ -100,14 +110,14 @@ const Users = () => {
     try {
       if (selectedUser) {
         await updateUser({ id: selectedUser._id, ...formData }).unwrap();
-        toast.success('İstifadəçi məlumatları yeniləndi');
+        toast.success(t('users.editSuccess'));
       } else {
         await addUser(formData).unwrap();
-        toast.success('Yeni istifadəçi yaradıldı');
+        toast.success(t('users.addSuccess'));
       }
       setIsModalOpen(false);
     } catch (err) {
-      toast.error(err.data?.message || 'Xəta baş verdi');
+      toast.error(err.data?.message || t('students.error'));
     }
   };
 
@@ -116,15 +126,15 @@ const Users = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">İstifadəçilər</h1>
-          <p className="text-white/60 text-sm mt-1">Sistemdəki bütün istifadəçilərin idarə edilməsi.</p>
+          <h1 className="text-2xl font-bold text-white">{t('users.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('users.subtitle')}</p>
         </div>
         <button 
           onClick={handleAddUser}
           className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
         >
           <UserPlus size={18} />
-          Yeni İstifadəçi
+          {t('users.newUser')}
         </button>
       </div>
 
@@ -134,7 +144,7 @@ const Users = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input
             type="text"
-            placeholder="Ad və ya email ilə axtar..."
+            placeholder={t('auth.emailPlaceholder')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
@@ -143,7 +153,7 @@ const Users = () => {
         <div className="flex items-center gap-2 w-full md:w-auto">
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm hover:text-white hover:bg-white/10 transition-all flex-1 md:flex-none">
             <Filter size={16} />
-            Filtrlər
+            {t('settings.notifications')}
           </button>
         </div>
       </div>
@@ -154,10 +164,10 @@ const Users = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">İstifadəçi</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">Əməliyyatlar</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('common.user')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('users.role')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableStatus')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">{t('students.tableActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -226,7 +236,7 @@ const Users = () => {
                   <td colSpan="4" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-white/40">
                       <UserIcon size={40} className="mb-2 opacity-20" />
-                      <p>İstifadəçi tapılmadı</p>
+                      <p>{t('students.noStudents')}</p>
                     </div>
                   </td>
                 </tr>
@@ -239,7 +249,11 @@ const Users = () => {
         {data?.pages > 1 && (
           <div className="px-6 py-4 border-t border-white/10 bg-white/[0.01] flex items-center justify-between">
             <p className="text-xs text-white/40">
-              Cəmi <span className="text-white">{data.total}</span> nəticədən {((page - 1) * 10) + 1}-{Math.min(page * 10, data.total)} arası göstərilir
+              {t('students.totalCount', { 
+                total: data.total, 
+                from: ((page - 1) * 10) + 1, 
+                to: Math.min(page * 10, data.total) 
+              })}
             </p>
             <div className="flex items-center gap-2">
               <button
