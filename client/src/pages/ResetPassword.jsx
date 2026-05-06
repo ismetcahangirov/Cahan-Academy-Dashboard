@@ -1,97 +1,151 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import toast from 'react-hot-toast';
-import { Lock, Loader2, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Lock, ArrowLeft, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-const resetPasswordSchema = (t) => z.object({
-  password: z.string().min(6, t('auth.passwordShort')),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: t('auth.passwordsDoNotMatch'),
-  path: ['confirmPassword'],
-});
+import { toast } from 'react-hot-toast';
+import axios from 'axios';
 
 const ResetPassword = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { token } = useParams();
-  const isLoading = false;
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(resetPasswordSchema(t)),
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [formData, setFormData] = useState({
+    password: '',
+    confirmPassword: ''
   });
 
-  const onSubmit = async (data) => {
-    // This will be connected to the backend later
-    console.log(data, token);
-    toast.success(t('auth.passwordResetSuccess'));
-    navigate('/login');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      return toast.error(t('auth.passwordsDoNotMatch'));
+    }
+
+    setIsLoading(true);
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/reset-password/${token}`, {
+        password: formData.password
+      });
+      setIsSuccess(true);
+      toast.success(t('auth.passwordResetSuccess'));
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || t('auth.errorOccurred'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-bordo rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-0 -right-4 w-72 h-72 bg-bordo rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 font-sans">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[440px]"
+      >
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-[32px] p-8 md:p-10 shadow-2xl shadow-black/5">
+          <div className="mb-10 text-center">
+            <div className="w-16 h-16 bg-bordo/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              {isSuccess ? (
+                <CheckCircle2 size={32} className="text-emerald-500" />
+              ) : (
+                <ShieldCheck size={32} className="text-bordo" />
+              )}
+            </div>
+            <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-3">
+              {isSuccess ? t('auth.success') : t('auth.resetPasswordTitle')}
+            </h1>
+            <p className="text-[var(--muted-foreground)]/60 text-sm leading-relaxed px-4">
+              {isSuccess ? t('auth.successDescription') : t('auth.resetPasswordSubtitle')}
+            </p>
+          </div>
 
-      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl relative z-10">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">{t('auth.newPassword')}</h1>
-          <p className="text-white/60 text-sm">{t('auth.enterNewPassword')}</p>
+          {!isSuccess ? (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[var(--muted-foreground)] ml-1">
+                  {t('auth.newPassword')}
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors">
+                    <Lock size={20} />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 pl-12 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 focus:ring-4 focus:ring-bordo/5 transition-all placeholder:text-[var(--muted-foreground)]/30"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-[var(--muted-foreground)] ml-1">
+                  {t('auth.confirmNewPassword')}
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors">
+                    <Lock size={20} />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 pl-12 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 focus:ring-4 focus:ring-bordo/5 transition-all placeholder:text-[var(--muted-foreground)]/30"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-bordo hover:bg-bordo/90 text-white py-4 rounded-2xl font-bold text-sm transition-all shadow-xl shadow-bordo/20 hover:shadow-bordo/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+              >
+                {isLoading ? (
+                  <Loader2 size={20} className="animate-spin" />
+                ) : (
+                  t('auth.resetPasswordBtn')
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/login')}
+                className="w-full flex items-center justify-center gap-2 text-sm font-semibold text-[var(--muted-foreground)]/60 hover:text-bordo transition-colors mt-6"
+              >
+                <ArrowLeft size={18} />
+                {t('auth.backToLogin')}
+              </button>
+            </form>
+          ) : (
+            <div className="text-center space-y-6">
+              <div className="py-8 px-4 bg-emerald-500/5 rounded-3xl border border-emerald-500/10">
+                <p className="text-emerald-600 font-medium text-sm">
+                  {t('auth.redirecting')}...
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full bg-bordo text-white py-4 rounded-2xl font-bold text-sm transition-all"
+              >
+                {t('auth.loginNow')}
+              </button>
+            </div>
+          )}
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80 block">{t('auth.newPassword')}</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-              <input
-                {...register('password')}
-                type="password"
-                className={`w-full bg-black/40 border ${errors.password ? 'border-bordo' : 'border-white/10'} rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
-                placeholder="••••••••"
-              />
-            </div>
-            {errors.password && <p className="text-xs text-bordo mt-1">{errors.password.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80 block">{t('auth.confirmPassword')}</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-              <input
-                {...register('confirmPassword')}
-                type="password"
-                className={`w-full bg-black/40 border ${errors.confirmPassword ? 'border-bordo' : 'border-white/10'} rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
-                placeholder="••••••••"
-              />
-            </div>
-            {errors.confirmPassword && <p className="text-xs text-bordo mt-1">{errors.confirmPassword.message}</p>}
-          </div>
-
-          <button
-            disabled={isLoading}
-            type="submit"
-            className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                {t('auth.savePassword')}
-              </>
-            )}
-          </button>
-        </form>
-      </div>
+        <div className="mt-8 text-center">
+          <p className="text-xs text-[var(--muted-foreground)]/40">
+            © {new Date().getFullYear()} Cahan Academy. {t('auth.allRightsReserved')}
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 };

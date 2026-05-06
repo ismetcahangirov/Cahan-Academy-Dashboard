@@ -1,383 +1,396 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Plus, Clock, MapPin, BookOpen, Trash2, X } from 'lucide-react';
-import {
-  useGetScheduleQuery,
-  useCreateScheduleEntryMutation,
-  useDeleteScheduleEntryMutation,
-} from '../../features/schedule/scheduleApi';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from '../../features/auth/authSlice';
-import { useGetGroupsQuery } from '../../features/groups/groupsApi';
-import toast from 'react-hot-toast';
+import { 
+  Calendar as CalendarIcon, 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
+  Clock, 
+  MapPin, 
+  Users, 
+  BookOpen,
+  X,
+  Search,
+  Filter,
+  CheckCircle2,
+  AlertCircle
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, parseISO } from 'date-fns';
+import { az, enUS, ru } from 'date-fns/locale';
+import { cn } from '../../lib/utils';
 
-const getDays = (t) => [
-  { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
-  { label: t('schedule.days.tuesday'), short: t('schedule.days.tue') },
-  { label: t('schedule.days.wednesday'), short: t('schedule.days.wed') },
-  { label: t('schedule.days.thursday'), short: t('schedule.days.thu') },
-  { label: t('schedule.days.friday'), short: t('schedule.days.fri') },
-  { label: t('schedule.days.saturday'), short: t('schedule.days.sat') },
-  { label: t('schedule.days.sunday'), short: t('schedule.days.sun') },
-];
-
-const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
+const ScheduleModal = ({ isOpen, onClose, date, events = [] }) => {
   const { t } = useTranslation();
-  const DAYS = getDays(t);
-  const [form, setForm] = useState({
-    subject: '',
-    group: '',
-    teacher: '',
-    dayOfWeek: 0,
-    startTime: '',
-    endTime: '',
-    room: '',
-    type: 'offline',
-    note: '',
-    repetitionType: 'weekly',
-    specificDate: '',
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'group' && value) {
-      const selectedGroup = groups.find(g => g._id === value);
-      if (selectedGroup) {
-        setForm(prev => ({
-          ...prev,
-          group: value,
-          subject: selectedGroup.name,
-          teacher: selectedGroup.teacher?._id || selectedGroup.teacher // handle populated or ID
-        }));
-        return;
-      }
-    }
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.subject || !form.startTime || !form.endTime) {
-      toast.error(t('groups.fillAllFields'));
-      return;
-    }
-    onSubmit(form);
-  };
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
+        className="bg-[var(--card)] border border-[var(--border)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-white">{t('schedule.addNew')}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors">
-            <X size={18} />
+        <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--muted)]/20">
+          <div>
+            <h3 className="text-xl font-bold text-[var(--foreground)]">{format(date, 'd MMMM yyyy')}</h3>
+            <p className="text-sm text-[var(--muted-foreground)]/60">{t('schedule.dailySchedule')}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-[var(--muted)] rounded-xl transition-colors">
+            <X size={20} className="text-[var(--muted-foreground)]" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-          <div>
-            <label className="block text-sm text-white/70 mb-1">{t('common.group')} ({t('common.optional')})</label>
-            <select name="group" value={form.group} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-              <option value="" className="bg-[#111]">{t('groups.selectGroup')}</option>
-              {groups.map((g) => (
-                <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm text-white/70 mb-1">{t('schedule.subject')} *</label>
-            <input name="subject" value={form.subject} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-              placeholder={t('schedule.subjectPlaceholder')} required />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white/70">{t('schedule.repetition')}</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, repetitionType: 'weekly' })}
-                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
-                }`}
-              >
-                {t('schedule.weekly')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, repetitionType: 'once' })}
-                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
-                }`}
-              >
-                {t('schedule.once')}
-              </button>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {form.repetitionType === 'weekly' ? (
-              <div>
-                <label className="block text-sm text-white/70 mb-1">{t('schedule.day')} *</label>
-                <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-                  {DAYS.map((d, i) => (
-                    <option key={i} value={i} className="bg-[#111]">{d.label}</option>
-                  ))}
-                </select>
+        <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar space-y-4">
+          {events.length > 0 ? (
+            events.map((event, idx) => (
+              <div key={idx} className="group p-4 bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl hover:border-bordo/30 transition-all">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-bordo animate-pulse"></span>
+                      <h4 className="font-semibold text-[var(--foreground)]">{event.title}</h4>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                      <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                        <Clock size={14} />
+                        {event.time}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                        <MapPin size={14} />
+                        {event.room}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                        <Users size={14} />
+                        {event.group}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                        <BookOpen size={14} />
+                        {event.teacher}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="px-2 py-1 bg-bordo/10 text-bordo rounded text-[10px] font-bold uppercase tracking-wider">
+                    {event.type}
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div>
-                <label className="block text-sm text-white/70 mb-1">{t('schedule.date')} *</label>
-                <input 
-                  type="date" 
-                  name="specificDate" 
-                  value={form.specificDate} 
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-                  required 
-                />
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-[var(--muted)] rounded-full flex items-center justify-center mx-auto mb-4">
+                <CalendarIcon className="text-[var(--muted-foreground)]/20" size={32} />
               </div>
-            )}
-            <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.format')}</label>
-              <select name="type" value={form.type} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-                <option value="offline" className="bg-[#111]">Offline</option>
-                <option value="online" className="bg-[#111]">Online</option>
-              </select>
+              <p className="text-[var(--muted-foreground)]/40 font-medium">{t('schedule.noEvents')}</p>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm text-white/70 mb-1">{t('schedule.room')}</label>
-            <input name="room" value={form.room} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-              placeholder={form.type === 'online' ? t('schedule.linkPlaceholder') : t('schedule.roomPlaceholder')} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.startTime')} *</label>
-              <input type="time" name="startTime" value={form.startTime} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-                required />
-            </div>
-            <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.endTime')} *</label>
-              <input type="time" name="endTime" value={form.endTime} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
-                required />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm text-white/70 mb-1">{t('groups.note')}</label>
-            <textarea name="note" value={form.note} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo resize-none h-20"
-              placeholder={t('schedule.notePlaceholder')} />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors">
-              {t('common.cancel')}
-            </button>
-            <button type="submit" disabled={isLoading}
-              className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
-              {isLoading ? t('schedule.adding') : t('common.add')}
-            </button>
-          </div>
-        </form>
+          )}
+        </div>
+
+        <div className="p-6 bg-[var(--muted)]/10 border-t border-[var(--border)] flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-bordo text-white rounded-xl text-sm font-medium hover:bg-bordo/90 transition-all shadow-lg shadow-bordo/20"
+          >
+            {t('common.close')}
+          </button>
+        </div>
       </motion.div>
     </div>
   );
 };
 
 const Schedule = () => {
-  const { t } = useTranslation();
-  const DAYS = getDays(t);
-  const user = useSelector(selectCurrentUser);
-  const [showModal, setShowModal] = useState(false);
-  const { data: schedule = [], isLoading } = useGetScheduleQuery({});
-  const { data: groupsData } = useGetGroupsQuery();
-  const groups = groupsData?.data || [];
-  const [createEntry, { isLoading: isCreating }] = useCreateScheduleEntryMutation();
-  const [deleteEntry] = useDeleteScheduleEntryMutation();
+  const { t, i18n } = useTranslation();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [view, setView] = useState('calendar'); // 'calendar' or 'list'
 
-  const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
+  const locales = { az, en: enUS, ru };
+  const currentLocale = locales[i18n.language] || az;
 
-  // Group lessons by day
-  const byDay = DAYS.map((_, i) =>
-    schedule.filter((s) => {
-      if (s.repetitionType === 'once' && s.specificDate) {
-        // Map specific date to day of week (0-6)
-        // Adjust for Azerbaijani week if necessary (Monday=0 in DAYS)
-        const date = new Date(s.specificDate);
-        let day = date.getDay(); // 0 is Sunday, 1 is Monday...
-        day = day === 0 ? 6 : day - 1; // Map Sunday to 6, others shift by 1 to make Monday=0
-        return day === i;
-      }
-      return s.dayOfWeek === i;
-    }).sort((a, b) => a.startTime.localeCompare(b.startTime))
+  // Mock data - in real app, fetch from API
+  const events = {
+    '2026-05-06': [
+      { title: 'Mathematics Advanced', time: '10:00 - 11:30', room: 'Room 204', group: 'Group A1', teacher: 'John Doe', type: 'lesson' },
+      { title: 'Physics Lab', time: '14:00 - 15:30', room: 'Lab 1', group: 'Group B2', teacher: 'Sarah Wilson', type: 'lab' }
+    ],
+    '2026-05-08': [
+      { title: 'English Literature', time: '11:00 - 12:30', room: 'Room 105', group: 'Group C3', teacher: 'Emily Brown', type: 'lesson' }
+    ]
+  };
+
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  const renderHeader = () => (
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">{t('schedule.title')}</h1>
+        <p className="text-[var(--muted-foreground)]/60 mt-1">{t('schedule.subtitle')}</p>
+      </div>
+      
+      <div className="flex items-center gap-3 bg-[var(--card)] p-1.5 rounded-2xl border border-[var(--border)] shadow-sm">
+        <button
+          onClick={() => setView('calendar')}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+            view === 'calendar' ? "bg-bordo text-white shadow-lg shadow-bordo/20" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          )}
+        >
+          {t('schedule.calendarView')}
+        </button>
+        <button
+          onClick={() => setView('list')}
+          className={cn(
+            "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+            view === 'list' ? "bg-bordo text-white shadow-lg shadow-bordo/20" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+          )}
+        >
+          {t('schedule.listView')}
+        </button>
+      </div>
+    </div>
   );
 
-  const handleAdd = async (data) => {
-    try {
-      const payload = {
-        ...data,
-        teacher: user?._id,
-      };
+  const renderDays = () => {
+    const days = [];
+    const startDate = startOfWeek(currentMonth, { weekStartsOn: 1 });
+    const weekDays = [
+      t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), 
+      t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')
+    ];
 
-      if (data.repetitionType === 'weekly') {
-        payload.dayOfWeek = Number(data.dayOfWeek);
-        delete payload.specificDate;
-      } else {
-        delete payload.dayOfWeek;
+    for (let i = 0; i < 7; i++) {
+      days.push(
+        <div key={i} className="text-center py-4 text-xs font-bold text-[var(--muted-foreground)]/40 uppercase tracking-widest bg-[var(--muted)]/10">
+          {weekDays[i]}
+        </div>
+      );
+    }
+    return <div className="grid grid-cols-7 border-x border-t border-[var(--border)] rounded-t-2xl overflow-hidden">{days}</div>;
+  };
+
+  const renderCells = () => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(monthStart);
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
+
+    const rows = [];
+    let days = [];
+    let day = startDate;
+
+    while (day <= endDate) {
+      for (let i = 0; i < 7; i++) {
+        const formattedDate = format(day, 'yyyy-MM-dd');
+        const dayEvents = events[formattedDate] || [];
+        const isSelected = isSameDay(day, selectedDate);
+        const isCurrentMonth = isSameMonth(day, monthStart);
+        const isToday = isSameDay(day, new Date());
+
+        days.push(
+          <div
+            key={day}
+            className={cn(
+              "relative min-h-[120px] p-3 border-r border-b border-[var(--border)] transition-all cursor-pointer group",
+              !isCurrentMonth ? "bg-[var(--muted)]/5 opacity-30" : "bg-[var(--card)] hover:bg-[var(--muted)]/30",
+              isSelected && "bg-bordo/5"
+            )}
+            onClick={() => {
+              setSelectedDate(day);
+              setIsModalOpen(true);
+            }}
+          >
+            <div className="flex justify-between items-start mb-2">
+              <span className={cn(
+                "text-sm font-semibold flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                isToday ? "bg-bordo text-white shadow-lg shadow-bordo/20" : "text-[var(--foreground)]",
+                !isCurrentMonth && "text-[var(--muted-foreground)]/40"
+              )}>
+                {format(day, 'd')}
+              </span>
+              {dayEvents.length > 0 && (
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-bordo"></span>
+                  {dayEvents.length > 1 && <span className="w-1.5 h-1.5 rounded-full bg-bordo/50"></span>}
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-1.5 mt-2 overflow-hidden">
+              {dayEvents.slice(0, 2).map((event, idx) => (
+                <div key={idx} className="text-[10px] p-1.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-[var(--foreground)] truncate font-medium group-hover:border-bordo/20 transition-colors">
+                  {event.time.split(' ')[0]} - {event.title}
+                </div>
+              ))}
+              {dayEvents.length > 2 && (
+                <p className="text-[9px] text-bordo font-bold ml-1">+{dayEvents.length - 2} more</p>
+              )}
+            </div>
+          </div>
+        );
+        day = addDays(day, 1);
       }
-
-      await createEntry(payload).unwrap();
-      toast.success(t('schedule.addSuccess'));
-      setShowModal(false);
-    } catch (error) {
-      toast.error(error?.data?.message || t('students.error'));
+      rows.push(<div className="grid grid-cols-7" key={day}>{days}</div>);
+      days = [];
     }
+    return <div className="border-l border-[var(--border)] shadow-2xl rounded-b-2xl overflow-hidden">{rows}</div>;
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteEntry(id).unwrap();
-      toast.success(t('schedule.deleteSuccess'));
-    } catch (error) {
-      toast.error(error?.data?.message || t('students.error'));
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bordo"></div>
+  const renderListView = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-6">
+        {Object.entries(events).sort().map(([date, dayEvents]) => (
+          <div key={date} className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-[var(--border)]"></div>
+              <span className="text-xs font-bold text-[var(--muted-foreground)]/40 uppercase tracking-widest">
+                {format(parseISO(date), 'EEEE, d MMMM', { locale: currentLocale })}
+              </span>
+              <div className="h-px flex-1 bg-[var(--border)]"></div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dayEvents.map((event, idx) => (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  key={idx}
+                  className="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl hover:border-bordo/30 transition-all group"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="bg-bordo/10 px-3 py-1 rounded-lg text-bordo text-[10px] font-bold uppercase tracking-wider">
+                      {event.type}
+                    </div>
+                    <span className="text-xs font-medium text-[var(--muted-foreground)]/60 bg-[var(--muted)] px-2 py-1 rounded-lg border border-[var(--border)]">
+                      {event.time}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-[var(--foreground)] mb-4 text-lg">{event.title}</h4>
+                  <div className="grid grid-cols-2 gap-y-3">
+                    <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                      <MapPin size={14} className="text-bordo/50" />
+                      {event.room}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                      <Users size={14} className="text-bordo/50" />
+                      {event.group}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+                      <BookOpen size={14} className="text-bordo/50" />
+                      {event.teacher}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-    );
-  }
+
+      <div className="space-y-6">
+        <div className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-2xl shadow-sm">
+          <h3 className="text-lg font-bold text-[var(--foreground)] mb-6 flex items-center gap-2">
+            <Filter size={18} className="text-bordo" />
+            {t('schedule.upcomingDeadlines')}
+          </h3>
+          <div className="space-y-4">
+            {[1, 2, 3].map((_, i) => (
+              <div key={i} className="flex gap-4 p-3 rounded-xl hover:bg-[var(--muted)]/50 transition-colors border border-transparent hover:border-[var(--border)]">
+                <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center shrink-0">
+                  <AlertCircle size={20} className="text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-[var(--foreground)] line-clamp-1">Mathematics Assignment #3</p>
+                  <p className="text-xs text-[var(--muted-foreground)]/60 mt-1">Due in 2 days</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-bordo p-6 rounded-2xl text-white relative overflow-hidden shadow-xl shadow-bordo/20">
+          <div className="relative z-10">
+            <h3 className="text-lg font-bold mb-2">{t('schedule.needHelp')}</h3>
+            <p className="text-white/70 text-xs mb-6 leading-relaxed">{t('schedule.helpDescription')}</p>
+            <button className="w-full bg-white text-bordo py-3 rounded-xl text-sm font-bold hover:bg-white/90 transition-all">
+              {t('schedule.contactSupport')}
+            </button>
+          </div>
+          <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Calendar className="text-bordo" />
-            {t('schedule.title')}
-          </h1>
-          {isAdminOrTeacher && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-            >
-              <Plus size={18} />
-              {t('schedule.addNew')}
+    <div className="max-w-[1400px] mx-auto px-4 py-8">
+      {renderHeader()}
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 bg-[var(--card)] border border-[var(--border)] p-1 rounded-xl">
+            <button onClick={prevMonth} className="p-2 hover:bg-[var(--muted)] rounded-lg transition-colors text-[var(--muted-foreground)]">
+              <ChevronLeft size={20} />
             </button>
-          )}
+            <button onClick={nextMonth} className="p-2 hover:bg-[var(--muted)] rounded-lg transition-colors text-[var(--muted-foreground)]">
+              <ChevronRight size={20} />
+            </button>
+          </div>
+          <h2 className="text-xl font-bold text-[var(--foreground)] capitalize">
+            {format(currentMonth, 'MMMM yyyy', { locale: currentLocale })}
+          </h2>
         </div>
 
-        <div className="grid gap-4">
-          {DAYS.map((day, dayIndex) => (
-            <motion.div
-              key={dayIndex}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: dayIndex * 0.05 }}
-              className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden"
-            >
-              <div className="flex items-center gap-3 px-5 py-3 border-b border-white/10 bg-white/5">
-                <span className="text-sm font-semibold text-bordo">{day.short}</span>
-                <h2 className="text-sm font-medium text-white">{day.label}</h2>
-                {byDay[dayIndex].length > 0 && (
-                  <span className="ml-auto text-xs text-white/40">{byDay[dayIndex].length} {t('schedule.lessonCount')}</span>
-                )}
-              </div>
-
-              <div className="p-4">
-                {byDay[dayIndex].length === 0 ? (
-                  <p className="text-sm text-white/30 text-center py-3">{t('schedule.noLessons')}</p>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {byDay[dayIndex].map((entry) => (
-                      <div
-                        key={entry._id}
-                        className="group relative flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all"
-                      >
-                        <div className="p-2 rounded-lg bg-bordo/20 text-bordo shrink-0">
-                          <BookOpen size={16} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
-                            {entry.subject}
-                            {entry.repetitionType === 'once' && entry.specificDate && (
-                              <span className="text-[10px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded font-normal">
-                                {new Date(entry.specificDate).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' })}
-                              </span>
-                            )}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="flex items-center gap-1 text-xs text-white/50">
-                              <Clock size={11} />
-                              {entry.startTime} – {entry.endTime}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border ${
-                              entry.type === 'online' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                            }`}>
-                              {entry.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}
-                            </span>
-                            {entry.room && (
-                              <span className="flex items-center gap-1 text-xs text-white/50">
-                                <MapPin size={11} />
-                                {entry.room}
-                              </span>
-                            )}
-                          </div>
-                          {entry.note && (
-                            <p className="text-[10px] text-white/30 mt-1 italic line-clamp-1">{entry.note}</p>
-                          )}
-                          {entry.teacher && (
-                            <p className="text-xs text-white/40 mt-1 truncate">{entry.teacher.name}</p>
-                          )}
-                          {entry.group && (
-                            <span className="inline-block text-xs bg-bordo/20 text-bordo px-2 py-0.5 rounded-full mt-1">
-                              {entry.group.name}
-                            </span>
-                          )}
-                        </div>
-                        {isAdminOrTeacher && (
-                          <button
-                            onClick={() => handleDelete(entry._id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          ))}
+        <div className="flex items-center gap-3">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
+            <input
+              type="text"
+              placeholder={t('schedule.searchEvents')}
+              className="bg-[var(--card)] border border-[var(--border)] pl-10 pr-4 py-2.5 rounded-xl text-sm text-[var(--foreground)] focus:outline-none focus:border-bordo/50 transition-all w-64"
+            />
+          </div>
+          <button className="flex items-center gap-2 bg-bordo text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-bordo/90 transition-all shadow-lg shadow-bordo/20">
+            <Plus size={18} />
+            <span className="hidden sm:inline">{t('schedule.newEvent')}</span>
+          </button>
         </div>
       </div>
 
-      <AnimatePresence>
-        {showModal && (
-          <AddEntryModal
-            onClose={() => setShowModal(false)}
-            onSubmit={handleAdd}
-            isLoading={isCreating}
-            groups={groups}
-          />
+      <AnimatePresence mode="wait">
+        {view === 'calendar' ? (
+          <motion.div
+            key="calendar"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="rounded-2xl overflow-hidden"
+          >
+            {renderDays()}
+            {renderCells()}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="list"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            {renderListView()}
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
+
+      <ScheduleModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        date={selectedDate}
+        events={events[format(selectedDate, 'yyyy-MM-dd')] || []}
+      />
+    </div>
   );
 };
 

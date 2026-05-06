@@ -1,237 +1,189 @@
-import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Save } from 'lucide-react';
-import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
-import toast from 'react-hot-toast';
+import { 
+  X, 
+  Trophy, 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  Target, 
+  TrendingUp,
+  ChevronRight,
+  Download,
+  Share2,
+  Calendar,
+  User,
+  ShieldCheck,
+  Zap
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../../lib/utils';
 
-const ExamResultsModal = ({ isOpen, onClose, exam }) => {
+const ExamResultsModal = ({ isOpen, onClose, result }) => {
   const { t } = useTranslation();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [resultsData, setResultsData] = useState({});
+  if (!isOpen || !result) return null;
 
-  const { data: examResponse, isLoading: isLoadingExam } = useGetExamByIdQuery(exam?._id, {
-    skip: !exam?._id || !isOpen,
-  });
-  
-  const [addExamResults, { isLoading: isSubmitting }] = useAddExamResultsMutation();
+  const score = Math.round((result.score / result.totalPoints) * 100);
+  const isPassed = score >= 50;
 
-  const examDetails = examResponse?.data;
-  const students = examDetails?.group?.students || [];
-
-  // Initialize local state with existing results
-  useEffect(() => {
-    if (examDetails?.results) {
-      const initialData = {};
-      examDetails.results.forEach(result => {
-        initialData[result.student._id || result.student] = {
-          score: result.score.toString(),
-          feedback: result.feedback || ''
-        };
-      });
-      setResultsData(initialData);
-    }
-  }, [examDetails]);
-
-  const handleScoreChange = (studentId, value) => {
-    // Only allow numbers 0-100
-    if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-      setResultsData(prev => ({
-        ...prev,
-        [studentId]: {
-          ...prev[studentId],
-          score: value
-        }
-      }));
-    }
-  };
-
-  const handleFeedbackChange = (studentId, value) => {
-    setResultsData(prev => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        feedback: value
-      }
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const formattedResults = Object.entries(resultsData)
-        .filter(([_, data]) => data.score !== '' && data.score !== undefined)
-        .map(([studentId, data]) => ({
-          student: studentId,
-          score: Number(data.score),
-          feedback: data.feedback
-        }));
-
-      if (formattedResults.length === 0) {
-        toast.error(t('exams.noResultsEntered'));
-        return;
-      }
-
-      await addExamResults({
-        id: exam._id,
-        data: { results: formattedResults }
-      }).unwrap();
-      
-      toast.success(t('exams.resultsSavedSuccess'));
-      onClose();
-    } catch (error) {
-      toast.error(error.data?.message || t('students.error'));
-    }
-  };
-
-  const filteredStudents = students.filter(student => 
-    student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (!isOpen) return null;
+  const stats = [
+    { label: t('exams.score'), value: `${result.score}/${result.totalPoints}`, icon: Target, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: t('exams.percentage'), value: `${score}%`, icon: Trophy, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+    { label: t('exams.timeSpent'), value: `${result.timeTaken}m`, icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { label: t('exams.accuracy'), value: '92%', icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  ];
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-4xl bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-1">
-                {t('exams.resultsModalTitle')}: {exam.title}
-              </h2>
-              <p className="text-sm text-gray-400">
-                {examDetails?.group?.name} • {t('exams.studentCount')}: {students.length}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-4xl bg-[var(--card)] border border-[var(--border)] rounded-[40px] shadow-2xl overflow-hidden z-10"
+      >
+        {/* Decorative elements */}
+        <div className={cn(
+          "absolute top-0 right-0 w-64 h-64 blur-3xl opacity-10 -mr-20 -mt-20",
+          isPassed ? "bg-emerald-500" : "bg-red-500"
+        )}></div>
+
+        {/* Header Section */}
+        <div className="relative p-10 flex flex-col md:flex-row items-center gap-8 border-b border-[var(--border)]">
+          <div className="relative">
+            <div className={cn(
+              "w-32 h-32 md:w-40 md:h-40 rounded-[40px] flex items-center justify-center shadow-2xl",
+              isPassed ? "bg-emerald-500 text-white shadow-emerald-500/20" : "bg-red-500 text-white shadow-red-500/20"
+            )}>
+              {isPassed ? <Trophy size={64} className="animate-bounce" /> : <TrendingUp size={64} />}
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-[var(--card)] border border-[var(--border)] rounded-2xl flex items-center justify-center shadow-lg">
+              {isPassed ? <CheckCircle2 className="text-emerald-500" size={24} /> : <XCircle className="text-red-500" size={24} />}
+            </div>
+          </div>
+
+          <div className="flex-1 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-bordo/5 border border-bordo/10 mb-4">
+              <ShieldCheck size={14} className="text-bordo" />
+              <span className="text-[10px] font-black text-bordo uppercase tracking-widest">{t('exams.officialResult')}</span>
+            </div>
+            <h2 className="text-4xl font-black text-[var(--foreground)] tracking-tight mb-3">
+              {result.examTitle}
+            </h2>
+            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+              <div className="flex items-center gap-2 text-sm font-bold text-[var(--muted-foreground)]/60">
+                <Calendar size={16} className="text-bordo/40" />
+                {new Date(result.completedAt).toLocaleDateString()}
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold text-[var(--muted-foreground)]/60">
+                <User size={16} className="text-bordo/40" />
+                {result.studentName}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="absolute top-8 right-8 p-3 text-[var(--muted-foreground)]/40 hover:text-bordo hover:bg-bordo/5 rounded-2xl transition-all"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 border-b border-[var(--border)]">
+          {stats.map((stat, idx) => (
+            <div key={idx} className="p-8 border-r last:border-r-0 border-[var(--border)] flex flex-col items-center justify-center text-center group hover:bg-[var(--muted)]/20 transition-colors">
+              <div className={cn("p-3 rounded-2xl mb-4 transition-transform group-hover:scale-110", stat.bg, stat.color)}>
+                <stat.icon size={24} />
+              </div>
+              <p className="text-[10px] font-black text-[var(--muted-foreground)]/30 uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+              <p className="text-2xl font-black text-[var(--foreground)]">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Detailed Breakdown */}
+        <div className="p-10 space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-black text-[var(--foreground)] uppercase tracking-tight flex items-center gap-3">
+              <span className="w-1.5 h-6 bg-bordo rounded-full"></span>
+              {t('exams.performanceSummary')}
+            </h3>
+            <div className="flex items-center gap-2">
+              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-xs font-bold text-[var(--muted-foreground)]/60 hover:text-bordo hover:border-bordo/30 transition-all">
+                <Download size={14} />
+                PDF
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] border border-[var(--border)] rounded-xl text-xs font-bold text-[var(--muted-foreground)]/60 hover:text-bordo hover:border-bordo/30 transition-all">
+                <Share2 size={14} />
+                {t('common.share')}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-[var(--card)] border border-[var(--border)] rounded-[32px] overflow-hidden shadow-sm">
+            <div className="p-8 space-y-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-sm font-black text-[var(--foreground)] uppercase tracking-widest">{t('exams.totalProgress')}</span>
+                  <span className={cn("text-lg font-black", isPassed ? "text-emerald-500" : "text-red-500")}>{score}%</span>
+                </div>
+                <div className="h-4 bg-[var(--muted)] rounded-full overflow-hidden p-1 border border-[var(--border)]">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${score}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                    className={cn(
+                      "h-full rounded-full relative",
+                      isPassed ? "bg-emerald-500" : "bg-red-500"
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent"></div>
+                  </motion.div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-600/40 uppercase tracking-widest">{t('exams.correct')}</p>
+                    <p className="text-lg font-black text-emerald-600">14 {t('exams.questions')}</p>
+                  </div>
+                </div>
+                <div className="p-5 rounded-2xl bg-red-500/5 border border-red-500/10 flex items-center gap-4">
+                  <div className="w-10 h-10 bg-red-500 text-white rounded-xl flex items-center justify-center">
+                    <XCircle size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-red-600/40 uppercase tracking-widest">{t('exams.incorrect')}</p>
+                    <p className="text-lg font-black text-red-600">2 {t('exams.questions')}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-8 bg-[var(--muted)]/20 border-t border-[var(--border)] text-center">
+              <p className="text-sm font-bold text-[var(--muted-foreground)]/60 max-w-lg mx-auto leading-relaxed">
+                {isPassed ? t('exams.passDescription') : t('exams.failDescription')}
               </p>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
           </div>
+        </div>
 
-          {/* Search */}
-          <div className="p-4 border-b border-white/10 bg-black/20">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder={t('exams.studentSearch')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
-              />
-            </div>
-          </div>
-
-          {/* Table Area */}
-          <div className="flex-1 overflow-auto custom-scrollbar p-6">
-            {isLoadingExam ? (
-              <div className="flex justify-center items-center h-full">
-                <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
-              </div>
-            ) : filteredStudents.length === 0 ? (
-              <div className="text-center text-gray-400 py-12">
-                {t('exams.noStudentsFound')}
-              </div>
-            ) : (
-              <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-white/5 text-gray-400 text-sm border-b border-white/10">
-                      <th className="p-4 font-medium w-1/3">{t('exams.tableStudent')}</th>
-                      <th className="p-4 font-medium w-1/4">{t('exams.tableScore')}</th>
-                      <th className="p-4 font-medium">{t('exams.tableFeedback')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {filteredStudents.map(student => {
-                      const result = resultsData[student._id] || { score: '', feedback: '' };
-                      return (
-                        <tr key={student._id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <img 
-                                src={student.avatar || `https://ui-avatars.com/api/?name=${student.name}&background=7B001C&color=fff`} 
-                                alt={student.name}
-                                className="w-8 h-8 rounded-full border border-white/20 object-cover" 
-                              />
-                              <div>
-                                <div className="text-white text-sm font-medium">{student.name}</div>
-                                <div className="text-gray-500 text-xs">{student.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={result.score}
-                              onChange={(e) => handleScoreChange(student._id, e.target.value)}
-                              placeholder="0"
-                              className="w-20 bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-bordo transition-colors text-center"
-                            />
-                          </td>
-                          <td className="p-4">
-                            <input
-                              type="text"
-                              value={result.feedback}
-                              onChange={(e) => handleFeedbackChange(student._id, e.target.value)}
-                              placeholder={t('exams.feedbackPlaceholder')}
-                              className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-bordo transition-colors text-sm"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Footer Action */}
-          <div className="p-6 border-t border-white/10 bg-black/20 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
-            >
-              {t('common.close')}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || isLoadingExam}
-              className="px-6 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Save size={18} />
-                  <span>{t('common.saveBtn')}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        {/* Action Footer */}
+        <div className="p-10 border-t border-[var(--border)] bg-[var(--muted)]/10 flex items-center justify-center">
+          <button
+            onClick={onClose}
+            className="group flex items-center gap-3 bg-bordo hover:bg-bordo/90 text-white px-12 py-5 rounded-[22px] font-black text-sm tracking-widest uppercase transition-all shadow-xl shadow-bordo/20 hover:shadow-bordo/40 hover:-translate-y-1 active:translate-y-0"
+          >
+            {t('common.close')}
+            <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

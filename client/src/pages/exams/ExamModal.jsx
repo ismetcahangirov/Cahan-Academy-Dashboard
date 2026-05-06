@@ -1,510 +1,283 @@
-import { useEffect, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar as CalendarIcon, Clock, Type, AlignLeft, Users, Plus, Trash2, ChevronDown, ChevronUp, CheckCircle2, Circle, MessageSquare } from 'lucide-react';
-import { useCreateExamMutation, useUpdateExamMutation } from '../../features/exams/examsApi';
-import { useGetGroupsQuery } from '../../features/groups/groupsApi';
-import toast from 'react-hot-toast';
+import { 
+  X, 
+  Plus, 
+  Trash2, 
+  Loader2, 
+  Save, 
+  HelpCircle,
+  CheckCircle2,
+  AlertCircle,
+  FileText,
+  Clock,
+  BookOpen,
+  Layout
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '../../lib/utils';
 
-const questionSchema = z.object({
-  text: z.string().min(1, 'Sual mətni boş ola bilməz'),
-  type: z.enum(['multiple-choice', 'true-false', 'open-ended']),
-  options: z.array(z.string()).optional(),
-  correctAnswer: z.string().optional(),
-  points: z.string().transform(val => Number(val)).default('1'),
-});
-
-const examSchema = z.object({
-  title: z.string().min(3, 'Başlıq ən azı 3 simvol olmalıdır'),
-  description: z.string().optional(),
-  group: z.string().min(1, 'Qrup seçilməlidir'),
-  date: z.string().min(1, 'Tarix seçilməlidir'),
-  time: z.string().min(1, 'Saat seçilməlidir'),
-  duration: z.string().transform(val => Number(val)).refine(val => val > 0, { message: 'Müddət sıfırdan böyük olmalıdır' }),
-  type: z.enum(['midterm', 'final', 'practice']),
-  questions: z.array(questionSchema).optional(),
-});
-
-const ExamModal = ({ isOpen, onClose, exam }) => {
+const ExamModal = ({ isOpen, onClose, onSubmit, exam, isLoading }) => {
   const { t } = useTranslation();
-  const isEditing = !!exam;
-  const { data: groupsResponse, isLoading: isLoadingGroups } = useGetGroupsQuery();
-  const groups = groupsResponse?.data || [];
+  const isEdit = !!exam;
 
-  const [createExam, { isLoading: isCreating }] = useCreateExamMutation();
-  const [updateExam, { isLoading: isUpdating }] = useUpdateExamMutation();
-  const isSubmitting = isCreating || isUpdating;
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    watch,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(examSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      group: '',
-      date: '',
-      time: '',
-      duration: '60',
-      type: 'practice',
-      questions: [],
-    },
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    duration: 60,
+    course: '',
+    questions: [
+      {
+        questionText: '',
+        options: ['', '', '', ''],
+        correctAnswer: 0,
+        points: 1
+      }
+    ]
   });
-
-  const { fields, append, remove, update } = useFieldArray({
-    control,
-    name: 'questions',
-  });
-
-  const [expandedQuestion, setExpandedQuestion] = useState(null);
 
   useEffect(() => {
-    if (exam && isOpen) {
-      const examDate = new Date(exam.date);
-      reset({
-        title: exam.title,
-        description: exam.description || '',
-        group: typeof exam.group === 'object' ? exam.group._id : exam.group,
-        date: examDate.toISOString().split('T')[0],
-        time: examDate.toTimeString().slice(0, 5),
-        duration: exam.duration.toString(),
-        type: exam.type,
-        questions: exam.questions?.map(q => ({
-          ...q,
-          points: q.points.toString()
-        })) || [],
-      });
-    } else if (isOpen) {
-      reset({
-        title: '',
-        description: '',
-        group: '',
-        date: '',
-        time: '',
-        duration: '60',
-        type: 'practice',
-        questions: [],
-      });
+    if (exam) {
+      setFormData(exam);
     }
-  }, [exam, isOpen, reset]);
+  }, [exam]);
 
+  const addQuestion = () => {
+    setFormData({
+      ...formData,
+      questions: [
+        ...formData.questions,
+        { questionText: '', options: ['', '', '', ''], correctAnswer: 0, points: 1 }
+      ]
+    });
+  };
 
-  const onSubmit = async (data) => {
-    try {
-      // Combine date and time
-      const dateTime = new Date(`${data.date}T${data.time}`);
-      
-      const payload = {
-        title: data.title,
-        description: data.description,
-        group: data.group,
-        date: dateTime.toISOString(),
-        duration: Number(data.duration),
-        type: data.type,
-        questions: data.questions || [],
-      };
+  const removeQuestion = (index) => {
+    const newQuestions = formData.questions.filter((_, i) => i !== index);
+    setFormData({ ...formData, questions: newQuestions });
+  };
 
-      if (isEditing) {
-        await updateExam({ id: exam._id, data: payload }).unwrap();
-        toast.success(t('exams.updateSuccess'));
-      } else {
-        await createExam(payload).unwrap();
-        toast.success(t('exams.createSuccess'));
-      }
-      onClose();
-    } catch (error) {
-      toast.error(error.data?.message || t('students.error'));
-    }
+  const updateQuestion = (index, field, value) => {
+    const newQuestions = [...formData.questions];
+    newQuestions[index] = { ...newQuestions[index], [field]: value };
+    setFormData({ ...formData, questions: newQuestions });
+  };
+
+  const updateOption = (qIndex, oIndex, value) => {
+    const newQuestions = [...formData.questions];
+    newQuestions[qIndex].options[oIndex] = value;
+    setFormData({ ...formData, questions: newQuestions });
   };
 
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-lg bg-[#111] border border-white/10 rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">
-              {isEditing ? t('exams.modalTitleEdit') : t('exams.modalTitleAdd')}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        className="relative w-full max-w-4xl bg-[var(--card)] border border-[var(--border)] rounded-[40px] shadow-2xl overflow-hidden z-10 my-8"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-8 border-b border-[var(--border)] bg-[var(--muted)]/20">
+          <div>
+            <h2 className="text-2xl font-black text-[var(--foreground)] tracking-tight">
+              {isEdit ? t('exams.editExam') : t('exams.newExam')}
             </h2>
-            <button
-              onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
+            <p className="text-[var(--muted-foreground)]/60 text-xs font-bold uppercase tracking-widest mt-1">
+              {t('exams.examConfiguration')}
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="p-3 text-[var(--muted-foreground)]/40 hover:text-bordo hover:bg-bordo/5 rounded-2xl transition-all"
+          >
+            <X size={24} />
+          </button>
+        </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                {t('exams.examTitle')}
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <AlignLeft size={18} />
+        {/* Content */}
+        <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+          <form className="space-y-10">
+            {/* General Info Section */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-xl bg-bordo/10 flex items-center justify-center text-bordo">
+                  <Layout size={18} />
                 </div>
-                <input
-                  type="text"
-                  {...register('title')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
-                  placeholder="Məs: Fevral Ayı Sınaq İmtahanı"
-                />
+                <h3 className="text-sm font-black text-[var(--foreground)] uppercase tracking-widest">{t('exams.generalInfo')}</h3>
               </div>
-              {errors.title && (
-                <p className="mt-1 text-sm text-red-500">{errors.title.message}</p>
-              )}
-            </div>
-
-            {/* Group */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                {t('common.group')}
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Users size={18} />
-                </div>
-                <select
-                  {...register('group')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
-                >
-                  <option value="">{t('groups.selectGroup')}</option>
-                  {!isLoadingGroups && groups.map((g) => (
-                    <option key={g._id} value={g._id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.group && (
-                <p className="mt-1 text-sm text-red-500">{errors.group.message}</p>
-              )}
-            </div>
-
-            {/* Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                {t('exams.type')}
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Type size={18} />
-                </div>
-                <select
-                  {...register('type')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
-                >
-                  <option value="practice">{t('exams.practice')}</option>
-                  <option value="midterm">{t('exams.midterm')}</option>
-                  <option value="final">{t('exams.final')}</option>
-                </select>
-              </div>
-              {errors.type && (
-                <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>
-              )}
-            </div>
-
-            {/* Date and Time */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('exams.date')}
-                </label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <CalendarIcon size={18} />
-                  </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.2em] ml-1">{t('exams.tableTitle')}</label>
                   <input
-                    type="date"
-                    {...register('date')}
-                    className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
+                    placeholder={t('exams.titlePlaceholder')}
                   />
                 </div>
-                {errors.date && (
-                  <p className="mt-1 text-sm text-red-500">{errors.date.message}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                  {t('exams.time')}
-                </label>
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <Clock size={18} />
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.2em] ml-1">{t('exams.tableDuration')} (min)</label>
                   <input
-                    type="time"
-                    {...register('time')}
-                    className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                    type="number"
+                    value={formData.duration}
+                    onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) })}
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
                   />
                 </div>
-                {errors.time && (
-                  <p className="mt-1 text-sm text-red-500">{errors.time.message}</p>
-                )}
               </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                {t('exams.duration')} ({t('exams.minute')})
-              </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Clock size={18} />
-                </div>
-                <input
-                  type="number"
-                  {...register('duration')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
-                  placeholder={t('exams.durationPlaceholder')}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-[0.2em] ml-1">{t('exams.tableDescription')}</label>
+                <textarea
+                  rows={2}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all resize-none"
+                  placeholder={t('exams.descPlaceholder')}
                 />
               </div>
-              {errors.duration && (
-                <p className="mt-1 text-sm text-red-500">{errors.duration.message}</p>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
-                {t('exams.infoOptional')}
-              </label>
-              <textarea
-                {...register('description')}
-                rows={3}
-                className="w-full px-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all resize-none"
-                placeholder={t('exams.notesPlaceholder')}
-              />
             </div>
 
             {/* Questions Section */}
-            <div className="pt-6 border-t border-white/10 mt-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <MessageSquare size={20} className="text-bordo" />
-                  {t('exams.questions')} ({fields.length})
-                </h3>
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <HelpCircle size={18} />
+                  </div>
+                  <h3 className="text-sm font-black text-[var(--foreground)] uppercase tracking-widest">{t('exams.questions')}</h3>
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    append({ text: '', type: 'multiple-choice', options: ['', '', '', ''], correctAnswer: '0', points: '1' });
-                    setExpandedQuestion(fields.length);
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo/10 text-bordo hover:bg-bordo/20 rounded-lg transition-all text-xs font-semibold border border-bordo/20"
+                  onClick={addQuestion}
+                  className="flex items-center gap-2 text-xs font-black text-bordo bg-bordo/5 px-4 py-2 rounded-xl border border-bordo/10 hover:bg-bordo hover:text-white transition-all"
                 >
-                  <Plus size={14} />
+                  <Plus size={16} />
                   {t('exams.addQuestion')}
                 </button>
               </div>
 
-              <div className="space-y-4">
-                {fields.map((field, index) => (
+              <div className="space-y-6">
+                {formData.questions.map((question, qIndex) => (
                   <motion.div
-                    key={field.id}
-                    layout
-                    className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    key={qIndex}
+                    className="bg-[var(--card)] border border-[var(--border)] p-6 rounded-[32px] relative group hover:border-bordo/30 transition-all"
                   >
-                    <div 
-                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
-                      onClick={() => setExpandedQuestion(expandedQuestion === index ? null : index)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/50">
-                          {index + 1}
-                        </span>
-                        <span className="text-sm font-medium text-white truncate max-w-[200px]">
-                          {watch(`questions.${index}.text`) || t('exams.newQuestion')}
-                        </span>
-                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-white/40 uppercase tracking-wider">
-                          {watch(`questions.${index}.type`) === 'multiple-choice' ? t('exams.multipleChoice') : 
-                           watch(`questions.${index}.type`) === 'true-false' ? t('exams.trueFalse') : t('exams.openEnded')}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            remove(index);
-                          }}
-                          className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                        {expandedQuestion === index ? <ChevronUp size={18} className="text-white/40" /> : <ChevronDown size={18} className="text-white/40" />}
-                      </div>
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(qIndex)}
+                        className="p-2 text-red-500 hover:bg-red-500/5 rounded-xl transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
                     </div>
 
-                    <AnimatePresence>
-                      {expandedQuestion === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="px-4 pb-4 border-t border-white/5 pt-4 space-y-4"
-                        >
-                          {/* Question Text */}
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                              {t('exams.questionText')}
+                    <div className="space-y-6">
+                      <div className="flex gap-4">
+                        <span className="w-8 h-8 rounded-xl bg-[var(--muted)] flex items-center justify-center text-xs font-black text-[var(--muted-foreground)]/60 shrink-0">
+                          {qIndex + 1}
+                        </span>
+                        <div className="flex-1 space-y-2">
+                          <label className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">{t('exams.questionText')}</label>
+                          <input
+                            type="text"
+                            value={question.questionText}
+                            onChange={(e) => updateQuestion(qIndex, 'questionText', e.target.value)}
+                            className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-4 px-6 text-[var(--foreground)] text-sm font-bold focus:outline-none focus:border-bordo/50 transition-all"
+                            placeholder={t('exams.questionPlaceholder')}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {question.options.map((option, oIndex) => (
+                          <div key={oIndex} className="space-y-2">
+                            <label className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest ml-1">
+                              {t('exams.option')} {String.fromCharCode(65 + oIndex)}
                             </label>
-                            <textarea
-                              {...register(`questions.${index}.text`)}
-                              className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all resize-none h-20"
-                              placeholder={t('exams.questionPlaceholder')}
-                            />
-                          </div>
-
-                          {/* Type and Points */}
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                {t('exams.type')}
-                              </label>
-                              <select
-                                {...register(`questions.${index}.type`)}
-                                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all"
-                                onChange={(e) => {
-                                  const type = e.target.value;
-                                  if (type === 'true-false') {
-                                    update(index, { ...watch(`questions.${index}`), type, options: ['Düzdür', 'Səhvdir'], correctAnswer: 'true' });
-                                  } else if (type === 'multiple-choice') {
-                                    update(index, { ...watch(`questions.${index}`), type, options: ['', '', '', ''], correctAnswer: '0' });
-                                  } else {
-                                    update(index, { ...watch(`questions.${index}`), type, options: [], correctAnswer: '' });
-                                  }
-                                }}
-                              >
-                                <option value="multiple-choice">{t('exams.multipleChoice')}</option>
-                                <option value="true-false">{t('exams.trueFalse')}</option>
-                                <option value="open-ended">{t('exams.openEnded')}</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                {t('exams.points')}
-                              </label>
+                            <div className="relative group/option">
                               <input
-                                type="number"
-                                {...register(`questions.${index}.points`)}
-                                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all"
-                                placeholder="1"
+                                type="text"
+                                value={option}
+                                onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
+                                className={cn(
+                                  "w-full bg-[var(--input)] border rounded-2xl py-3 px-12 text-[var(--foreground)] text-sm font-bold focus:outline-none transition-all",
+                                  question.correctAnswer === oIndex 
+                                    ? "border-emerald-500/50 ring-2 ring-emerald-500/5" 
+                                    : "border-[var(--border)] focus:border-bordo/30"
+                                )}
                               />
+                              <button
+                                type="button"
+                                onClick={() => updateQuestion(qIndex, 'correctAnswer', oIndex)}
+                                className={cn(
+                                  "absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center",
+                                  question.correctAnswer === oIndex 
+                                    ? "bg-emerald-500 border-emerald-500 text-white" 
+                                    : "border-[var(--border)] hover:border-bordo"
+                                )}
+                              >
+                                {question.correctAnswer === oIndex && <CheckCircle2 size={12} />}
+                              </button>
                             </div>
                           </div>
-
-                          {/* Options for Multiple Choice */}
-                          {watch(`questions.${index}.type`) === 'multiple-choice' && (
-                            <div className="space-y-2">
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
-                                {t('exams.options')} ({t('exams.correctOption')})
-                              </label>
-                              {[0, 1, 2, 3].map((optIndex) => (
-                                <div key={optIndex} className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: optIndex.toString() })}
-                                    className={`p-1.5 rounded-full transition-all ${
-                                      watch(`questions.${index}.correctAnswer`) === optIndex.toString() 
-                                        ? "text-emerald-500 bg-emerald-500/10" 
-                                        : "text-white/20 hover:text-white/40"
-                                    }`}
-                                  >
-                                    {watch(`questions.${index}.correctAnswer`) === optIndex.toString() ? <CheckCircle2 size={16} /> : <Circle size={16} />}
-                                  </button>
-                                  <input
-                                    {...register(`questions.${index}.options.${optIndex}`)}
-                                    className="flex-1 px-3 py-1.5 bg-black/30 border border-white/5 rounded-lg text-white text-xs focus:outline-none focus:border-bordo transition-all"
-                                    placeholder={`${String.fromCharCode(65 + optIndex)} variantı...`}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Options for True/False */}
-                          {watch(`questions.${index}.type`) === 'true-false' && (
-                            <div className="flex gap-4 pt-2">
-                              <button
-                                type="button"
-                                onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: 'true' })}
-                                className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
-                                  watch(`questions.${index}.correctAnswer`) === 'true'
-                                    ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500"
-                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
-                                }`}
-                              >
-                                {t('exams.true')}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: 'false' })}
-                                className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
-                                  watch(`questions.${index}.correctAnswer`) === 'false'
-                                    ? "bg-red-500/10 border-red-500/50 text-red-500"
-                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
-                                }`}
-                              >
-                                {t('exams.false')}
-                              </button>
-                            </div>
-                          )}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        ))}
+                      </div>
+                    </div>
                   </motion.div>
                 ))}
               </div>
             </div>
-
-            <div className="flex gap-3 pt-4 border-t border-white/10 mt-6">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  isEditing ? t('common.update') : t('common.create')
-                )}
-              </button>
-            </div>
           </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div className="p-8 border-t border-[var(--border)] bg-[var(--muted)]/10 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest">{t('exams.totalQuestions')}</span>
+              <span className="text-xl font-black text-[var(--foreground)]">{formData.questions.length}</span>
+            </div>
+            <div className="w-px h-8 bg-[var(--border)]"></div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-[var(--muted-foreground)]/40 uppercase tracking-widest">{t('exams.totalPoints')}</span>
+              <span className="text-xl font-black text-emerald-500">
+                {formData.questions.reduce((acc, q) => acc + (q.points || 1), 0)}
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-8 py-4 rounded-2xl text-sm font-bold text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              disabled={isLoading}
+              onClick={() => onSubmit(formData)}
+              className="flex items-center gap-3 bg-bordo hover:bg-bordo/90 text-white px-10 py-4 rounded-2xl font-black text-sm tracking-wider transition-all shadow-xl shadow-bordo/20 hover:shadow-bordo/40 active:scale-95 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : (
+                <Save size={20} />
+              )}
+              {isEdit ? t('common.save') : t('common.create')}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
