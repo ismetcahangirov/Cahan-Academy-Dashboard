@@ -239,6 +239,7 @@ const Groups = () => {
     name: '',
     teacher: '',
     course: '',
+    students: [],
     schedule: { 
       repetitionType: 'weekly',
       days: [], 
@@ -255,6 +256,7 @@ const Groups = () => {
 
   const { data: groupsData, isLoading } = useGetGroupsQuery();
   const { data: teachersData } = useGetTeachersQuery({ limit: 100 });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 500 });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
   const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();
@@ -281,6 +283,7 @@ const Groups = () => {
       name: group.name,
       teacher: group.teacher?._id || group.teacher,
       course: group.course,
+      students: group.students?.map(s => typeof s === 'object' ? s._id : s) || [],
       schedule: {
         repetitionType: group.schedule?.repetitionType || 'weekly',
         days: group.schedule?.days || [],
@@ -301,6 +304,7 @@ const Groups = () => {
       name: '', 
       teacher: '', 
       course: '', 
+      students: [],
       schedule: { 
         repetitionType: 'weekly',
         days: [], 
@@ -509,6 +513,45 @@ const Groups = () => {
                       <option key={teacher._id} value={teacher._id}>{teacher.name}</option>
                     ))}
                   </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-white/70">Tələbələr</label>
+                  <div className="space-y-3">
+                    <select
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val && !formData.students.includes(val)) {
+                          setFormData({ ...formData, students: [...formData.students, val] });
+                        }
+                        e.target.value = "";
+                      }}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
+                    >
+                      <option value="">Tələbə əlavə edin...</option>
+                      {studentsData?.data?.filter(s => !formData.students.includes(s._id)).map((student) => (
+                        <option key={student._id} value={student._id}>{student.name}</option>
+                      ))}
+                    </select>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      {formData.students.map((studentId) => {
+                        const student = studentsData?.data?.find(s => s._id === studentId);
+                        return (
+                          <div key={studentId} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white">
+                            <span>{student?.name || 'Yüklənir...'}</span>
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, students: formData.students.filter(id => id !== studentId) })}
+                              className="text-white/40 hover:text-white"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">

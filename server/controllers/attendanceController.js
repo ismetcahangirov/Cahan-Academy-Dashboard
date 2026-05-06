@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Attendance from '../models/Attendance.js';
+import Group from '../models/Group.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
 /**
@@ -15,14 +16,34 @@ export const getAttendance = async (req, res) => {
       return sendError(res, 'Group and date are required', 400);
     }
 
-    // Normalize date to start of day
     const queryDate = new Date(date);
     queryDate.setHours(0, 0, 0, 0);
 
-    const attendance = await Attendance.findOne({
-      group,
-      date: queryDate,
-    }).populate('records.student', 'name avatar');
+    let query = { group, date: queryDate };
+
+    // Role-based access control
+    if (req.user.role === 'teacher') {
+      // Check if teacher belongs to this group
+      const targetGroup = await Group.findById(group);
+      if (targetGroup.teacher.toString() !== req.user._id.toString()) {
+        return sendError(res, 'Siz yalnız öz qruplarınızın davamiyyətini görə bilərsiniz', 403);
+      }
+    } else if (req.user.role === 'student') {
+      // Check if student is in this group
+      const targetGroup = await Group.findById(group);
+      if (!targetGroup.students.includes(req.user._id)) {
+        return sendError(res, 'Siz yalnız daxil olduğunuz qrupların davamiyyətini görə bilərsiniz', 403);
+      }
+    }
+
+    const attendance = await Attendance.findOne(query).populate('records.student', 'name avatar');
+
+    if (attendance && req.user.role === 'student') {
+      // Filter records to only show the student's own record
+      attendance.records = attendance.records.filter(
+        r => r.student._id.toString() === req.user._id.toString()
+      );
+    }
 
     return sendSuccess(res, 'Attendance fetched successfully', attendance);
   } catch (error) {
@@ -41,6 +62,14 @@ export const markAttendance = async (req, res) => {
 
     if (!group || !date || !records) {
       return sendError(res, 'Missing required fields', 400);
+    }
+
+    // Teacher validation
+    if (req.user.role === 'teacher') {
+      const targetGroup = await Group.findById(group);
+      if (targetGroup.teacher.toString() !== req.user._id.toString()) {
+        return sendError(res, 'Siz yalnız öz qruplarınıza davamiyyət yaza bilərsiniz', 403);
+      }
     }
 
     const queryDate = new Date(date);
@@ -78,9 +107,31 @@ export const markAttendance = async (req, res) => {
  */
 export const getGroupStats = async (req, res) => {
   try {
+    // Access control for stats
+    const targetGroup = await Group.findById(req.params.groupId);
+    if (!targetGroup) return sendError(res, 'Qrup tapılmadı', 404);
+
+    if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+      return sendError(res, 'Siz yalnız öz qruplarınızın statistikasını görə bilərsiniz', 403);
+    }
+
+    let matchQuery = { group: new mongoose.Types.ObjectId(req.params.groupId) };
+
+    if (req.user.role === 'student') {
+      if (!targetGroup.students.includes(req.user._id)) {
+        return sendError(res, 'Bu qrupun statistikasını görmək icazəniz yoxdur', 403);
+      }
+      matchQuery['records.student'] = new mongoose.Types.ObjectId(req.user._id);
+    }
+
     const stats = await Attendance.aggregate([
-      { $match: { group: new mongoose.Types.ObjectId(req.params.groupId) } },
+      { $match: matchQuery },
       { $unwind: '$records' },
+      { 
+        $match: req.user.role === 'student' 
+          ? { 'records.student': new mongoose.Types.ObjectId(req.user._id) }
+          : {}
+      },
       {
         $group: {
           _id: '$records.status',
