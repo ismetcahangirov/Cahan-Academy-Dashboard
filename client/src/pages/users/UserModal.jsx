@@ -66,7 +66,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
         />
 
         {/* Modal Content */}
@@ -74,16 +74,16 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10"
+          className="relative w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-10"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.02]">
-            <h2 className="text-xl font-semibold text-white">
+          <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--muted)]/20">
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">
               {isEdit ? t('users.editUser') : t('users.newUser')}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+              className="p-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"
             >
               <X size={20} />
             </button>
@@ -93,16 +93,16 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
           <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
             {/* Name */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-white/70">{t('auth.fullName')}</label>
+              <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('auth.fullName')}</label>
               <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
                 <input
                   {...register('name')}
                   type="text"
                   placeholder={t('users.namePlaceholder')}
                   className={cn(
-                    "w-full bg-black/40 border rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none transition-all",
-                    errors.name ? "border-bordo" : "border-white/10 focus:border-bordo/50"
+                    "w-full bg-[var(--input)] border rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none transition-all",
+                    errors.name ? "border-bordo" : "border-[var(--border)] focus:border-bordo/50"
                   )}
                 />
               </div>
@@ -111,16 +111,16 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-white/70">{t('auth.email')}</label>
+              <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('auth.email')}</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
                 <input
                   {...register('email')}
                   type="email"
                   placeholder={t('auth.emailPlaceholder')}
                   className={cn(
-                    "w-full bg-black/40 border rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none transition-all",
-                    errors.email ? "border-bordo" : "border-white/10 focus:border-bordo/50"
+                    "w-full bg-[var(--input)] border rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none transition-all",
+                    errors.email ? "border-bordo" : "border-[var(--border)] focus:border-bordo/50"
                   )}
                 />
               </div>
@@ -129,18 +129,18 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
 
             {/* Password (Only for new user or optional for edit) */}
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-white/70">
+              <label className="text-sm font-medium text-[var(--muted-foreground)]">
                 {isEdit ? t('users.passwordOptional') : t('auth.password')}
               </label>
               <div className="relative">
-                <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
                 <input
                   {...register('password')}
                   type="password"
                   placeholder="••••••••"
                   className={cn(
-                    "w-full bg-black/40 border rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none transition-all",
-                    errors.password ? "border-bordo" : "border-white/10 focus:border-bordo/50"
+                    "w-full bg-[var(--input)] border rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none transition-all",
+                    errors.password ? "border-bordo" : "border-[var(--border)] focus:border-bordo/50"
                   )}
                 />
               </div>
@@ -150,12 +150,12 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
             <div className="grid grid-cols-2 gap-4">
               {/* Role */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-white/70">{t('users.role')}</label>
+                <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('users.role')}</label>
                 <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={18} />
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
                   <select
                     {...register('role')}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
                   >
                     <option value="student">{t('common.student')}</option>
                     <option value="teacher">{t('common.teacher')}</option>
@@ -166,10 +166,10 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
 
               {/* Status */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-white/70">{t('users.status')}</label>
+                <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('users.status')}</label>
                 <select
                   {...register('status')}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
                 >
                   <option value="active">{t('students.active')}</option>
                   <option value="inactive">{t('students.inactive')}</option>
@@ -178,11 +178,11 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
             </div>
 
             {/* Footer Actions */}
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10 mt-6">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)] mt-6">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
               >
                 {t('users.cancelBtn')}
               </button>

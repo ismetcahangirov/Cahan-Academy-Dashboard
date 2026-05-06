@@ -65,10 +65,10 @@ const Profile = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <User className="text-bordo w-8 h-8" />
-        <h1 className="text-2xl font-bold text-white">{t('profile.title')}</h1>
+        <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('profile.title')}</h1>
       </div>
 
-      <div className="bg-[#111] border border-white/10 rounded-2xl overflow-hidden">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden">
         {/* Banner */}
         <div className="h-32 bg-gradient-to-r from-bordo/40 to-black relative"></div>
         
@@ -79,9 +79,9 @@ const Profile = () => {
               <img 
                 src={form.avatar || `https://ui-avatars.com/api/?name=${form.name || 'U'}&background=7B001C&color=fff&size=128`} 
                 alt="Profile" 
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[#111] object-cover bg-[#111]"
+                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--card)] object-cover bg-[var(--card)]"
               />
-              <div className="absolute bottom-0 right-0 bg-bordo p-2 rounded-full border-2 border-[#111] text-white shadow-lg">
+              <div className="absolute bottom-0 right-0 bg-bordo p-2 rounded-full border-2 border-[var(--card)] text-white shadow-lg">
                 <Camera size={16} />
               </div>
             </div>
@@ -89,56 +89,56 @@ const Profile = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm text-white/70">{t('profile.fullName')}</label>
+              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.fullName')}</label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
                 <input 
                   type="text" 
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-bordo transition-colors"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-white/70">{t('profile.emailLocked')}</label>
+              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.emailLocked')}</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
                 <input 
                   type="email" 
                   value={form.email}
                   disabled
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white/50 cursor-not-allowed"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)]/50 cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-white/70">{t('profile.roleLocked')}</label>
+              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.roleLocked')}</label>
               <div className="relative">
-                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
                 <input 
                   type="text" 
                   value={t(`sidebar.roles.${form.role}`)}
                   disabled
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white/50 cursor-not-allowed"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)]/50 cursor-not-allowed"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-white/70">{t('profile.avatarUrl')}</label>
+              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.avatarUrl')}</label>
               <div className="relative">
-                <Camera className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={18} />
+                <Camera className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
                 <input 
                   type="text" 
                   name="avatar"
                   value={form.avatar}
                   onChange={handleChange}
                   placeholder="https://example.com/avatar.jpg"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-bordo transition-colors"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
                 />
               </div>
             </div>

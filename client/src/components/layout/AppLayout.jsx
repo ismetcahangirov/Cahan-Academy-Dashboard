@@ -7,7 +7,7 @@ const AppLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-black text-white selection:bg-bordo selection:text-white">
+    <div className="flex min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-bordo selection:text-white">
       {/* Background Orbs for overall layout */}
       <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-bordo rounded-full mix-blend-multiply filter blur-[120px] opacity-10 pointer-events-none"></div>
       <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-bordo rounded-full mix-blend-multiply filter blur-[120px] opacity-10 pointer-events-none"></div>
