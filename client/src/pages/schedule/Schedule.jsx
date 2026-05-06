@@ -265,15 +265,6 @@ const Schedule = () => {
             <Calendar className="text-bordo" />
             Cədvəl
           </h1>
-          {isAdminOrTeacher && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-bordo hover:bg-bordo/80 text-white rounded-xl text-sm transition-colors"
-            >
-              <Plus size={16} />
-              Dərs əlavə et
-            </button>
-          )}
         </div>
 
         <div className="grid gap-4">
