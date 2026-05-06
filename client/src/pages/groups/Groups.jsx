@@ -18,6 +18,7 @@ import {
   useGetGroupsQuery,
   useGetGroupByIdQuery,
   useCreateGroupMutation,
+  useUpdateGroupMutation,
   useDeleteGroupMutation,
   useAddStudentToGroupMutation,
 } from '../../features/groups/groupsApi';
@@ -231,6 +232,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingGroupId, setEditingGroupId] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [search, setSearch] = useState('');
   const [formData, setFormData] = useState({
@@ -254,31 +256,61 @@ const Groups = () => {
   const { data: groupsData, isLoading } = useGetGroupsQuery();
   const { data: teachersData } = useGetTeachersQuery({ limit: 100 });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
+  const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await createGroup(formData).unwrap();
-      toast.success('Qrup uğurla yaradıldı');
-      setIsCreateModalOpen(false);
-      setFormData({ 
-        name: '', 
-        teacher: '', 
-        course: '', 
-        schedule: { 
-          repetitionType: 'weekly',
-          days: [], 
-          specificDate: '',
-          startTime: '', 
-          endTime: '', 
-          type: 'offline', 
-          note: '' 
-        } 
-      });
+      if (editingGroupId) {
+        await updateGroup({ id: editingGroupId, ...formData }).unwrap();
+        toast.success('Qrup uğurla yeniləndi');
+      } else {
+        await createGroup(formData).unwrap();
+        toast.success('Qrup uğurla yaradıldı');
+      }
+      handleCloseModal();
     } catch (error) {
       toast.error(error.data?.message || 'Xəta baş verdi');
     }
+  };
+
+  const handleEditClick = (group) => {
+    setEditingGroupId(group._id);
+    setFormData({
+      name: group.name,
+      teacher: group.teacher?._id || group.teacher,
+      course: group.course,
+      schedule: {
+        repetitionType: group.schedule?.repetitionType || 'weekly',
+        days: group.schedule?.days || [],
+        specificDate: group.schedule?.specificDate ? new Date(group.schedule.specificDate).toISOString().split('T')[0] : '',
+        startTime: group.schedule?.startTime || '',
+        endTime: group.schedule?.endTime || '',
+        type: group.schedule?.type || 'offline',
+        note: group.schedule?.note || ''
+      },
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    setEditingGroupId(null);
+    setFormData({ 
+      name: '', 
+      teacher: '', 
+      course: '', 
+      schedule: { 
+        repetitionType: 'weekly',
+        days: [], 
+        specificDate: '',
+        startTime: '', 
+        endTime: '', 
+        type: 'offline', 
+        note: '' 
+      } 
+    });
   };
 
   const handleDelete = async (id) => {
@@ -352,12 +384,20 @@ const Groups = () => {
                     <BookOpen size={20} />
                   </div>
                   {isAdmin && (
-                    <button
-                      onClick={() => handleDelete(group._id)}
-                      className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => handleEditClick(group)}
+                        className="p-1.5 text-white/30 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(group._id)}
+                        className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -432,16 +472,16 @@ const Groups = () => {
       <AnimatePresence>
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsCreateModalOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleCloseModal} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10"
+              className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
-                <h3 className="text-xl font-semibold text-white">Yeni Qrup Yarat</h3>
-                <button onClick={() => setIsCreateModalOpen(false)} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
+                <h3 className="text-xl font-semibold text-white">{editingGroupId ? 'Qrupu Redaktə Et' : 'Yeni Qrup Yarat'}</h3>
+                <button onClick={handleCloseModal} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleCreate} className="p-6 space-y-4">
@@ -571,9 +611,9 @@ const Groups = () => {
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsCreateModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">Ləğv et</button>
-                  <button type="submit" disabled={isCreating} className="bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating ? 'Yaradılır...' : 'Qrupu Yarat'}
+                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">Ləğv et</button>
+                  <button type="submit" disabled={isCreating || isUpdating} className="bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
+                    {isCreating || isUpdating ? (editingGroupId ? 'Yenilənir...' : 'Yaradılır...') : (editingGroupId ? 'Yadda Saxla' : 'Qrupu Yarat')}
                   </button>
                 </div>
               </form>

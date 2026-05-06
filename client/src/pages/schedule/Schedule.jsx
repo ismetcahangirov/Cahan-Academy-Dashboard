@@ -8,6 +8,7 @@ import {
 } from '../../features/schedule/scheduleApi';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../features/auth/authSlice';
+import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 
 const DAYS = [
@@ -20,7 +21,7 @@ const DAYS = [
   { label: 'Bazar', short: 'B' },
 ];
 
-const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
+const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
   const [form, setForm] = useState({
     subject: '',
     group: '',
@@ -37,6 +38,18 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'group' && value) {
+      const selectedGroup = groups.find(g => g._id === value);
+      if (selectedGroup) {
+        setForm(prev => ({
+          ...prev,
+          group: value,
+          subject: selectedGroup.name,
+          teacher: selectedGroup.teacher?._id || selectedGroup.teacher // handle populated or ID
+        }));
+        return;
+      }
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -63,7 +76,17 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading }) => {
             <X size={18} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div>
+            <label className="block text-sm text-white/70 mb-1">Qrup (Könüllü)</label>
+            <select name="group" value={form.group} onChange={handleChange}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
+              <option value="" className="bg-[#111]">Qrup seçin</option>
+              {groups.map((g) => (
+                <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-sm text-white/70 mb-1">Fənn *</label>
             <input name="subject" value={form.subject} onChange={handleChange}
@@ -173,6 +196,8 @@ const Schedule = () => {
   const user = useSelector(selectCurrentUser);
   const [showModal, setShowModal] = useState(false);
   const { data: schedule = [], isLoading } = useGetScheduleQuery({});
+  const { data: groupsData } = useGetGroupsQuery();
+  const groups = groupsData?.data || [];
   const [createEntry, { isLoading: isCreating }] = useCreateScheduleEntryMutation();
   const [deleteEntry] = useDeleteScheduleEntryMutation();
 
@@ -343,6 +368,7 @@ const Schedule = () => {
             onClose={() => setShowModal(false)}
             onSubmit={handleAdd}
             isLoading={isCreating}
+            groups={groups}
           />
         )}
       </AnimatePresence>
