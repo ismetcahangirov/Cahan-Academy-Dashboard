@@ -12,7 +12,9 @@
     "admin": "Админ",
     "teacher": "Учитель",
     "student": "Студент",
-    "logoutConfirm": "Вы уверены, что хотите выйти?"
+    "logoutConfirm": "Вы уверены, что хотите выйти?",
+    "lightMode": "Светлая тема",
+    "darkMode": "Темная тема"
   },
   "auth": {
     "loginTitle": "Cahan Academy",

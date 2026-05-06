@@ -19,10 +19,13 @@ import {
   FileText,
   ClipboardList,
   Trophy,
-  PenTool
+  PenTool,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/ThemeContext';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -31,6 +34,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -111,7 +115,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsMobileOpen(false)}
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-sm"
+            className="fixed inset-0 bg-background/60 z-40 lg:hidden backdrop-blur-sm"
           />
         )}
       </AnimatePresence>
@@ -126,12 +130,12 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         }
         variants={sidebarVariants}
         className={cn(
-          'fixed lg:sticky top-0 left-0 h-screen z-50 bg-black border-r border-white/10 flex flex-col',
+          'fixed lg:sticky top-0 left-0 h-screen z-50 bg-[var(--card)] border-r border-[var(--border)] flex flex-col',
           !isMobile && 'translate-x-0 opacity-100' // Force visible on desktop
         )}
       >
         {/* Logo Area */}
-        <div className="h-16 flex items-center px-4 border-b border-white/10">
+        <div className="h-16 flex items-center px-4 border-b border-[var(--border)]">
           <div className={cn(
             "flex items-center gap-3 overflow-hidden w-full",
             isCollapsed && !isMobile ? "justify-center" : "justify-between"
@@ -142,7 +146,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               </div>
               <span
                 className={cn(
-                  "text-white font-bold whitespace-nowrap",
+                  "text-[var(--foreground)] font-bold whitespace-nowrap",
                   isCollapsed && !isMobile ? "hidden" : "block"
                 )}
               >
@@ -154,7 +158,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             {!isCollapsed && !isMobile && (
               <button
                 onClick={() => setIsCollapsed(true)}
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-[var(--muted)] hover:bg-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -164,7 +168,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           {isCollapsed && !isMobile && (
             <button
               onClick={() => setIsCollapsed(false)}
-              className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-bordo border border-white/10 flex items-center justify-center text-white shadow-lg z-50 transition-transform hover:scale-110"
+              className="absolute -right-4 top-20 w-8 h-8 rounded-full bg-bordo border border-[var(--border)] flex items-center justify-center text-white shadow-lg z-50 transition-transform hover:scale-110"
             >
               <ChevronRight size={16} />
             </button>
@@ -190,7 +194,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                       : 'gap-3 px-3 py-2.5',
                     isActive
                       ? 'bg-bordo text-white shadow-lg shadow-bordo/20'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                      : 'text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]'
                   )
                 }
               >
@@ -212,12 +216,31 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         </div>
 
         {/* Bottom Profile / Logout */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-[var(--border)] space-y-2">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "flex items-center rounded-xl text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all group relative",
+              isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
+            )}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <span
+              className={cn(
+                "whitespace-nowrap font-medium text-sm",
+                isCollapsed && !isMobile ? "hidden" : "block"
+              )}
+            >
+              {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
+            </span>
+          </button>
+
           <button
             onClick={handleLogout}
             title={isCollapsed && !isMobile ? t('common.logout') : undefined}
             className={cn(
-              "flex items-center rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
+              "flex items-center rounded-xl text-[var(--muted-foreground)] hover:text-bordo hover:bg-bordo/10 transition-all group relative",
               isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
             )}
           >
@@ -230,8 +253,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             >
               {t('common.logout')}
             </span>
-            
-             {/* Tooltips removed to prevent horizontal scroll overflow */}
           </button>
         </div>
       </motion.aside>
