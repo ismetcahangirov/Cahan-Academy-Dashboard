@@ -4,12 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
 import { Mail, ChevronLeft, Loader2, Send } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Düzgün email daxil edin'),
+const forgotPasswordSchema = (t) => z.object({
+  email: z.string().email(t('auth.emailInvalid')),
 });
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   // Using a mock loading state since the endpoint logic will be implemented in backend later
   const isLoading = false;
@@ -19,13 +21,13 @@ const ForgotPassword = () => {
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(forgotPasswordSchema(t)),
   });
 
   const onSubmit = async (data) => {
     // This will be connected to the backend authApi later
     console.log(data);
-    toast.success('Şifrə yeniləmə linki emailinizə göndərildi');
+    toast.success(t('forgotPassword.successMessage'));
   };
 
   return (
@@ -36,25 +38,25 @@ const ForgotPassword = () => {
 
       <div className="w-full max-w-md bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl relative z-10">
         <Link to="/login" className="inline-flex items-center text-white/60 hover:text-white mb-6 transition-colors gap-1 text-sm">
-          <ChevronLeft className="w-4 h-4" />
-          Girişə qayıt
-        </Link>
+           <ChevronLeft className="w-4 h-4" />
+           {t('forgotPassword.backToLogin')}
+         </Link>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Şifrəni unutmusunuz?</h1>
-          <p className="text-white/60 text-sm">Emailinizi daxil edin, biz sizə şifrəni yeniləmək üçün link göndərəcəyik</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{t('forgotPassword.title')}</h1>
+          <p className="text-white/60 text-sm">{t('forgotPassword.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-white/80 block">Email</label>
+            <label className="text-sm font-medium text-white/80 block">{t('auth.email')}</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
               <input
                 {...register('email')}
                 type="email"
                 className={`w-full bg-black/40 border ${errors.email ? 'border-bordo' : 'border-white/10'} rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
-                placeholder="nümunə@cahan.az"
+                placeholder={t('forgotPassword.emailPlaceholder')}
               />
             </div>
             {errors.email && <p className="text-xs text-bordo mt-1">{errors.email.message}</p>}
@@ -70,7 +72,7 @@ const ForgotPassword = () => {
             ) : (
               <>
                 <Send className="w-5 h-5" />
-                Linki göndər
+                {t('forgotPassword.sendLink')}
               </>
             )}
           </button>

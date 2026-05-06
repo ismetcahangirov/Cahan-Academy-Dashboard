@@ -12,6 +12,7 @@ import {
   BookOpen,
   MoreHorizontal
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { 
   useGetStudentsQuery, 
   useDeleteStudentMutation,
@@ -23,6 +24,7 @@ import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 
 const StatusBadge = ({ status }) => {
+  const { t } = useTranslation();
   const isActive = status === 'active';
   return (
     <span className={cn(
@@ -32,12 +34,13 @@ const StatusBadge = ({ status }) => {
         : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
     )}>
       <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-zinc-500')}></span>
-      {isActive ? 'Aktiv' : 'Deaktiv'}
+      {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
 };
 
 const Students = () => {
+  const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,12 +57,12 @@ const Students = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bu tələbəni silmək istədiyinizə əminsiniz?')) {
+    if (window.confirm(t('students.deleteConfirm'))) {
       try {
         await deleteStudent(id).unwrap();
-        toast.success('Tələbə uğurla silindi');
+        toast.success(t('students.deleteSuccess'));
       } catch (error) {
-        toast.error('Xəta baş verdi');
+        toast.error(t('students.error'));
       }
     }
   };
@@ -68,21 +71,21 @@ const Students = () => {
     try {
       if (selectedStudent) {
         await updateStudent({ id: selectedStudent._id, ...formData }).unwrap();
-        toast.success('Tələbə məlumatları yeniləndi');
+        toast.success(t('students.updateSuccess'));
       } else {
         await inviteStudent({ ...formData, role: 'student' }).unwrap();
-        toast.success('Yeni tələbə yaradıldı');
+        toast.success(t('students.createSuccess'));
       }
       setIsModalOpen(false);
     } catch (err) {
-      toast.error(err.data?.message || 'Xəta baş verdi');
+      toast.error(err.data?.message || t('students.error'));
     }
   };
 
   const stats = [
-    { title: 'Ümumi Tələbələr', value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { title: 'Aktiv Tələbələr', value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { title: 'Yeni Tələbələr (7 gün)', value: data?.data?.filter(t => {
+    { title: t('students.totalStudents'), value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { title: t('students.activeStudents'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { title: t('students.newStudents7Days'), value: data?.data?.filter(t => {
       const d = new Date(t.createdAt);
       const now = new Date();
       return d > new Date(now.setDate(now.getDate() - 7));
@@ -94,15 +97,15 @@ const Students = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Tələbələr</h1>
-          <p className="text-white/60 text-sm mt-1">Akademiyanın bütün tələbələrinin siyahısı.</p>
+          <h1 className="text-2xl font-bold text-white">{t('students.title')}</h1>
+          <p className="text-white/60 text-sm mt-1">{t('students.subtitle')}</p>
         </div>
         <button
           onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }}
           className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
         >
           <Plus size={18} />
-          Yeni Tələbə
+          {t('students.newStudent')}
         </button>
       </div>
 
@@ -133,7 +136,7 @@ const Students = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
           <input
             type="text"
-            placeholder="Tələbə axtar..."
+            placeholder={t('students.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
@@ -141,7 +144,7 @@ const Students = () => {
         </div>
         <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/70 text-sm hover:text-white hover:bg-white/10 transition-all flex-1 md:flex-none">
           <Filter size={16} />
-          Qrup üzrə filter
+          {t('students.filterGroup')}
         </button>
       </div>
 
@@ -151,12 +154,12 @@ const Students = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Tələbə</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Qrup</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Qeydiyyat</th>
-                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">Əməliyyatlar</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableStudent')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableEmail')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableGroup')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableStatus')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">{t('students.tableRegistration')}</th>
+                <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">{t('students.tableActions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -188,11 +191,11 @@ const Students = () => {
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-500/10 text-blue-400 border-blue-500/20">
                         <BookOpen size={12} />
-                        {student.group || 'Qrupsuz'}
+                        {student.group || t('students.noGroup')}
                       </span>
                     </td>
                     <td className="px-6 py-4"><StatusBadge status={student.status} /></td>
-                    <td className="px-6 py-4 text-white/50 text-sm">{new Date(student.createdAt).toLocaleDateString('az-AZ')}</td>
+                    <td className="px-6 py-4 text-white/50 text-sm">{new Date(student.createdAt).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US')}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => handleEdit(student)} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><Edit2 size={16} /></button>
@@ -207,7 +210,7 @@ const Students = () => {
                   <td colSpan="6" className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-white/40">
                       <GraduationCap size={40} className="mb-2 opacity-20" />
-                      <p>Tələbə tapılmadı</p>
+                      <p>{t('students.noStudents')}</p>
                     </div>
                   </td>
                 </tr>
@@ -218,10 +221,10 @@ const Students = () => {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t border-white/10 bg-white/[0.01] flex items-center justify-between">
-          <p className="text-xs text-white/40">Cəmi <span className="text-white">{data?.pagination?.total || 0}</span> tələbə</p>
+          <p className="text-xs text-white/40">{t('students.totalCount', { count: data?.pagination?.total || 0 })}</p>
           <div className="flex items-center gap-2">
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-white/10 rounded-lg text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-30 text-sm transition-all">Əvvəlki</button>
-            <button disabled={page === data?.pagination?.pages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-white/10 rounded-lg text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-30 text-sm transition-all">Növbəti</button>
+            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-white/10 rounded-lg text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-30 text-sm transition-all">{t('students.prev')}</button>
+            <button disabled={page === data?.pagination?.pages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-white/10 rounded-lg text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-30 text-sm transition-all">{t('students.next')}</button>
           </div>
         </div>
       </div>

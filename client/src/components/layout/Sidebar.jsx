@@ -40,44 +40,44 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
 
   const getLinksByRole = (role) => {
     const baseLinks = [
-      { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+      { name: t('sidebar.dashboard'), path: '/', icon: LayoutDashboard },
     ];
 
     if (role === 'admin') {
       baseLinks.push(
-        { name: 'Müəllimlər', path: '/teachers', icon: GraduationCap },
-        { name: 'Tələbələr', path: '/students', icon: Users },
-        { name: 'Kurslar', path: '/courses', icon: BookOpen },
-        { name: 'Davamiyyət', path: '/attendance', icon: CheckCircle },
-        { name: 'Ev Tapşırıqları', path: '/homeworks', icon: FileText },
-        { name: 'Sinif İşləri', path: '/classworks', icon: ClipboardList },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
-        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
-        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
-        { name: 'Dəvətlər', path: '/invitations', icon: Mail },
-        { name: 'İstifadəçilər', path: '/users', icon: Users },
-        { name: 'Qruplar', path: '/groups', icon: BookOpen },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+        { name: t('sidebar.teachers'), path: '/teachers', icon: GraduationCap },
+        { name: t('sidebar.students'), path: '/students', icon: Users },
+        { name: t('sidebar.courses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.attendance'), path: '/attendance', icon: CheckCircle },
+        { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
+        { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },
+        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
+        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
+        { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
+        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
+        { name: t('sidebar.invitations'), path: '/invitations', icon: Mail },
+        { name: t('sidebar.users'), path: '/users', icon: Users },
+        { name: t('sidebar.groups'), path: '/groups', icon: BookOpen },
+        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
       );
     } else if (role === 'teacher') {
       baseLinks.push(
-        { name: 'Tələbələrim', path: '/students', icon: Users },
-        { name: 'Dərslərim', path: '/courses', icon: BookOpen },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
-        { name: 'Cədvəl', path: '/schedule', icon: Calendar },
-        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+        { name: t('sidebar.myStudents'), path: '/students', icon: Users },
+        { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
+        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
+        { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
+        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
+        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
       );
     } else {
       baseLinks.push(
-        { name: 'Kurslarım', path: '/courses', icon: BookOpen },
-        { name: 'İmtahanlar', path: '/exams', icon: PenTool },
-        { name: 'Quizlər', path: '/quizzes', icon: Trophy },
-        { name: 'Cədvəlim', path: '/schedule', icon: Calendar },
-        { name: 'Bildirişlər', path: '/notifications', icon: Mail },
-        { name: 'Tənzimləmələr', path: '/settings', icon: Settings }
+        { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
+        { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
+        { name: t('sidebar.mySchedule'), path: '/schedule', icon: Calendar },
+        { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
+        { name: t('sidebar.settings'), path: '/settings', icon: Settings }
       );
     }
 
@@ -87,7 +87,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const links = getLinksByRole(user?.role || 'student');
 
   const handleLogout = () => {
-    dispatch(logout());
+    if (window.confirm(t('common.logoutConfirm'))) {
+      dispatch(logout());
+    }
   };
 
   const isMobile = windowWidth < 1024;
@@ -213,7 +215,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         <div className="p-4 border-t border-white/10">
           <button
             onClick={handleLogout}
-            title={isCollapsed && !isMobile ? "Çıxış et" : undefined}
+            title={isCollapsed && !isMobile ? t('common.logout') : undefined}
             className={cn(
               "flex items-center rounded-xl text-white/60 hover:text-bordo hover:bg-bordo/10 transition-all group relative",
               isCollapsed && !isMobile ? "justify-center h-12 w-12 mx-auto" : "gap-3 px-3 py-3 w-full"
@@ -226,7 +228,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
                 isCollapsed && !isMobile ? "hidden" : "block"
               )}
             >
-              Çıxış et
+              {t('common.logout')}
             </span>
             
              {/* Tooltips removed to prevent horizontal scroll overflow */}

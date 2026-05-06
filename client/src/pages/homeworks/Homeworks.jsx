@@ -5,6 +5,7 @@ import {
   Plus, Search, MoreVertical, Calendar, 
   Users, FileText
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { 
   useGetHomeworksQuery, 
   useCreateHomeworkMutation,
@@ -17,6 +18,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import { format } from 'date-fns';
 
 const Homeworks = () => {
+  const { t } = useTranslation();
   const user = useSelector(selectCurrentUser);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -31,11 +33,11 @@ const Homeworks = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Ev Tapşırıqları</h1>
+          <h1 className="text-2xl font-bold text-white">{t('homeworks.title')}</h1>
           <p className="text-gray-400 mt-1">
             {user.role === 'student' 
-              ? 'Aktiv və tamamlanmış tapşırıqlarınız' 
-              : 'Qruplar üzrə verilmiş tapşırıqlar'}
+              ? t('homeworks.studentSubtitle') 
+              : t('homeworks.teacherSubtitle')}
           </p>
         </div>
 
@@ -45,7 +47,7 @@ const Homeworks = () => {
             className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
           >
             <Plus size={20} />
-            <span>Yeni Tapşırıq</span>
+            <span>{t('homeworks.addNew')}</span>
           </button>
         )}
       </div>
@@ -56,7 +58,7 @@ const Homeworks = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Tapşırıq axtar..."
+            placeholder={t('homeworks.searchPlaceholder')}
             className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
@@ -67,7 +69,7 @@ const Homeworks = () => {
             onChange={(e) => setSelectedGroup(e.target.value)}
             className="w-full px-4 py-2 bg-dark border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
           >
-            <option value="">Bütün Qruplar</option>
+            <option value="">{t('exams.allGroups')}</option>
             {groups.map(group => (
               <option key={group._id} value={group._id}>{group.name}</option>
             ))}
@@ -103,15 +105,15 @@ const Homeworks = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <Users size={16} className="text-bordo" />
-                  <span>Qrup: {hw.group?.name || 'Bilinmir'}</span>
+                  <span>{t('common.group')}: {hw.group?.name || t('common.unknown')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <Calendar size={16} className="text-bordo" />
-                  <span>Son tarix: {format(new Date(hw.dueDate), 'dd MMM yyyy, HH:mm')}</span>
+                  <span>{t('homeworks.dueDate')}: {format(new Date(hw.dueDate), 'dd MMM yyyy, HH:mm')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-gray-300">
                   <FileText size={16} className="text-bordo" />
-                  <span>{hw.files?.length || 0} əlavə fayl</span>
+                  <span>{t('homeworks.attachmentCount', { count: hw.files?.length || 0 })}</span>
                 </div>
               </div>
 
@@ -119,15 +121,15 @@ const Homeworks = () => {
               <div className="pt-4 border-t border-white/10 flex items-center justify-between">
                 {user.role === 'student' ? (
                   <button className="w-full py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium">
-                    Tapşırığa Bax / Təhvil Ver
+                    {t('homeworks.viewAndSubmit')}
                   </button>
                 ) : (
                   <div className="flex items-center justify-between w-full">
                     <div className="text-sm text-gray-400">
-                      <span className="text-white font-medium">{hw.submissions?.length || 0}</span> təhvil
+                      <span className="text-white font-medium">{t('homeworks.submissionsCount', { count: hw.submissions?.length || 0 })}</span>
                     </div>
                     <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium">
-                      Yoxla
+                      {t('homeworks.checkBtn')}
                     </button>
                   </div>
                 )}
@@ -138,7 +140,7 @@ const Homeworks = () => {
           {homeworks.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-400">
               <FileText size={48} className="mb-4 opacity-50" />
-              <p>Hələ kiç tapşırıq yoxdur</p>
+              <p>{t('homeworks.noHomeworks')}</p>
             </div>
           )}
         </div>
