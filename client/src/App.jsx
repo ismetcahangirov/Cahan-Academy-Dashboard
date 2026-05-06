@@ -8,6 +8,7 @@ import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRoute from './components/RoleRoute';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Lazy-loaded Pages
 const Login = lazy(() => import('./pages/Login'));
@@ -47,15 +48,15 @@ const PageLoader = () => {
 
 function App() {
   return (
-    <>
+    <ThemeProvider>
       <Toaster 
         position="top-right" 
         reverseOrder={false}
         toastOptions={{
           style: {
-            background: '#1a1a1a',
-            color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: 'var(--card)',
+            color: 'var(--foreground)',
+            border: '1px solid var(--border)',
           },
         }}
       />
@@ -69,23 +70,23 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
           </Route>
-
+ 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
-
+ 
               {/* Admin only */}
               <Route element={<RoleRoute roles={['admin']} />}>
                 <Route path="/users" element={<Users />} />
                 <Route path="/invitations" element={<Invitations />} />
               </Route>
-
+ 
               {/* Admin + Teacher */}
               <Route element={<RoleRoute roles={['admin', 'teacher']} />}>
                 <Route path="/teachers" element={<Teachers />} />
               </Route>
-
+ 
               {/* All authenticated users */}
               <Route path="/students" element={<Students />} />
               <Route path="/groups" element={<Groups />} />
@@ -104,7 +105,7 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
-    </>
+    </ThemeProvider>
   );
 }
 

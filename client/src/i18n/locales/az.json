@@ -12,7 +12,9 @@
     "admin": "Admin",
     "teacher": "Müəllim",
     "student": "Tələbə",
-    "logoutConfirm": "Çıxış etmək istədiyinizə əminsiniz?"
+    "logoutConfirm": "Çıxış etmək istədiyinizə əminsiniz?",
+    "lightMode": "İşıqlı rejim",
+    "darkMode": "Qaranlıq rejim"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
