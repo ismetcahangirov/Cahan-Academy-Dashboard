@@ -55,6 +55,19 @@ const examSchema = new mongoose.Schema(
       enum: ['midterm', 'final', 'practice'],
       default: 'practice',
     },
+    questions: [
+      {
+        text: { type: String, required: true },
+        type: {
+          type: String,
+          enum: ['multiple-choice', 'true-false', 'open-ended'],
+          required: true
+        },
+        options: [String], // for multiple-choice
+        correctAnswer: String, // for auto-grading if implemented later
+        points: { type: Number, default: 1 }
+      }
+    ],
     results: [examResultSchema],
   },
   {

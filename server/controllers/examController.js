@@ -107,7 +107,7 @@ export const getExamById = asyncHandler(async (req, res) => {
 // @route   POST /api/exams
 // @access  Private/Teacher, Admin
 export const createExam = asyncHandler(async (req, res) => {
-  const { title, description, group, date, duration, type } = req.body;
+  const { title, description, group, date, duration, type, questions } = req.body;
 
   // Qrupu tap
   const targetGroup = await Group.findById(group);
@@ -130,6 +130,7 @@ export const createExam = asyncHandler(async (req, res) => {
     date,
     duration,
     type,
+    questions: questions || [],
     results: [],
   });
 
