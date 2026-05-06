@@ -437,7 +437,7 @@ const Groups = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10"
+              className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
                 <h3 className="text-xl font-semibold text-white">Yeni Qrup Yarat</h3>
