@@ -25,7 +25,7 @@ const Register = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector(selectCurrentUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef(null);
 
