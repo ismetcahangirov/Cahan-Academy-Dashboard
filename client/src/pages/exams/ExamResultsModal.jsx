@@ -97,7 +97,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
           onClick={onClose}
         />
         
@@ -105,36 +105,36 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-4xl bg-[#111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]"
+          className="relative w-full max-w-4xl bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
             <div>
-              <h2 className="text-xl font-bold text-white mb-1">
+              <h2 className="text-xl font-bold text-[var(--foreground)] mb-1">
                 {t('exams.resultsModalTitle')}: {exam.title}
               </h2>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-[var(--muted-foreground)]">
                 {examDetails?.group?.name} • {t('exams.studentCount')}: {students.length}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-full transition-colors"
             >
               <X size={20} />
             </button>
           </div>
 
           {/* Search */}
-          <div className="p-4 border-b border-white/10 bg-black/20">
+          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]/20">
             <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" size={20} />
               <input
                 type="text"
                 placeholder={t('exams.studentSearch')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-bordo transition-colors"
+                className="w-full pl-10 pr-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
               />
             </div>
           </div>
@@ -146,34 +146,34 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                 <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
               </div>
             ) : filteredStudents.length === 0 ? (
-              <div className="text-center text-gray-400 py-12">
+              <div className="text-center text-[var(--muted-foreground)] py-12">
                 {t('exams.noStudentsFound')}
               </div>
             ) : (
-              <div className="bg-white/5 rounded-xl border border-white/10 overflow-hidden">
+              <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-white/5 text-gray-400 text-sm border-b border-white/10">
+                    <tr className="bg-[var(--muted)]/10 text-[var(--muted-foreground)] text-sm border-b border-[var(--border)]">
                       <th className="p-4 font-medium w-1/3">{t('exams.tableStudent')}</th>
                       <th className="p-4 font-medium w-1/4">{t('exams.tableScore')}</th>
                       <th className="p-4 font-medium">{t('exams.tableFeedback')}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/10">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {filteredStudents.map(student => {
                       const result = resultsData[student._id] || { score: '', feedback: '' };
                       return (
-                        <tr key={student._id} className="hover:bg-white/[0.02] transition-colors">
+                        <tr key={student._id} className="hover:bg-[var(--muted)]/20 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
                               <img 
                                 src={student.avatar || `https://ui-avatars.com/api/?name=${student.name}&background=7B001C&color=fff`} 
                                 alt={student.name}
-                                className="w-8 h-8 rounded-full border border-white/20 object-cover" 
+                                className="w-8 h-8 rounded-full border border-[var(--border)] object-cover" 
                               />
                               <div>
-                                <div className="text-white text-sm font-medium">{student.name}</div>
-                                <div className="text-gray-500 text-xs">{student.email}</div>
+                                <div className="text-[var(--foreground)] text-sm font-medium">{student.name}</div>
+                                <div className="text-[var(--muted-foreground)]/50 text-xs">{student.email}</div>
                               </div>
                             </div>
                           </td>
@@ -185,7 +185,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                               value={result.score}
                               onChange={(e) => handleScoreChange(student._id, e.target.value)}
                               placeholder="0"
-                              className="w-20 bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-bordo transition-colors text-center"
+                              className="w-20 bg-[var(--input)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors text-center"
                             />
                           </td>
                           <td className="p-4">
@@ -194,7 +194,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                               value={result.feedback}
                               onChange={(e) => handleFeedbackChange(student._id, e.target.value)}
                               placeholder={t('exams.feedbackPlaceholder')}
-                              className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-bordo transition-colors text-sm"
+                              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors text-sm"
                             />
                           </td>
                         </tr>
@@ -207,10 +207,10 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           </div>
 
           {/* Footer Action */}
-          <div className="p-6 border-t border-white/10 bg-black/20 flex justify-end gap-3">
+          <div className="p-6 border-t border-[var(--border)] bg-[var(--muted)]/20 flex justify-end gap-3">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
+              className="px-6 py-2.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-xl transition-colors font-medium"
             >
               {t('common.close')}
             </button>

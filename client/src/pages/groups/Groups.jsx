@@ -62,26 +62,26 @@ const GroupDetailModal = ({ groupId, onClose }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
-        className="bg-zinc-900 border border-white/10 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+        className="bg-[var(--card)] border border-[var(--border)] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-white/[0.02]">
+        <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between flex-shrink-0 bg-[var(--muted)]/30">
           <div>
             {isLoading ? (
-              <div className="h-6 w-40 bg-white/10 rounded animate-pulse" />
+              <div className="h-6 w-40 bg-[var(--muted)] rounded animate-pulse" />
             ) : (
               <>
-                <h3 className="text-xl font-bold text-white">{group?.name}</h3>
-                <p className="text-sm text-white/50">{group?.course}</p>
+                <h3 className="text-xl font-bold text-[var(--foreground)]">{group?.name}</h3>
+                <p className="text-sm text-[var(--muted-foreground)]/60">{group?.course}</p>
               </>
             )}
           </div>
-          <button onClick={onClose} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+          <button onClick={onClose} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
             <X size={20} />
           </button>
         </div>
@@ -91,7 +91,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
           {isLoading ? (
             <div className="space-y-3">
               {Array(4).fill(0).map((_, i) => (
-                <div key={i} className="h-12 bg-white/5 rounded-xl animate-pulse" />
+                <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
               ))}
             </div>
           ) : (
@@ -103,8 +103,8 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     <GraduationCap size={18} className="text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-white/40">{t('groups.teacher')}</p>
-                    <p className="font-semibold text-white text-sm">{group?.teacher?.name || t('teachers.noTeachers')}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.teacher')}</p>
+                    <p className="font-semibold text-[var(--foreground)] text-sm">{group?.teacher?.name || t('teachers.noTeachers')}</p>
                   </div>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
@@ -112,29 +112,29 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     <Users size={18} className="text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-xs text-white/40">{t('groups.totalStudents')}</p>
-                    <p className="font-semibold text-white text-sm">{group?.students?.length || 0} {t('common.user').toLowerCase()}</p>
+                    <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.totalStudents')}</p>
+                    <p className="font-semibold text-[var(--foreground)] text-sm">{group?.students?.length || 0} {t('common.user').toLowerCase()}</p>
                   </div>
                 </div>
               </div>
 
               {/* Schedule */}
               {(group?.schedule?.days?.length > 0 || group?.schedule?.specificDate) && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
-                  <p className="text-xs text-white/40 flex items-center gap-1 mb-1">
+                <div className="bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl p-4 space-y-2">
+                  <p className="text-xs text-[var(--muted-foreground)]/60 flex items-center gap-1 mb-1">
                     <Calendar size={13} /> {t('groups.schedule')} ({group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')})
-                    <span className="ml-auto px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
+                    <span className="ml-auto px-1.5 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-[10px]">
                       {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
                     </span>
                   </p>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-[var(--foreground)]">
                     {group.schedule.repetitionType === 'weekly' 
                       ? group.schedule.days.join(', ')
                       : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                     {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
                   </p>
                   {group.schedule.note && (
-                    <p className="text-xs text-white/60 bg-black/20 p-2 rounded-lg mt-2 border border-white/5">
+                    <p className="text-xs text-[var(--muted-foreground)]/80 bg-[var(--input)] p-2 rounded-lg mt-2 border border-[var(--border)]">
                       {t('groups.note')}: {group.schedule.note}
                     </p>
                   )}
@@ -144,7 +144,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
               {/* Students List */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-white text-sm">{t('sidebar.students')}</h4>
+                  <h4 className="font-semibold text-[var(--foreground)] text-sm">{t('sidebar.students')}</h4>
                   <button
                     onClick={() => setShowAddStudent(!showAddStudent)}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo hover:bg-bordo/90 text-white text-xs font-semibold rounded-lg transition-all"
@@ -164,11 +164,11 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                       className="overflow-hidden mb-3"
                     >
                       <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 space-y-3">
-                        <p className="text-xs font-medium text-white/70">{t('groups.selectStudent')}:</p>
+                        <p className="text-xs font-medium text-[var(--muted-foreground)]">{t('groups.selectStudent')}:</p>
                         <select
                           value={selectedStudentId}
                           onChange={(e) => setSelectedStudentId(e.target.value)}
-                          className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-xl text-sm text-white focus:border-bordo/50 outline-none"
+                          className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] focus:border-bordo/50 outline-none"
                         >
                           <option value="">{t('common.select') || 'Seçin...'}</option>
                           {availableStudents.map((s) => (
@@ -176,7 +176,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                           ))}
                         </select>
                         <div className="flex gap-2">
-                          <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-white/10 text-white/60 rounded-xl text-sm hover:bg-white/5">{t('users.cancelBtn')}</button>
+                          <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-[var(--border)] text-[var(--muted-foreground)] rounded-xl text-sm hover:bg-[var(--muted)]">{t('users.cancelBtn')}</button>
                           <button
                             onClick={handleAddStudent}
                             disabled={!selectedStudentId || isAdding}
@@ -192,31 +192,31 @@ const GroupDetailModal = ({ groupId, onClose }) => {
 
                 {/* Search */}
                 <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={15} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={15} />
                   <input
                     type="text"
                     placeholder={t('groups.searchStudents')}
                     value={studentSearch}
                     onChange={(e) => setStudentSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-bordo/50 transition-all placeholder:text-white/30"
+                    className="w-full pl-9 pr-4 py-2 bg-[var(--muted)]/50 border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] outline-none focus:border-bordo/50 transition-all placeholder:text-[var(--muted-foreground)]/40"
                   />
                 </div>
 
                 {filteredStudents?.length === 0 ? (
-                  <div className="text-center py-8 text-white/40 text-sm">
+                  <div className="text-center py-8 text-[var(--muted-foreground)]/40 text-sm">
                     <Users size={32} className="mx-auto mb-2 opacity-30" />
                     {t('groups.noStudentsGroup')}
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {filteredStudents?.map((student) => (
-                      <div key={student._id} className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/5 rounded-xl hover:bg-white/[0.05] transition-all">
+                      <div key={student._id} className="flex items-center gap-3 p-3 bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl hover:bg-[var(--muted)]/50 transition-all">
                         <div className="w-8 h-8 rounded-full bg-bordo/20 flex items-center justify-center text-bordo font-bold text-sm flex-shrink-0">
                           {student.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-white text-sm truncate">{student.name}</p>
-                          <p className="text-xs text-white/40 truncate">{student.email}</p>
+                          <p className="font-medium text-[var(--foreground)] text-sm truncate">{student.name}</p>
+                          <p className="text-xs text-[var(--muted-foreground)]/60 truncate">{student.email}</p>
                         </div>
                       </div>
                     ))}
@@ -352,8 +352,8 @@ const Groups = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t('groups.title')}</h1>
-          <p className="text-white/60 text-sm mt-1">{t('groups.subtitle')}</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('groups.title')}</h1>
+          <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('groups.subtitle')}</p>
         </div>
         {isAdmin && (
           <button
@@ -367,15 +367,15 @@ const Groups = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
           <input
             type="text"
             placeholder={t('groups.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-bordo transition-colors"
+            className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
       </div>
@@ -384,7 +384,7 @@ const Groups = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading
           ? Array(6).fill(0).map((_, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 h-48 rounded-2xl animate-pulse" />
+              <div key={idx} className="bg-[var(--card)] border border-[var(--border)] h-48 rounded-2xl animate-pulse" />
             ))
           : filteredGroups?.map((group) => (
               <motion.div
@@ -392,7 +392,7 @@ const Groups = () => {
                 layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-4 hover:border-bordo/30 transition-all"
+                className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 hover:border-bordo/30 transition-all"
               >
                 <div className="flex justify-between items-start">
                   <div className="p-2.5 bg-bordo/10 border border-bordo/20 rounded-xl text-bordo">
@@ -402,13 +402,13 @@ const Groups = () => {
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleEditClick(group)}
-                        className="p-1.5 text-white/30 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
                       >
                         <Edit2 size={15} />
                       </button>
                       <button
                         onClick={() => handleDelete(group._id)}
-                        className="p-1.5 text-white/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -417,34 +417,34 @@ const Groups = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-base font-bold text-white">{group.name}</h3>
-                  <p className="text-white/50 text-sm">{group.course}</p>
+                  <h3 className="text-base font-bold text-[var(--foreground)]">{group.name}</h3>
+                  <p className="text-[var(--muted-foreground)]/60 text-sm">{group.course}</p>
                 </div>
 
-                  <div className="space-y-2 pt-3 border-t border-white/10">
-                    <div className="flex items-center gap-2 text-sm text-white/50">
-                      <User size={14} className="text-white/30" />
+                  <div className="space-y-2 pt-3 border-t border-[var(--border)]">
+                    <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]/60">
+                      <User size={14} className="text-[var(--muted-foreground)]/30" />
                       <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-white/50">
-                      <Users size={14} className="text-white/30" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]/60">
+                      <Users size={14} className="text-[var(--muted-foreground)]/30" />
                       <span>{group.students?.length || 0} {t('sidebar.students')}</span>
                     </div>
                   {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
-                    <div className="flex flex-col gap-1 text-sm text-white/50">
+                    <div className="flex flex-col gap-1 text-sm text-[var(--muted-foreground)]/60">
                       <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-white/30" />
+                        <Calendar size={14} className="text-[var(--muted-foreground)]/30" />
                         <span>
                           {group.schedule.repetitionType === 'weekly' 
                             ? group.schedule.days.join(', ')
                             : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                         </span>
-                        <span className="text-[10px] text-white/20 ml-auto">
+                        <span className="text-[10px] text-[var(--muted-foreground)]/40 ml-auto">
                           {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
                         </span>
                       </div>
                       {(group.schedule.startTime || group.schedule.endTime) && (
-                        <div className="flex items-center gap-2 pl-5 text-xs text-white/40">
+                        <div className="flex items-center gap-2 pl-5 text-xs text-[var(--muted-foreground)]/60">
                           <span>{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
                           <span className={cn(
                             "px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border",
@@ -487,38 +487,38 @@ const Groups = () => {
       <AnimatePresence>
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleCloseModal} className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleCloseModal} className="fixed inset-0 bg-background/60 backdrop-blur-sm" />
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="relative bg-zinc-900 border border-white/10 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
+              className="relative bg-[var(--card)] border border-[var(--border)] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/[0.02]">
-                <h3 className="text-xl font-semibold text-white">{editingGroupId ? t('groups.editGroup') : t('groups.newGroup')}</h3>
-                <button onClick={handleCloseModal} className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-all"><X size={20} /></button>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--muted)]/20">
+                <h3 className="text-xl font-semibold text-[var(--foreground)]">{editingGroupId ? t('groups.editGroup') : t('groups.newGroup')}</h3>
+                <button onClick={handleCloseModal} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleCreate} className="p-6 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.groupName')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.groupName')}</label>
                     <input required type="text" placeholder={t('groups.groupNamePlaceholder')} value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.course')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.course')}</label>
                     <input required type="text" placeholder={t('groups.coursePlaceholder')} value={formData.course}
                       onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('groups.selectTeacher')}</label>
+                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.selectTeacher')}</label>
                   <select required value={formData.teacher} onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
                     <option value="">{t('common.select') || 'Seçin...'}</option>
                     {teachersData?.data?.map((teacher) => (
                       <option key={teacher._id} value={teacher._id}>{teacher.name}</option>
@@ -527,7 +527,7 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('sidebar.students')}</label>
+                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('sidebar.students')}</label>
                   <div className="space-y-3">
                     <select
                       onChange={(e) => {
@@ -537,7 +537,7 @@ const Groups = () => {
                         }
                         e.target.value = "";
                       }}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
                     >
                       <option value="">{t('groups.addStudentsDesc')}</option>
                       {studentsData?.data?.filter(s => !formData.students.includes(s._id)).map((student) => (
@@ -549,12 +549,12 @@ const Groups = () => {
                       {formData.students.map((studentId) => {
                         const student = studentsData?.data?.find(s => s._id === studentId);
                         return (
-                          <div key={studentId} className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-xs text-white">
+                          <div key={studentId} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs text-[var(--foreground)]">
                             <span>{student?.name || t('common.loading')}</span>
                             <button
                               type="button"
                               onClick={() => setFormData({ ...formData, students: formData.students.filter(id => id !== studentId) })}
-                              className="text-white/40 hover:text-white"
+                              className="text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"
                             >
                               <X size={12} />
                             </button>
@@ -566,7 +566,7 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('groups.repetitionType')}</label>
+                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.repetitionType')}</label>
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -575,7 +575,7 @@ const Groups = () => {
                         'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
                         formData.schedule.repetitionType === 'weekly'
                           ? 'bg-bordo border-bordo/50 text-white'
-                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+                          : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
                       )}
                     >
                       {t('groups.repetitionWeekly')}
@@ -587,7 +587,7 @@ const Groups = () => {
                         'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
                         formData.schedule.repetitionType === 'once'
                           ? 'bg-bordo border-bordo/50 text-white'
-                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+                          : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
                       )}
                     >
                       {t('groups.repetitionOnce')}
@@ -597,7 +597,7 @@ const Groups = () => {
 
                 {formData.schedule.repetitionType === 'weekly' ? (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.days')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.days')}</label>
                     <div className="flex flex-wrap gap-2">
                       {DAYS.map((day) => (
                         <button
@@ -613,7 +613,7 @@ const Groups = () => {
                             'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
                             formData.schedule.days.includes(day)
                               ? 'bg-bordo border-bordo/50 text-white'
-                              : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'
+                              : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
                           )}
                         >
                           {day}
@@ -623,49 +623,49 @@ const Groups = () => {
                   </div>
                 ) : (
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.specificDate')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.specificDate')}</label>
                     <input 
                       type="date" 
                       value={formData.schedule.specificDate}
                       onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, specificDate: e.target.value } })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" 
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" 
                     />
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.startTime')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.startTime')}</label>
                     <input type="time" value={formData.schedule.startTime}
                       onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, startTime: e.target.value } })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-white/70">{t('groups.endTime')}</label>
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.endTime')}</label>
                     <input type="time" value={formData.schedule.endTime}
                       onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, endTime: e.target.value } })}
-                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('groups.format')}</label>
+                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.format')}</label>
                   <select value={formData.schedule.type} onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, type: e.target.value } })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
                     <option value="offline">{t('groups.formatOffline')}</option>
                     <option value="online">{t('groups.formatOnline')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">{t('groups.note')}</label>
+                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.note')}</label>
                   <textarea placeholder={t('groups.notePlaceholder')} value={formData.schedule.note}
                     onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, note: e.target.value } })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all resize-none h-20" />
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all resize-none h-20" />
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all">{t('users.cancelBtn')}</button>
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
+                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('users.cancelBtn')}</button>
                   <button type="submit" disabled={isCreating || isUpdating} className="bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
                     {isCreating || isUpdating ? (editingGroupId ? t('groups.updating') : t('groups.creating')) : (editingGroupId ? t('users.saveBtn') : t('groups.newGroup'))}
                   </button>

@@ -134,7 +134,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
           onClick={onClose}
         />
         
@@ -142,15 +142,15 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-lg bg-[#111] border border-white/10 rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
+          className="relative w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
         >
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-[var(--foreground)]">
               {isEditing ? t('exams.modalTitleEdit') : t('exams.modalTitleAdd')}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-full transition-colors"
             >
               <X size={20} />
             </button>
@@ -159,17 +159,17 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('exams.examTitle')}
               </label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                   <AlignLeft size={18} />
                 </div>
                 <input
                   type="text"
                   {...register('title')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/30 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
                   placeholder="Məs: Fevral Ayı Sınaq İmtahanı"
                 />
               </div>
@@ -180,20 +180,20 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
 
             {/* Group */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('common.group')}
               </label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                   <Users size={18} />
                 </div>
                 <select
                   {...register('group')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
                 >
-                  <option value="">{t('groups.selectGroup')}</option>
+                  <option value="" className="bg-[var(--card)]">{t('groups.selectGroup')}</option>
                   {!isLoadingGroups && groups.map((g) => (
-                    <option key={g._id} value={g._id}>
+                    <option key={g._id} value={g._id} className="bg-[var(--card)]">
                       {g.name}
                     </option>
                   ))}
@@ -206,20 +206,20 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
 
             {/* Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('exams.type')}
               </label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                   <Type size={18} />
                 </div>
                 <select
                   {...register('type')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
                 >
-                  <option value="practice">{t('exams.practice')}</option>
-                  <option value="midterm">{t('exams.midterm')}</option>
-                  <option value="final">{t('exams.final')}</option>
+                  <option value="practice" className="bg-[var(--card)]">{t('exams.practice')}</option>
+                  <option value="midterm" className="bg-[var(--card)]">{t('exams.midterm')}</option>
+                  <option value="final" className="bg-[var(--card)]">{t('exams.final')}</option>
                 </select>
               </div>
               {errors.type && (
@@ -230,17 +230,17 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
             {/* Date and Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                   {t('exams.date')}
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                     <CalendarIcon size={18} />
                   </div>
                   <input
                     type="date"
                     {...register('date')}
-                    className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
                   />
                 </div>
                 {errors.date && (
@@ -248,17 +248,17 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1.5">
+                <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                   {t('exams.time')}
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                     <Clock size={18} />
                   </div>
                   <input
                     type="time"
                     {...register('time')}
-                    className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
                   />
                 </div>
                 {errors.time && (
@@ -269,17 +269,17 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
 
             {/* Duration */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('exams.duration')} ({t('exams.minute')})
               </label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
                   <Clock size={18} />
                 </div>
                 <input
                   type="number"
                   {...register('duration')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/30 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all"
                   placeholder={t('exams.durationPlaceholder')}
                 />
               </div>
@@ -290,21 +290,21 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('exams.infoOptional')}
               </label>
               <textarea
                 {...register('description')}
                 rows={3}
-                className="w-full px-4 py-2.5 bg-black/50 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all resize-none"
+                className="w-full px-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/30 focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all resize-none"
                 placeholder={t('exams.notesPlaceholder')}
               />
             </div>
 
             {/* Questions Section */}
-            <div className="pt-6 border-t border-white/10 mt-6">
+            <div className="pt-6 border-t border-[var(--border)] mt-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <h3 className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
                   <MessageSquare size={20} className="text-bordo" />
                   {t('exams.questions')} ({fields.length})
                 </h3>
@@ -326,20 +326,20 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   <motion.div
                     key={field.id}
                     layout
-                    className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden"
+                    className="bg-[var(--muted)]/20 border border-[var(--border)] rounded-xl overflow-hidden"
                   >
                     <div 
-                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors"
+                      className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-[var(--muted)]/30 transition-colors"
                       onClick={() => setExpandedQuestion(expandedQuestion === index ? null : index)}
                     >
                       <div className="flex items-center gap-3">
-                        <span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/50">
+                        <span className="w-6 h-6 rounded-full bg-[var(--muted)] flex items-center justify-center text-xs font-bold text-[var(--muted-foreground)]/50">
                           {index + 1}
                         </span>
-                        <span className="text-sm font-medium text-white truncate max-w-[200px]">
+                        <span className="text-sm font-medium text-[var(--foreground)] truncate max-w-[200px]">
                           {watch(`questions.${index}.text`) || t('exams.newQuestion')}
                         </span>
-                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-white/40 uppercase tracking-wider">
+                        <span className="px-2 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-[10px] text-[var(--muted-foreground)]/40 uppercase tracking-wider">
                           {watch(`questions.${index}.type`) === 'multiple-choice' ? t('exams.multipleChoice') : 
                            watch(`questions.${index}.type`) === 'true-false' ? t('exams.trueFalse') : t('exams.openEnded')}
                         </span>
@@ -351,11 +351,11 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                             e.stopPropagation();
                             remove(index);
                           }}
-                          className="p-1.5 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                          className="p-1.5 text-[var(--muted-foreground)]/20 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
                         >
                           <Trash2 size={14} />
                         </button>
-                        {expandedQuestion === index ? <ChevronUp size={18} className="text-white/40" /> : <ChevronDown size={18} className="text-white/40" />}
+                        {expandedQuestion === index ? <ChevronUp size={18} className="text-[var(--muted-foreground)]/40" /> : <ChevronDown size={18} className="text-[var(--muted-foreground)]/40" />}
                       </div>
                     </div>
 
@@ -365,16 +365,16 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="px-4 pb-4 border-t border-white/5 pt-4 space-y-4"
+                          className="px-4 pb-4 border-t border-[var(--border)] pt-4 space-y-4"
                         >
                           {/* Question Text */}
                           <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                            <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">
                               {t('exams.questionText')}
                             </label>
                             <textarea
                               {...register(`questions.${index}.text`)}
-                              className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all resize-none h-20"
+                              className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-all resize-none h-20"
                               placeholder={t('exams.questionPlaceholder')}
                             />
                           </div>
@@ -382,12 +382,12 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           {/* Type and Points */}
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                              <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">
                                 {t('exams.type')}
                               </label>
                               <select
                                 {...register(`questions.${index}.type`)}
-                                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all"
+                                className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-all"
                                 onChange={(e) => {
                                   const type = e.target.value;
                                   if (type === 'true-false') {
@@ -405,13 +405,13 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                               </select>
                             </div>
                             <div>
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                              <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">
                                 {t('exams.points')}
                               </label>
                               <input
                                 type="number"
                                 {...register(`questions.${index}.points`)}
-                                className="w-full px-3 py-2 bg-black/30 border border-white/10 rounded-lg text-white text-sm focus:outline-none focus:border-bordo transition-all"
+                                className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-all"
                                 placeholder="1"
                               />
                             </div>
@@ -420,7 +420,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                           {/* Options for Multiple Choice */}
                           {watch(`questions.${index}.type`) === 'multiple-choice' && (
                             <div className="space-y-2">
-                              <label className="block text-xs font-medium text-gray-400 mb-1.5">
+                              <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">
                                 {t('exams.options')} ({t('exams.correctOption')})
                               </label>
                               {[0, 1, 2, 3].map((optIndex) => (
@@ -431,14 +431,14 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                     className={`p-1.5 rounded-full transition-all ${
                                       watch(`questions.${index}.correctAnswer`) === optIndex.toString() 
                                         ? "text-emerald-500 bg-emerald-500/10" 
-                                        : "text-white/20 hover:text-white/40"
+                                        : "text-[var(--muted-foreground)]/20 hover:text-[var(--muted-foreground)]/40"
                                     }`}
                                   >
                                     {watch(`questions.${index}.correctAnswer`) === optIndex.toString() ? <CheckCircle2 size={16} /> : <Circle size={16} />}
                                   </button>
                                   <input
                                     {...register(`questions.${index}.options.${optIndex}`)}
-                                    className="flex-1 px-3 py-1.5 bg-black/30 border border-white/5 rounded-lg text-white text-xs focus:outline-none focus:border-bordo transition-all"
+                                    className="flex-1 px-3 py-1.5 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] text-xs focus:outline-none focus:border-bordo transition-all"
                                     placeholder={`${String.fromCharCode(65 + optIndex)} variantı...`}
                                   />
                                 </div>
@@ -455,7 +455,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
                                   watch(`questions.${index}.correctAnswer`) === 'true'
                                     ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500"
-                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                                    : "bg-[var(--muted)]/50 border-[var(--border)] text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]"
                                 }`}
                               >
                                 {t('exams.true')}
@@ -466,7 +466,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
                                   watch(`questions.${index}.correctAnswer`) === 'false'
                                     ? "bg-red-500/10 border-red-500/50 text-red-500"
-                                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                                    : "bg-[var(--muted)]/50 border-[var(--border)] text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]"
                                 }`}
                               >
                                 {t('exams.false')}
@@ -481,11 +481,11 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-white/10 mt-6">
+            <div className="flex gap-3 pt-4 border-t border-[var(--border)] mt-6">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-colors font-medium"
+                className="flex-1 py-2.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-xl transition-colors font-medium"
               >
                 {t('common.cancel')}
               </button>

@@ -66,44 +66,44 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[#111] border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6"
+        className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md p-6"
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-white">{t('schedule.addNew')}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors">
+          <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('schedule.addNew')}</h2>
+          <button onClick={onClose} className="p-2 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors">
             <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
           <div>
-            <label className="block text-sm text-white/70 mb-1">{t('common.group')} ({t('common.optional')})</label>
+            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('common.group')} ({t('common.optional')})</label>
             <select name="group" value={form.group} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-              <option value="" className="bg-[#111]">{t('groups.selectGroup')}</option>
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
+              <option value="" className="bg-[var(--card)]">{t('groups.selectGroup')}</option>
               {groups.map((g) => (
-                <option key={g._id} value={g._id} className="bg-[#111]">{g.name}</option>
+                <option key={g._id} value={g._id} className="bg-[var(--card)]">{g.name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">{t('schedule.subject')} *</label>
+            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.subject')} *</label>
             <input name="subject" value={form.subject} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
               placeholder={t('schedule.subjectPlaceholder')} required />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white/70">{t('schedule.repetition')}</label>
+            <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('schedule.repetition')}</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setForm({ ...form, repetitionType: 'weekly' })}
                 className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
+                  form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]'
                 }`}
               >
                 {t('schedule.weekly')}
@@ -112,7 +112,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
                 type="button"
                 onClick={() => setForm({ ...form, repetitionType: 'once' })}
                 className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-white/5 border-white/10 text-white/50'
+                  form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]'
                 }`}
               >
                 {t('schedule.once')}
@@ -123,65 +123,65 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
           <div className="grid grid-cols-2 gap-4">
             {form.repetitionType === 'weekly' ? (
               <div>
-                <label className="block text-sm text-white/70 mb-1">{t('schedule.day')} *</label>
+                <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.day')} *</label>
                 <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
                   {DAYS.map((d, i) => (
-                    <option key={i} value={i} className="bg-[#111]">{d.label}</option>
+                    <option key={i} value={i} className="bg-[var(--card)]">{d.label}</option>
                   ))}
                 </select>
               </div>
             ) : (
               <div>
-                <label className="block text-sm text-white/70 mb-1">{t('schedule.date')} *</label>
+                <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.date')} *</label>
                 <input 
                   type="date" 
                   name="specificDate" 
                   value={form.specificDate} 
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                   required 
                 />
               </div>
             )}
             <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.format')}</label>
+              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.format')}</label>
               <select name="type" value={form.type} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo">
-                <option value="offline" className="bg-[#111]">Offline</option>
-                <option value="online" className="bg-[#111]">Online</option>
+                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
+                <option value="offline" className="bg-[var(--card)]">Offline</option>
+                <option value="online" className="bg-[var(--card)]">Online</option>
               </select>
             </div>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">{t('schedule.room')}</label>
+            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.room')}</label>
             <input name="room" value={form.room} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
               placeholder={form.type === 'online' ? t('schedule.linkPlaceholder') : t('schedule.roomPlaceholder')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.startTime')} *</label>
+              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.startTime')} *</label>
               <input type="time" name="startTime" value={form.startTime} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
             <div>
-              <label className="block text-sm text-white/70 mb-1">{t('schedule.endTime')} *</label>
+              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.endTime')} *</label>
               <input type="time" name="endTime" value={form.endTime} onChange={handleChange}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo"
+                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
           </div>
           <div>
-            <label className="block text-sm text-white/70 mb-1">{t('groups.note')}</label>
+            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('groups.note')}</label>
             <textarea name="note" value={form.note} onChange={handleChange}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-bordo resize-none h-20"
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none h-20"
               placeholder={t('schedule.notePlaceholder')} />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-white/60 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors">
+              className="px-4 py-2 text-sm text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] bg-[var(--muted)] hover:bg-[var(--muted)]/80 rounded-xl transition-colors">
               {t('common.cancel')}
             </button>
             <button type="submit" disabled={isLoading}
@@ -266,7 +266,7 @@ const Schedule = () => {
     <>
       <div className="space-y-6">
         <div className="flex justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-2">
             <Calendar className="text-bordo" />
             {t('schedule.title')}
           </h1>
@@ -288,40 +288,40 @@ const Schedule = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: dayIndex * 0.05 }}
-              className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden"
+              className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm"
             >
-              <div className="flex items-center gap-3 px-5 py-3 border-b border-white/10 bg-white/5">
+              <div className="flex items-center gap-3 px-5 py-3 border-b border-[var(--border)] bg-[var(--muted)]/20">
                 <span className="text-sm font-semibold text-bordo">{day.short}</span>
-                <h2 className="text-sm font-medium text-white">{day.label}</h2>
+                <h2 className="text-sm font-medium text-[var(--foreground)]">{day.label}</h2>
                 {byDay[dayIndex].length > 0 && (
-                  <span className="ml-auto text-xs text-white/40">{byDay[dayIndex].length} {t('schedule.lessonCount')}</span>
+                  <span className="ml-auto text-xs text-[var(--muted-foreground)]/40">{byDay[dayIndex].length} {t('schedule.lessonCount')}</span>
                 )}
               </div>
 
               <div className="p-4">
                 {byDay[dayIndex].length === 0 ? (
-                  <p className="text-sm text-white/30 text-center py-3">{t('schedule.noLessons')}</p>
+                  <p className="text-sm text-[var(--muted-foreground)]/30 text-center py-3">{t('schedule.noLessons')}</p>
                 ) : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {byDay[dayIndex].map((entry) => (
                       <div
                         key={entry._id}
-                        className="group relative flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all"
+                        className="group relative flex items-start gap-3 p-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)]/80 border border-[var(--border)] transition-all"
                       >
                         <div className="p-2 rounded-lg bg-bordo/20 text-bordo shrink-0">
                           <BookOpen size={16} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                          <p className="text-sm font-semibold text-[var(--foreground)] truncate flex items-center gap-2">
                             {entry.subject}
                             {entry.repetitionType === 'once' && entry.specificDate && (
-                              <span className="text-[10px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded font-normal">
+                              <span className="text-[10px] bg-[var(--muted)] text-[var(--muted-foreground)]/50 px-1.5 py-0.5 rounded font-normal">
                                 {new Date(entry.specificDate).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' })}
                               </span>
                             )}
                           </p>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="flex items-center gap-1 text-xs text-white/50">
+                            <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]/50">
                               <Clock size={11} />
                               {entry.startTime} – {entry.endTime}
                             </span>
@@ -331,17 +331,17 @@ const Schedule = () => {
                               {entry.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}
                             </span>
                             {entry.room && (
-                              <span className="flex items-center gap-1 text-xs text-white/50">
+                              <span className="flex items-center gap-1 text-xs text-[var(--muted-foreground)]/50">
                                 <MapPin size={11} />
                                 {entry.room}
                               </span>
                             )}
                           </div>
                           {entry.note && (
-                            <p className="text-[10px] text-white/30 mt-1 italic line-clamp-1">{entry.note}</p>
+                            <p className="text-[10px] text-[var(--muted-foreground)]/30 mt-1 italic line-clamp-1">{entry.note}</p>
                           )}
                           {entry.teacher && (
-                            <p className="text-xs text-white/40 mt-1 truncate">{entry.teacher.name}</p>
+                            <p className="text-xs text-[var(--muted-foreground)]/40 mt-1 truncate">{entry.teacher.name}</p>
                           )}
                           {entry.group && (
                             <span className="inline-block text-xs bg-bordo/20 text-bordo px-2 py-0.5 rounded-full mt-1">
@@ -352,7 +352,7 @@ const Schedule = () => {
                         {isAdminOrTeacher && (
                           <button
                             onClick={() => handleDelete(entry._id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-white/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                            className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 size={13} />
                           </button>
