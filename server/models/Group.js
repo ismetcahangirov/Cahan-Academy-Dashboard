@@ -23,8 +23,21 @@ const groupSchema = mongoose.Schema(
       required: [true, 'Please specify a course'],
     },
     schedule: {
-      days: [String], // e.g. ["Monday", "Wednesday"]
-      time: String,   // e.g. "19:00"
+      repetitionType: {
+        type: String,
+        enum: ['weekly', 'once'],
+        default: 'weekly'
+      },
+      days: [String], // used if repetitionType is 'weekly'
+      specificDate: Date, // used if repetitionType is 'once'
+      startTime: String, // e.g. "19:00"
+      endTime: String,   // e.g. "21:00"
+      type: {
+        type: String,
+        enum: ['online', 'offline'],
+        default: 'offline'
+      },
+      note: String
     },
     status: {
       type: String,

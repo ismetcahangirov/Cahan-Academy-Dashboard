@@ -116,15 +116,25 @@ const GroupDetailModal = ({ groupId, onClose }) => {
               </div>
 
               {/* Schedule */}
-              {group?.schedule?.days?.length > 0 && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                  <p className="text-xs text-white/40 mb-2 flex items-center gap-1">
-                    <Calendar size={13} /> Cədvəl
+              {(group?.schedule?.days?.length > 0 || group?.schedule?.specificDate) && (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
+                  <p className="text-xs text-white/40 flex items-center gap-1 mb-1">
+                    <Calendar size={13} /> Cədvəl ({group.schedule.type === 'online' ? 'Online' : 'Offline'})
+                    <span className="ml-auto px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[10px]">
+                      {group.schedule.repetitionType === 'weekly' ? 'Hər həftə' : 'Bir dəfə'}
+                    </span>
                   </p>
                   <p className="text-sm font-medium text-white">
-                    {group.schedule.days.join(', ')}
-                    {group.schedule.time && ` — ${group.schedule.time}`}
+                    {group.schedule.repetitionType === 'weekly' 
+                      ? group.schedule.days.join(', ')
+                      : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString('az-AZ') : ''}
+                    {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
                   </p>
+                  {group.schedule.note && (
+                    <p className="text-xs text-white/60 bg-black/20 p-2 rounded-lg mt-2 border border-white/5">
+                      Qeyd: {group.schedule.note}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -227,7 +237,15 @@ const Groups = () => {
     name: '',
     teacher: '',
     course: '',
-    schedule: { days: [], time: '' },
+    schedule: { 
+      repetitionType: 'weekly',
+      days: [], 
+      specificDate: '',
+      startTime: '', 
+      endTime: '', 
+      type: 'offline', 
+      note: '' 
+    },
   });
 
   const user = useSelector(selectCurrentUser);
@@ -244,7 +262,20 @@ const Groups = () => {
       await createGroup(formData).unwrap();
       toast.success('Qrup uğurla yaradıldı');
       setIsCreateModalOpen(false);
-      setFormData({ name: '', teacher: '', course: '', schedule: { days: [], time: '' } });
+      setFormData({ 
+        name: '', 
+        teacher: '', 
+        course: '', 
+        schedule: { 
+          repetitionType: 'weekly',
+          days: [], 
+          specificDate: '',
+          startTime: '', 
+          endTime: '', 
+          type: 'offline', 
+          note: '' 
+        } 
+      });
     } catch (error) {
       toast.error(error.data?.message || 'Xəta baş verdi');
     }
@@ -344,10 +375,28 @@ const Groups = () => {
                     <Users size={14} className="text-white/30" />
                     <span>{group.students?.length || 0} Tələbə</span>
                   </div>
-                  {group.schedule?.days?.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm text-white/50">
-                      <Calendar size={14} className="text-white/30" />
-                      <span>{group.schedule.days.join(', ')}</span>
+                  {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
+                    <div className="flex flex-col gap-1 text-sm text-white/50">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} className="text-white/30" />
+                        <span>
+                          {group.schedule.repetitionType === 'weekly' 
+                            ? group.schedule.days.join(', ')
+                            : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString('az-AZ') : ''}
+                        </span>
+                        <span className="text-[10px] text-white/20 ml-auto">
+                          {group.schedule.repetitionType === 'weekly' ? 'Haftəlik' : 'Bir dəfə'}
+                        </span>
+                      </div>
+                      {(group.schedule.startTime || group.schedule.endTime) && (
+                        <div className="flex items-center gap-2 pl-5 text-xs text-white/40">
+                          <span>{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
+                          <span className={cn(
+                            "px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border",
+                            group.schedule.type === 'online' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                          )}>{group.schedule.type === 'online' ? 'Online' : 'Offline'}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -423,36 +472,102 @@ const Groups = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Günlər</label>
-                  <div className="flex flex-wrap gap-2">
-                    {DAYS.map((day) => (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() => {
-                          const days = formData.schedule.days.includes(day)
-                            ? formData.schedule.days.filter((d) => d !== day)
-                            : [...formData.schedule.days, day];
-                          setFormData({ ...formData, schedule: { ...formData.schedule, days } });
-                        }}
-                        className={cn(
-                          'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
-                          formData.schedule.days.includes(day)
-                            ? 'bg-bordo border-bordo/50 text-white'
-                            : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'
-                        )}
-                      >
-                        {day}
-                      </button>
-                    ))}
+                  <label className="text-sm font-medium text-white/70">Təkrar növü</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'weekly' } })}
+                      className={cn(
+                        'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
+                        formData.schedule.repetitionType === 'weekly'
+                          ? 'bg-bordo border-bordo/50 text-white'
+                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+                      )}
+                    >
+                      Hər həftə
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'once' } })}
+                      className={cn(
+                        'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
+                        formData.schedule.repetitionType === 'once'
+                          ? 'bg-bordo border-bordo/50 text-white'
+                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
+                      )}
+                    >
+                      Bir dəfəlik
+                    </button>
+                  </div>
+                </div>
+
+                {formData.schedule.repetitionType === 'weekly' ? (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-white/70">Günlər</label>
+                    <div className="flex flex-wrap gap-2">
+                      {DAYS.map((day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => {
+                            const days = formData.schedule.days.includes(day)
+                              ? formData.schedule.days.filter((d) => d !== day)
+                              : [...formData.schedule.days, day];
+                            setFormData({ ...formData, schedule: { ...formData.schedule, days } });
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
+                            formData.schedule.days.includes(day)
+                              ? 'bg-bordo border-bordo/50 text-white'
+                              : 'bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10'
+                          )}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-white/70">Konkret Tarix</label>
+                    <input 
+                      type="date" 
+                      value={formData.schedule.specificDate}
+                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, specificDate: e.target.value } })}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" 
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-white/70">Başlama saatı</label>
+                    <input type="time" value={formData.schedule.startTime}
+                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, startTime: e.target.value } })}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-white/70">Bitmə saatı</label>
+                    <input type="time" value={formData.schedule.endTime}
+                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, endTime: e.target.value } })}
+                      className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-white/70">Saat</label>
-                  <input type="text" placeholder="Məs: 10:00 - 12:00" value={formData.schedule.time}
-                    onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, time: e.target.value } })}
-                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all" />
+                  <label className="text-sm font-medium text-white/70">Dərs formatı</label>
+                  <select value={formData.schedule.type} onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, type: e.target.value } })}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
+                    <option value="offline">Offline</option>
+                    <option value="online">Online</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-white/70">Cədvəl üçün qeyd</label>
+                  <textarea placeholder="Məs: Həftəsonu əlavə dərslər ola bilər" value={formData.schedule.note}
+                    onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, note: e.target.value } })}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 px-4 text-white text-sm focus:outline-none focus:border-bordo/50 transition-all resize-none h-20" />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
