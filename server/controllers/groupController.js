@@ -12,7 +12,7 @@ const syncGroupSchedule = async (group) => {
     const { repetitionType, days, specificDate, startTime, endTime, type, note } = group.schedule;
 
     if (repetitionType === 'weekly' && days && days.length > 0) {
-      const DAYS_AZ = ['Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə', 'Cümə axşamı', 'Cümə', 'Şənbə', 'Bazar'];
+      const DAYS_AZ = ['B.ertəsi', 'Çərşənbə A.', 'Çərşənbə', 'Cümə A.', 'Cümə', 'Şənbə', 'Bazar'];
       for (const dayStr of days) {
         const dayOfWeek = DAYS_AZ.indexOf(dayStr);
         if (dayOfWeek !== -1) {
