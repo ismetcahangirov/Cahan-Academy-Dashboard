@@ -22,6 +22,7 @@ import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
+import Select from '../../components/common/Select';
 
 const getLevelConfig = (t) => ({
   Beginner: { label: t('courses.levels.Beginner'), cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
@@ -36,18 +37,6 @@ const DarkInput = ({ label, ...props }) => (
       {...props}
       className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all"
     />
-  </div>
-);
-
-const DarkSelect = ({ label, children, ...props }) => (
-  <div className="space-y-1.5">
-    {label && <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{label}</label>}
-    <select
-      {...props}
-      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
-    >
-      {children}
-    </select>
   </div>
 );
 
@@ -223,18 +212,32 @@ const Courses = () => {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <DarkSelect label={t('courses.category')} required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
-                    <option value="" className="bg-[var(--card)]">{t('common.select') || 'Seçin...'}</option>
-                    <option value="Frontend" className="bg-[var(--card)]">Frontend</option>
-                    <option value="Backend" className="bg-[var(--card)]">Backend</option>
-                    <option value="Design" className="bg-[var(--card)]">Design</option>
-                    <option value="Mobile" className="bg-[var(--card)]">Mobile</option>
-                  </DarkSelect>
-                  <DarkSelect label={t('courses.level')} value={formData.level} onChange={(e) => setFormData({ ...formData, level: e.target.value })}>
-                    <option value="Beginner" className="bg-[var(--card)]">{t('courses.levels.Beginner')}</option>
-                    <option value="Intermediate" className="bg-[var(--card)]">{t('courses.levels.Intermediate')}</option>
-                    <option value="Advanced" className="bg-[var(--card)]">{t('courses.levels.Advanced')}</option>
-                  </DarkSelect>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('courses.category')}</label>
+                    <Select
+                      value={formData.category}
+                      onChange={(val) => setFormData({ ...formData, category: val })}
+                      options={[
+                        { label: 'Frontend', value: 'Frontend' },
+                        { label: 'Backend', value: 'Backend' },
+                        { label: 'Design', value: 'Design' },
+                        { label: 'Mobile', value: 'Mobile' },
+                      ]}
+                      placeholder={t('common.select') || 'Seçin...'}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('courses.level')}</label>
+                    <Select
+                      value={formData.level}
+                      onChange={(val) => setFormData({ ...formData, level: val })}
+                      options={[
+                        { label: t('courses.levels.Beginner'), value: 'Beginner' },
+                        { label: t('courses.levels.Intermediate'), value: 'Intermediate' },
+                        { label: t('courses.levels.Advanced'), value: 'Advanced' },
+                      ]}
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('users.cancelBtn')}</button>

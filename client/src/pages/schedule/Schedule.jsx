@@ -11,6 +11,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Select from '../../components/common/Select';
 
 const getDays = (t) => [
   { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
@@ -39,8 +40,7 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
     specificDate: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (name, value) => {
     if (name === 'group' && value) {
       const selectedGroup = groups.find(g => g._id === value);
       if (selectedGroup) {
@@ -80,19 +80,20 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('common.group')} ({t('common.optional')})</label>
-            <select name="group" value={form.group} onChange={handleChange}
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
-              <option value="" className="bg-[var(--card)]">{t('groups.selectGroup')}</option>
-              {groups.map((g) => (
-                <option key={g._id} value={g._id} className="bg-[var(--card)]">{g.name}</option>
-              ))}
-            </select>
+          <div className="space-y-1.5">
+            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('common.group')} ({t('common.optional')})</label>
+            <Select
+              value={form.group}
+              onChange={(val) => handleChange('group', val)}
+              options={[
+                { label: t('groups.selectGroup'), value: '' },
+                ...groups.map(g => ({ label: g.name, value: g._id }))
+              ]}
+            />
           </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.subject')} *</label>
-            <input name="subject" value={form.subject} onChange={handleChange}
+          <div className="space-y-1.5">
+            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.subject')} *</label>
+            <input name="subject" value={form.subject} onChange={(e) => handleChange('subject', e.target.value)}
               className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
               placeholder={t('schedule.subjectPlaceholder')} required />
           </div>
@@ -122,60 +123,62 @@ const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
 
           <div className="grid grid-cols-2 gap-4">
             {form.repetitionType === 'weekly' ? (
-              <div>
-                <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.day')} *</label>
-                <select name="dayOfWeek" value={form.dayOfWeek} onChange={handleChange}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
-                  {DAYS.map((d, i) => (
-                    <option key={i} value={i} className="bg-[var(--card)]">{d.label}</option>
-                  ))}
-                </select>
+              <div className="space-y-1.5">
+                <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.day')} *</label>
+                <Select
+                  value={form.dayOfWeek}
+                  onChange={(val) => handleChange('dayOfWeek', val)}
+                  options={DAYS.map((d, i) => ({ label: d.label, value: i }))}
+                />
               </div>
             ) : (
-              <div>
-                <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.date')} *</label>
+              <div className="space-y-1.5">
+                <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.date')} *</label>
                 <input 
                   type="date" 
                   name="specificDate" 
                   value={form.specificDate} 
-                  onChange={handleChange}
+                  onChange={(e) => handleChange('specificDate', e.target.value)}
                   className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                   required 
                 />
               </div>
             )}
-            <div>
-              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.format')}</label>
-              <select name="type" value={form.type} onChange={handleChange}
-                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
-                <option value="offline" className="bg-[var(--card)]">Offline</option>
-                <option value="online" className="bg-[var(--card)]">Online</option>
-              </select>
+            <div className="space-y-1.5">
+              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.format')}</label>
+              <Select
+                value={form.type}
+                onChange={(val) => handleChange('type', val)}
+                options={[
+                  { label: 'Offline', value: 'offline' },
+                  { label: 'Online', value: 'online' },
+                ]}
+              />
             </div>
           </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.room')}</label>
-            <input name="room" value={form.room} onChange={handleChange}
+          <div className="space-y-1.5">
+            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.room')}</label>
+            <input name="room" value={form.room} onChange={(e) => handleChange('room', e.target.value)}
               className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
               placeholder={form.type === 'online' ? t('schedule.linkPlaceholder') : t('schedule.roomPlaceholder')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.startTime')} *</label>
-              <input type="time" name="startTime" value={form.startTime} onChange={handleChange}
+            <div className="space-y-1.5">
+              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.startTime')} *</label>
+              <input type="time" name="startTime" value={form.startTime} onChange={(e) => handleChange('startTime', e.target.value)}
                 className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
-            <div>
-              <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('schedule.endTime')} *</label>
-              <input type="time" name="endTime" value={form.endTime} onChange={handleChange}
+            <div className="space-y-1.5">
+              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.endTime')} *</label>
+              <input type="time" name="endTime" value={form.endTime} onChange={(e) => handleChange('endTime', e.target.value)}
                 className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
                 required />
             </div>
           </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)]/70 mb-1">{t('groups.note')}</label>
-            <textarea name="note" value={form.note} onChange={handleChange}
+          <div className="space-y-1.5">
+            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('groups.note')}</label>
+            <textarea name="note" value={form.note} onChange={(e) => handleChange('note', e.target.value)}
               className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none h-20"
               placeholder={t('schedule.notePlaceholder')} />
           </div>

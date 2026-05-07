@@ -15,6 +15,7 @@ import ExamModal from './ExamModal';
 import ExamResultsModal from './ExamResultsModal';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Select from '../../components/common/Select';
 
 const Exams = () => {
   const { t } = useTranslation();
@@ -111,16 +112,16 @@ const Exams = () => {
         </div>
         
         {['admin', 'teacher'].includes(user.role) && (
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="w-full px-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-          >
-            <option value="" className="bg-[var(--card)]">{t('exams.allGroups')}</option>
-            {groups.map(group => (
-              <option key={group._id} value={group._id} className="bg-[var(--card)]">{group.name}</option>
-            ))}
-          </select>
+          <div className="w-full">
+            <Select
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              options={[
+                { label: t('exams.allGroups'), value: '' },
+                ...groups.map(group => ({ label: group.name, value: group._id }))
+              ]}
+            />
+          </div>
         )}
       </div>
 

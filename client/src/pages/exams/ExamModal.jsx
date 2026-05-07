@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import Select from '../../components/common/Select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -183,25 +184,21 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
               <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('common.group')}
               </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
-                  <Users size={18} />
-                </div>
-                <select
-                  {...register('group')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
-                >
-                  <option value="" className="bg-[var(--card)]">{t('groups.selectGroup')}</option>
-                  {!isLoadingGroups && groups.map((g) => (
-                    <option key={g._id} value={g._id} className="bg-[var(--card)]">
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.group && (
-                <p className="mt-1 text-sm text-red-500">{errors.group.message}</p>
-              )}
+              <Controller
+                name="group"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={[
+                      { label: t('groups.selectGroup'), value: '' },
+                      ...groups.map(g => ({ label: g.name, value: g._id }))
+                    ]}
+                    icon={<Users size={18} />}
+                    error={errors.group?.message}
+                  />
+                )}
+              />
             </div>
 
             {/* Type */}
@@ -209,22 +206,22 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
               <label className="block text-sm font-medium text-[var(--muted-foreground)]/80 mb-1.5">
                 {t('exams.type')}
               </label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40">
-                  <Type size={18} />
-                </div>
-                <select
-                  {...register('type')}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] focus:outline-none focus:border-bordo focus:ring-1 focus:ring-bordo transition-all appearance-none"
-                >
-                  <option value="practice" className="bg-[var(--card)]">{t('exams.practice')}</option>
-                  <option value="midterm" className="bg-[var(--card)]">{t('exams.midterm')}</option>
-                  <option value="final" className="bg-[var(--card)]">{t('exams.final')}</option>
-                </select>
-              </div>
-              {errors.type && (
-                <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>
-              )}
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={[
+                      { label: t('exams.practice'), value: 'practice' },
+                      { label: t('exams.midterm'), value: 'midterm' },
+                      { label: t('exams.final'), value: 'final' },
+                    ]}
+                    icon={<Type size={18} />}
+                    error={errors.type?.message}
+                  />
+                )}
+              />
             </div>
 
             {/* Date and Time */}
@@ -385,24 +382,30 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                               <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">
                                 {t('exams.type')}
                               </label>
-                              <select
-                                {...register(`questions.${index}.type`)}
-                                className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-all"
-                                onChange={(e) => {
-                                  const type = e.target.value;
-                                  if (type === 'true-false') {
-                                    update(index, { ...watch(`questions.${index}`), type, options: ['Düzdür', 'Səhvdir'], correctAnswer: 'true' });
-                                  } else if (type === 'multiple-choice') {
-                                    update(index, { ...watch(`questions.${index}`), type, options: ['', '', '', ''], correctAnswer: '0' });
-                                  } else {
-                                    update(index, { ...watch(`questions.${index}`), type, options: [], correctAnswer: '' });
-                                  }
-                                }}
-                              >
-                                <option value="multiple-choice">{t('exams.multipleChoice')}</option>
-                                <option value="true-false">{t('exams.trueFalse')}</option>
-                                <option value="open-ended">{t('exams.openEnded')}</option>
-                              </select>
+                              <Controller
+                                name={`questions.${index}.type`}
+                                control={control}
+                                render={({ field }) => (
+                                  <Select
+                                    {...field}
+                                    onChange={(val) => {
+                                      field.onChange(val);
+                                      if (val === 'true-false') {
+                                        update(index, { ...watch(`questions.${index}`), type: val, options: ['Düzdür', 'Səhvdir'], correctAnswer: 'true' });
+                                      } else if (val === 'multiple-choice') {
+                                        update(index, { ...watch(`questions.${index}`), type: val, options: ['', '', '', ''], correctAnswer: '0' });
+                                      } else {
+                                        update(index, { ...watch(`questions.${index}`), type: val, options: [], correctAnswer: '' });
+                                      }
+                                    }}
+                                    options={[
+                                      { label: t('exams.multipleChoice'), value: 'multiple-choice' },
+                                      { label: t('exams.trueFalse'), value: 'true-false' },
+                                      { label: t('exams.openEnded'), value: 'open-ended' },
+                                    ]}
+                                  />
+                                )}
+                              />
                             </div>
                             <div>
                               <label className="block text-xs font-medium text-[var(--muted-foreground)]/60 mb-1.5">

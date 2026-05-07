@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetUnreadCountQuery } from '../../features/notifications/notificationsApi';
 import { useTranslation } from 'react-i18next';
+import Dropdown from '../common/Dropdown';
 
 const Header = ({ setIsMobileOpen }) => {
   const user = useSelector(selectCurrentUser);
@@ -14,20 +15,9 @@ const Header = ({ setIsMobileOpen }) => {
     pollingInterval: 30000,
   });
   const { t, i18n } = useTranslation();
-  const [isLangOpen, setIsLangOpen] = useState(false);
-  const langRef = useRef(null);
   
   const unreadCount = countData?.count || 0;
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (langRef.current && !langRef.current.contains(event.target)) {
-        setIsLangOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const languages = [
     { code: 'az', name: 'AZE', flag: '🇦🇿' },
@@ -74,41 +64,18 @@ const Header = ({ setIsMobileOpen }) => {
         </button>
 
         {/* Language Selector */}
-        <div className="relative" ref={langRef}>
-          <button
-            onClick={() => setIsLangOpen(!isLangOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)] transition-all"
-          >
-            <span className="text-lg">{currentLang.flag}</span>
-            <span className="text-xs font-bold uppercase">{currentLang.code}</span>
-            <ChevronDown size={14} className={`transition-transform duration-200 ${isLangOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {isLangOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden z-50 py-1 backdrop-blur-xl">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => {
-                    i18n.changeLanguage(lang.code);
-                    setIsLangOpen(false);
-                  }}
-                  className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-colors ${
-                    i18n.language === lang.code 
-                      ? 'bg-bordo text-white' 
-                      : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
-                  }`}
-                >
-                  <span className="text-lg">{lang.flag}</span>
-                  <span className="font-medium">{lang.name}</span>
-                  {i18n.language === lang.code && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Dropdown
+          label={currentLang.code}
+          icon={<span className="text-lg">{currentLang.flag}</span>}
+          items={languages.map(lang => ({
+            label: lang.name,
+            icon: lang.flag,
+            active: i18n.language === lang.code,
+            onClick: () => i18n.changeLanguage(lang.code)
+          }))}
+          buttonClassName="px-3 py-1.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)] transition-all"
+          menuClassName="w-40"
+        />
 
         {/* User Profile */}
         <div className="flex items-center gap-3 pl-4 border-l border-[var(--border)]">

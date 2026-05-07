@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { az, enUS, ru } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import Select from '../../components/common/Select';
 
 const dateLocales = {
   az: az,
@@ -61,13 +62,15 @@ const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
           </div>
           <div>
             <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.groupLabel')} *</label>
-            <select name="group" value={form.group} onChange={handleChange} required
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo">
-              <option value="" className="bg-[var(--card)]">{t('classworks.placeholderGroup')}</option>
-              {groups.map((g) => (
-                <option key={g._id} value={g._id} className="bg-[var(--card)]">{g.name}</option>
-              ))}
-            </select>
+            <Select
+              value={form.group}
+              onChange={(val) => setForm(p => ({ ...p, group: val }))}
+              options={[
+                { label: t('classworks.placeholderGroup'), value: '' },
+                ...groups.map(g => ({ label: g.name, value: g._id }))
+              ]}
+              required
+            />
           </div>
           <div>
             <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.descLabel')} *</label>
@@ -172,13 +175,16 @@ const Classworks = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors" />
           </div>
           {isAdminOrTeacher && (
-            <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)}
-              className="px-4 py-2.5 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors">
-              <option value="" className="bg-[var(--card)]">{t('exams.allGroups')}</option>
-              {groups.map((g) => (
-                <option key={g._id} value={g._id} className="bg-[var(--card)]">{g.name}</option>
-              ))}
-            </select>
+            <div className="min-w-[180px]">
+              <Select
+                value={selectedGroup}
+                onChange={setSelectedGroup}
+                options={[
+                  { label: t('exams.allGroups'), value: '' },
+                  ...groups.map(g => ({ label: g.name, value: g._id }))
+                ]}
+              />
+            </div>
           )}
         </div>
 
