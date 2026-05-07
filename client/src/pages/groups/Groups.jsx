@@ -29,6 +29,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
+import Select from '../../components/common/Select';
 
 // ─── Group Detail Modal ──────────────────────────────────────────────────────
 const GroupDetailModal = ({ groupId, onClose }) => {
@@ -165,16 +166,14 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     >
                       <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 space-y-3">
                         <p className="text-xs font-medium text-[var(--muted-foreground)]">{t('groups.selectStudent')}:</p>
-                        <select
+                        <Select
                           value={selectedStudentId}
-                          onChange={(e) => setSelectedStudentId(e.target.value)}
-                          className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] focus:border-bordo/50 outline-none"
-                        >
-                          <option value="">{t('common.select') || 'Seçin...'}</option>
-                          {availableStudents.map((s) => (
-                            <option key={s._id} value={s._id}>{s.name} — {s.email}</option>
-                          ))}
-                        </select>
+                          onChange={setSelectedStudentId}
+                          options={[
+                            { label: t('common.select') || 'Seçin...', value: '' },
+                            ...availableStudents.map(s => ({ label: `${s.name} — ${s.email}`, value: s._id }))
+                          ]}
+                        />
                         <div className="flex gap-2">
                           <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-[var(--border)] text-[var(--muted-foreground)] rounded-xl text-sm hover:bg-[var(--muted)]">{t('users.cancelBtn')}</button>
                           <button
@@ -517,33 +516,32 @@ const Groups = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.selectTeacher')}</label>
-                  <select required value={formData.teacher} onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
-                    <option value="">{t('common.select') || 'Seçin...'}</option>
-                    {teachersData?.data?.map((teacher) => (
-                      <option key={teacher._id} value={teacher._id}>{teacher.name}</option>
-                    ))}
-                  </select>
+                  <Select
+                    value={formData.teacher}
+                    onChange={(val) => setFormData({ ...formData, teacher: val })}
+                    options={[
+                      { label: t('common.select') || 'Seçin...', value: '' },
+                      ...(teachersData?.data?.map(teacher => ({ label: teacher.name, value: teacher._id })) || [])
+                    ]}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('sidebar.students')}</label>
                   <div className="space-y-3">
-                    <select
-                      onChange={(e) => {
-                        const val = e.target.value;
+                    <Select
+                      value=""
+                      onChange={(val) => {
                         if (val && !formData.students.includes(val)) {
                           setFormData({ ...formData, students: [...formData.students, val] });
                         }
-                        e.target.value = "";
                       }}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
-                    >
-                      <option value="">{t('groups.addStudentsDesc')}</option>
-                      {studentsData?.data?.filter(s => !formData.students.includes(s._id)).map((student) => (
-                        <option key={student._id} value={student._id}>{student.name}</option>
-                      ))}
-                    </select>
+                      options={[
+                        { label: t('groups.addStudentsDesc'), value: '' },
+                        ...(studentsData?.data?.filter(s => !formData.students.includes(s._id)).map(student => ({ label: student.name, value: student._id })) || [])
+                      ]}
+                    />
                     
                     <div className="flex flex-wrap gap-2">
                       {formData.students.map((studentId) => {
@@ -650,11 +648,14 @@ const Groups = () => {
 
                 <div className="space-y-1.5">
                   <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.format')}</label>
-                  <select value={formData.schedule.type} onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, type: e.target.value } })}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all">
-                    <option value="offline">{t('groups.formatOffline')}</option>
-                    <option value="online">{t('groups.formatOnline')}</option>
-                  </select>
+                  <Select
+                    value={formData.schedule.type}
+                    onChange={(val) => setFormData({ ...formData, schedule: { ...formData.schedule, type: val } })}
+                    options={[
+                      { label: t('groups.formatOffline'), value: 'offline' },
+                      { label: t('groups.formatOnline'), value: 'online' },
+                    ]}
+                  />
                 </div>
 
                 <div className="space-y-1.5">

@@ -21,6 +21,7 @@ import {
 import UserModal from '../users/UserModal';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
+import Dropdown from '../../components/common/Dropdown';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -204,9 +205,18 @@ const Teachers = () => {
                         >
                           <Trash2 size={16} />
                         </button>
-                        <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
-                          <MoreHorizontal size={16} />
-                        </button>
+                        <Dropdown
+                          trigger={
+                            <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
+                              <MoreHorizontal size={16} />
+                            </button>
+                          }
+                          items={[
+                            { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(teacher) },
+                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(teacher._id), className: 'text-red-500 hover:bg-red-500/10' }
+                          ]}
+                          menuClassName="w-32"
+                        />
                       </div>
                     </td>
                   </tr>
