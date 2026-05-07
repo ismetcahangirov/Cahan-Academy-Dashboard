@@ -1,14 +1,10 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const userApi = createApi({
-  reducerPath: 'userApi',
-  baseQuery: createBaseQuery('/users'),
-  tagTypes: ['User'],
+export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query({
       query: (params) => ({
-        url: '/',
+        url: '/users',
         params: {
           pageNumber: params?.page || 1,
           keyword: params?.keyword || '',
@@ -18,12 +14,12 @@ export const userApi = createApi({
       providesTags: ['User'],
     }),
     getUserById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/users/${id}`,
       providesTags: ['User'],
     }),
     addUser: builder.mutation({
       query: (user) => ({
-        url: '/',
+        url: '/users',
         method: 'POST',
         body: user,
       }),
@@ -31,7 +27,7 @@ export const userApi = createApi({
     }),
     updateUser: builder.mutation({
       query: ({ id, ...user }) => ({
-        url: `/${id}`,
+        url: `/users/${id}`,
         method: 'PUT',
         body: user,
       }),
@@ -39,7 +35,7 @@ export const userApi = createApi({
     }),
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/users/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['User'],

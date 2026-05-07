@@ -1,13 +1,9 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const groupsApi = createApi({
-  reducerPath: 'groupsApi',
-  baseQuery: createBaseQuery('/groups'),
-  tagTypes: ['Group'],
+export const groupsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getGroups: builder.query({
-      query: () => '/',
+      query: () => '/groups',
       providesTags: (result) =>
         result
           ? [
@@ -17,12 +13,12 @@ export const groupsApi = createApi({
           : [{ type: 'Group', id: 'LIST' }],
     }),
     getGroupById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/groups/${id}`,
       providesTags: (result, error, id) => [{ type: 'Group', id }],
     }),
     createGroup: builder.mutation({
       query: (data) => ({
-        url: '/',
+        url: '/groups',
         method: 'POST',
         body: data,
       }),
@@ -30,7 +26,7 @@ export const groupsApi = createApi({
     }),
     updateGroup: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/${id}`,
+        url: `/groups/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -41,14 +37,14 @@ export const groupsApi = createApi({
     }),
     deleteGroup: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/groups/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Group', id: 'LIST' }],
     }),
     addStudentToGroup: builder.mutation({
       query: ({ groupId, studentId }) => ({
-        url: `/${groupId}/students`,
+        url: `/groups/${groupId}/students`,
         method: 'POST',
         body: { studentId },
       }),
