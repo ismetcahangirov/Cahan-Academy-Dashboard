@@ -14,6 +14,7 @@ import {
 } from '../../features/homeworks/homeworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
+import Select from '../../components/common/Select';
 
 import { format } from 'date-fns';
 
@@ -64,16 +65,16 @@ const Homeworks = () => {
         </div>
         
         {['admin', 'teacher'].includes(user.role) && (
-          <select
-            value={selectedGroup}
-            onChange={(e) => setSelectedGroup(e.target.value)}
-            className="w-full px-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-          >
-            <option value="" className="bg-[var(--card)]">{t('exams.allGroups')}</option>
-            {groups.map(group => (
-              <option key={group._id} value={group._id} className="bg-[var(--card)]">{group.name}</option>
-            ))}
-          </select>
+          <div className="w-full">
+            <Select
+              value={selectedGroup}
+              onChange={setSelectedGroup}
+              options={[
+                { label: t('exams.allGroups'), value: '' },
+                ...groups.map(group => ({ label: group.name, value: group._id }))
+              ]}
+            />
+          </div>
         )}
       </div>
 
