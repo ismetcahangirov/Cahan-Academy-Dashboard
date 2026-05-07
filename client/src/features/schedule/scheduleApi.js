@@ -1,10 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const scheduleApi = createApi({
-  reducerPath: 'scheduleApi',
-  baseQuery: createBaseQuery(),
-  tagTypes: ['Schedule'],
+export const scheduleApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getSchedule: builder.query({
       query: (params = {}) => {

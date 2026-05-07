@@ -1,13 +1,9 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const coursesApi = createApi({
-  reducerPath: 'coursesApi',
-  baseQuery: createBaseQuery('/courses'),
-  tagTypes: ['Course', 'Lesson'],
+export const coursesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getCourses: builder.query({
-      query: () => '/',
+      query: () => '/courses',
       providesTags: (result) =>
         result
           ? [
@@ -17,12 +13,12 @@ export const coursesApi = createApi({
           : [{ type: 'Course', id: 'LIST' }],
     }),
     getCourseById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/courses/${id}`,
       providesTags: (result, error, id) => [{ type: 'Course', id }],
     }),
     createCourse: builder.mutation({
       query: (data) => ({
-        url: '/',
+        url: '/courses',
         method: 'POST',
         body: data,
       }),
@@ -30,7 +26,7 @@ export const coursesApi = createApi({
     }),
     updateCourse: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/${id}`,
+        url: `/courses/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -41,14 +37,14 @@ export const coursesApi = createApi({
     }),
     deleteCourse: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/courses/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Course', id: 'LIST' }],
     }),
     addLesson: builder.mutation({
       query: ({ courseId, ...lessonData }) => ({
-        url: `/${courseId}/lessons`,
+        url: `/courses/${courseId}/lessons`,
         method: 'POST',
         body: lessonData,
       }),

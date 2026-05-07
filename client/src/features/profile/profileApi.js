@@ -1,10 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const profileApi = createApi({
-  reducerPath: 'profileApi',
-  baseQuery: createBaseQuery(),
-  tagTypes: ['Profile'],
+export const profileApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProfile: builder.query({
       query: () => '/users/profile',
