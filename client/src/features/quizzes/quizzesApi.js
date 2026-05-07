@@ -1,10 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const quizzesApi = createApi({
-  reducerPath: 'quizzesApi',
-  baseQuery: createBaseQuery(),
-  tagTypes: ['Quiz'],
+export const quizzesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getQuizzes: builder.query({
       query: (groupId) => {

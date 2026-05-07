@@ -1,25 +1,21 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const attendanceApi = createApi({
-  reducerPath: 'attendanceApi',
-  baseQuery: createBaseQuery('/attendance'),
-  tagTypes: ['Attendance'],
+export const attendanceApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAttendance: builder.query({
-      query: ({ group, date }) => `?group=${group}&date=${date}`,
+      query: ({ group, date }) => `/attendance?group=${group}&date=${date}`,
       providesTags: ['Attendance'],
     }),
     markAttendance: builder.mutation({
       query: (data) => ({
-        url: '/',
+        url: '/attendance',
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['Attendance'],
     }),
     getGroupStats: builder.query({
-      query: (groupId) => `/stats/${groupId}`,
+      query: (groupId) => `/attendance/stats/${groupId}`,
       providesTags: ['Attendance'],
     }),
   }),

@@ -1,10 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const notificationsApi = createApi({
-  reducerPath: 'notificationsApi',
-  baseQuery: createBaseQuery(),
-  tagTypes: ['Notification', 'NotificationCount'],
+export const notificationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query({
       query: ({ page = 1, limit = 20 }) => ({

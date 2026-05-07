@@ -1,10 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const homeworksApi = createApi({
-  reducerPath: 'homeworksApi',
-  baseQuery: createBaseQuery(),
-  tagTypes: ['Homework'],
+export const homeworksApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getHomeworks: builder.query({
       query: (groupId) => {

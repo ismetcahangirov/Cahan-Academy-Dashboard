@@ -1,14 +1,10 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const studentsApi = createApi({
-  reducerPath: 'studentsApi',
-  baseQuery: createBaseQuery('/students'),
-  tagTypes: ['Student'],
+export const studentsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getStudents: builder.query({
       query: (params) => ({
-        url: '/',
+        url: '/students',
         params,
       }),
       providesTags: (result) =>
@@ -20,12 +16,12 @@ export const studentsApi = createApi({
           : [{ type: 'Student', id: 'LIST' }],
     }),
     getStudentById: builder.query({
-      query: (id) => `/${id}`,
+      query: (id) => `/students/${id}`,
       providesTags: (result, error, id) => [{ type: 'Student', id }],
     }),
     inviteStudent: builder.mutation({
       query: (data) => ({
-        url: '/invite',
+        url: '/students/invite',
         method: 'POST',
         body: data,
       }),
@@ -33,7 +29,7 @@ export const studentsApi = createApi({
     }),
     updateStudent: builder.mutation({
       query: ({ id, ...data }) => ({
-        url: `/${id}`,
+        url: `/students/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -44,7 +40,7 @@ export const studentsApi = createApi({
     }),
     deleteStudent: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/students/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Student', id: 'LIST' }],

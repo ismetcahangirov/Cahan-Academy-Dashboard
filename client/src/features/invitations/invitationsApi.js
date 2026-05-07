@@ -1,13 +1,9 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const invitationsApi = createApi({
-  reducerPath: 'invitationsApi',
-  baseQuery: createBaseQuery('/invitations'),
-  tagTypes: ['Invitation'],
+export const invitationsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getInvitations: builder.query({
-      query: () => '/',
+      query: () => '/invitations',
       providesTags: (result) =>
         result
           ? [
@@ -18,7 +14,7 @@ export const invitationsApi = createApi({
     }),
     sendInvitation: builder.mutation({
       query: (data) => ({
-        url: '/',
+        url: '/invitations',
         method: 'POST',
         body: data,
       }),
@@ -26,13 +22,13 @@ export const invitationsApi = createApi({
     }),
     deleteInvitation: builder.mutation({
       query: (id) => ({
-        url: `/${id}`,
+        url: `/invitations/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Invitation', id: 'LIST' }],
     }),
     verifyInvitation: builder.query({
-      query: (token) => `/verify/${token}`,
+      query: (token) => `/invitations/verify/${token}`,
     }),
   }),
 });
