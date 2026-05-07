@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { X, Loader2, Save, User as UserIcon, Mail, Shield, UserCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
+import Select from '../../components/common/Select';
 
 const userSchema = (t) => z.object({
   name: z.string().min(3, t('users.nameShort')),
@@ -23,6 +24,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(userSchema(t)),
@@ -58,7 +60,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
@@ -152,28 +154,43 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('users.role')}</label>
                 <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
-                  <select
-                    {...register('role')}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
-                  >
-                    <option value="student">{t('common.student')}</option>
-                    <option value="teacher">{t('common.teacher')}</option>
-                    <option value="admin">{t('common.admin')}</option>
-                  </select>
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 z-10" size={18} />
+                  <Controller
+                    name="role"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={[
+                          { label: t('common.student'), value: 'student' },
+                          { label: t('common.teacher'), value: 'teacher' },
+                          { label: t('common.admin'), value: 'admin' },
+                        ]}
+                        buttonClassName="pl-10"
+                        error={!!errors.role}
+                      />
+                    )}
+                  />
                 </div>
               </div>
 
               {/* Status */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('users.status')}</label>
-                <select
-                  {...register('status')}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 appearance-none transition-all"
-                >
-                  <option value="active">{t('students.active')}</option>
-                  <option value="inactive">{t('students.inactive')}</option>
-                </select>
+                <Controller
+                  name="status"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      options={[
+                        { label: t('students.active'), value: 'active' },
+                        { label: t('students.inactive'), value: 'inactive' },
+                      ]}
+                      error={!!errors.status}
+                    />
+                  )}
+                />
               </div>
             </div>
 

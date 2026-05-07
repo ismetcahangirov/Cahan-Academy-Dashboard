@@ -22,6 +22,7 @@ import {
 import UserModal from '../users/UserModal';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
+import Dropdown from '../../components/common/Dropdown';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -200,7 +201,18 @@ const Students = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => handleEdit(student)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><Edit2 size={16} /></button>
                         <button onClick={() => handleDelete(student._id)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={16} /></button>
-                        <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><MoreHorizontal size={16} /></button>
+                        <Dropdown
+                          trigger={
+                            <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
+                              <MoreHorizontal size={16} />
+                            </button>
+                          }
+                          items={[
+                            { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
+                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-red-500 hover:bg-red-500/10' }
+                          ]}
+                          menuClassName="w-32"
+                        />
                       </div>
                     </td>
                   </tr>
