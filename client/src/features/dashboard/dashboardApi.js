@@ -1,17 +1,13 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { createBaseQuery } from '../../utils/baseQuery';
+import { apiSlice } from '../../app/api/apiSlice';
 
-export const dashboardApi = createApi({
-  reducerPath: 'dashboardApi',
-  baseQuery: createBaseQuery('/dashboard'),
-  tagTypes: ['Dashboard'],
+export const dashboardApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getStats: builder.query({
-      query: () => '/stats',
+      query: () => '/dashboard/stats',
       providesTags: ['Dashboard'],
     }),
     getActivities: builder.query({
-      query: () => '/activities',
+      query: () => '/dashboard/activities',
       providesTags: ['Dashboard'],
     }),
   }),
