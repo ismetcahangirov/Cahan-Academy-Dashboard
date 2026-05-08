@@ -46,6 +46,7 @@
     "haveAccount": "Already have an account?",
     "loginLink": "Login",
     "registerSuccess": "Registration completed successfully!",
+    "registerPending": "Registration submitted. Please wait for admin approval.",
     "registerError": "Registration failed",
     "nameShort": "Name must be at least 2 characters long",
     "passMismatch": "Passwords do not match",
@@ -171,7 +172,12 @@
     "createBtn": "Create",
     "saveBtn": "Save",
     "cancelBtn": "Cancel",
-    "nameShort": "Name must be at least 3 characters long"
+    "nameShort": "Name must be at least 3 characters long",
+    "status": "Status",
+    "allStatuses": "All",
+    "pending": "Pending",
+    "approve": "Approve",
+    "approveSuccess": "User approved successfully"
   },
   "groups": {
     "title": "Groups",

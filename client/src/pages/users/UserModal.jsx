@@ -12,7 +12,7 @@ const userSchema = (t) => z.object({
   name: z.string().min(3, t('users.nameShort')),
   email: z.string().email(t('auth.emailInvalid')),
   role: z.enum(['student', 'teacher', 'admin']),
-  status: z.enum(['active', 'inactive']),
+  status: z.enum(['active', 'inactive', 'pending']),
   password: z.string().min(6, t('auth.passwordShort')).optional().or(z.literal('')),
 });
 
@@ -184,6 +184,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
                     <Select
                       {...field}
                       options={[
+                        { label: t('users.pending'), value: 'pending' },
                         { label: t('students.active'), value: 'active' },
                         { label: t('students.inactive'), value: 'inactive' },
                       ]}
