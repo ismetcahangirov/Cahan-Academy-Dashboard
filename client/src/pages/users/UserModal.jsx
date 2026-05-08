@@ -61,7 +61,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
 
   return (
     <AnimatePresence mode="wait">
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -76,7 +76,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-10"
+          className="relative z-10 my-4 flex max-h-[calc(100vh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-2xl"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--muted)]/20">
@@ -92,7 +92,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+          <form onSubmit={handleSubmit(onSubmit)} className="custom-scrollbar space-y-5 overflow-y-auto p-6">
             {/* Name */}
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('auth.fullName')}</label>
@@ -149,7 +149,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
               {errors.password && <p className="text-xs text-bordo">{errors.password.message}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Role */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('users.role')}</label>
