@@ -75,6 +75,9 @@ export const getUsers = async (req, res) => {
   try {
     const pageSize = Number(req.query.pageSize) || 10;
     const page = Number(req.query.pageNumber) || 1;
+    const statusFilter = ['active', 'inactive', 'pending'].includes(req.query.status)
+      ? { status: req.query.status }
+      : {};
 
     const keyword = req.query.keyword
       ? {
@@ -85,8 +88,9 @@ export const getUsers = async (req, res) => {
         }
       : {};
 
-    const count = await User.countDocuments({ ...keyword });
-    const users = await User.find({ ...keyword })
+    const filters = { ...keyword, ...statusFilter };
+    const count = await User.countDocuments(filters);
+    const users = await User.find(filters)
       .select('-password')
       .limit(pageSize)
       .skip(pageSize * (page - 1))
@@ -127,6 +131,10 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
+      if (req.body.status && !['active', 'inactive', 'pending'].includes(req.body.status)) {
+        return res.status(400).json({ message: 'Invalid user status' });
+      }
+
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.role = req.body.role || user.role;
