@@ -153,9 +153,9 @@ const Settings = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { code: 'az', name: 'Azərbaycan', flag: '🇦🇿' },
-                  { code: 'en', name: 'English', flag: '🇺🇸' },
-                  { code: 'ru', name: 'Русский', flag: '🇷🇺' }
+                  { code: 'az', name: 'Azərbaycan' },
+                  { code: 'en', name: 'English' },
+                  { code: 'ru', name: 'Русский' }
                 ].map((lang) => (
                   <button
                     key={lang.code}
@@ -166,7 +166,7 @@ const Settings = () => {
                         : 'bg-[var(--input)] border-[var(--border)] text-[var(--muted-foreground)]/60 hover:bg-[var(--muted)] hover:border-[var(--muted-foreground)]/20'
                     }`}
                   >
-                    <span className="text-3xl mb-3 group-hover:scale-110 transition-transform">{lang.flag}</span>
+                    <span className="text-2xl font-bold text-bordo mb-3 uppercase group-hover:scale-110 transition-transform">{lang.code}</span>
                     <span className="font-medium">{lang.name}</span>
                     {i18n.language === lang.code && (
                       <div className="mt-2 w-1.5 h-1.5 rounded-full bg-bordo shadow-[0_0_8px_rgba(123,0,28,0.8)]" />
