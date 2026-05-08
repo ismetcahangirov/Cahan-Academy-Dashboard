@@ -79,6 +79,7 @@ describe('Auth API', () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('token');
+      expect(res.body.data).toHaveProperty('refreshToken');
     });
 
     it('should not login pending user before admin approval', async () => {
