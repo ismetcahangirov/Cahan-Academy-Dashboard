@@ -5,7 +5,7 @@
   --color-white: #FFFFFF;
   --color-black: #0F0F0F;
   
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-sans: "Times New Roman", Times, serif;
 }
 
 :root {
@@ -43,6 +43,13 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }
 
 @layer base {
