@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users as UsersIcon, 
   Search, 
   Filter, 
   Plus, 
+  Eye,
   Edit2, 
   Trash2,
   GraduationCap,
@@ -42,6 +44,7 @@ const StatusBadge = ({ status }) => {
 
 const Students = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -198,9 +201,7 @@ const Students = () => {
                     <td className="px-6 py-4"><StatusBadge status={student.status} /></td>
                     <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{new Date(student.createdAt).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US')}</td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleEdit(student)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><Edit2 size={16} /></button>
-                        <button onClick={() => handleDelete(student._id)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={16} /></button>
+                      <div className="flex items-center justify-end">
                         <Dropdown
                           trigger={
                             <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
@@ -208,10 +209,10 @@ const Students = () => {
                             </button>
                           }
                           items={[
+                            { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/students/${student._id}`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
                             { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-red-500 hover:bg-red-500/10' }
                           ]}
-                          menuClassName="w-32"
                         />
                       </div>
                     </td>
