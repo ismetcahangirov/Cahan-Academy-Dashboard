@@ -99,7 +99,7 @@ const Login = () => {
           <img
             src="/cahan-logo.svg"
             alt="Cahan Academy"
-            className="mx-auto mb-4 h-16 w-16 object-contain"
+            className="brand-logo mx-auto mb-4 h-16 w-16 object-contain"
           />
           <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('auth.loginTitle')}</h1>
           <p className="text-[var(--muted-foreground)]/60">{t('auth.loginSubtitle')}</p>

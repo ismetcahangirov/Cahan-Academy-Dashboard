@@ -144,7 +144,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               <img
                 src="/cahan-logo.svg"
                 alt="Cahan Academy"
-                className="w-9 h-9 object-contain shrink-0"
+                className="brand-logo w-9 h-9 object-contain shrink-0"
               />
               <span
                 className={cn(
