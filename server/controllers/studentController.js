@@ -1,4 +1,7 @@
 import User from '../models/userModel.js';
+import Group from '../models/Group.js';
+import Attendance from '../models/Attendance.js';
+import mongoose from 'mongoose';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
 /**
@@ -69,13 +72,51 @@ export const getStudentById = async (req, res) => {
       return sendError(res, 'Student not found', 404);
     }
 
-    // Note: group info will be added when Groups model is ready
+    // Fetch groups where this student is a member
+    const groups = await Group.find({ students: student._id })
+      .select('name course status teacher schedule startDate endDate')
+      .populate('teacher', 'name avatar')
+      .sort('-createdAt');
+
     const studentData = {
       ...student.toObject(),
-      group: null,
+      groups,
     };
 
     return sendSuccess(res, 'Student details fetched successfully', studentData);
+  } catch (error) {
+    return sendError(res, error.message, 500);
+  }
+};
+
+/**
+ * @desc    Get attendance stats for a specific student across all groups
+ * @route   GET /api/students/:id/attendance-stats
+ * @access  Private/Admin/Teacher
+ */
+export const getStudentAttendanceStats = async (req, res) => {
+  try {
+    const student = await User.findOne({ _id: req.params.id, role: 'student' });
+    if (!student) return sendError(res, 'Student not found', 404);
+
+    const stats = await Attendance.aggregate([
+      { $unwind: '$records' },
+      { $match: { 'records.student': new mongoose.Types.ObjectId(req.params.id) } },
+      {
+        $group: {
+          _id: '$records.status',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Normalize to { present, absent, late }
+    const result = { present: 0, absent: 0, late: 0 };
+    stats.forEach(({ _id, count }) => {
+      if (_id && result.hasOwnProperty(_id)) result[_id] = count;
+    });
+
+    return sendSuccess(res, 'Student attendance stats fetched', result);
   } catch (error) {
     return sendError(res, error.message, 500);
   }

@@ -19,6 +19,10 @@ export const studentsApi = apiSlice.injectEndpoints({
       query: (id) => `/students/${id}`,
       providesTags: (result, error, id) => [{ type: 'Student', id }],
     }),
+    getStudentAttendanceStats: builder.query({
+      query: (id) => `/students/${id}/attendance-stats`,
+      providesTags: (result, error, id) => [{ type: 'Student', id: `${id}-stats` }],
+    }),
     inviteStudent: builder.mutation({
       query: (data) => ({
         url: '/students/invite',
@@ -51,6 +55,7 @@ export const studentsApi = apiSlice.injectEndpoints({
 export const {
   useGetStudentsQuery,
   useGetStudentByIdQuery,
+  useGetStudentAttendanceStatsQuery,
   useInviteStudentMutation,
   useUpdateStudentMutation,
   useDeleteStudentMutation,
