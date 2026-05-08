@@ -480,6 +480,14 @@
     "email": "Email",
     "createdAt": "Qeydiyyat tarixi",
     "updatedAt": "Son yenilənmə",
-    "notFound": "Məlumat tapılmadı"
+    "notFound": "Məlumat tapılmadı",
+    "groups": "Qruplar",
+    "noGroups": "Qrup tapılmadı",
+    "attendance": "Davamiyyət",
+    "rate": "davamiyyət",
+    "totalGroups": "Cəmi qrup",
+    "activeGroups": "Aktiv",
+    "completedGroups": "Tamamlanmış",
+    "totalStudents": "Cəmi tələbə"
   }
 }
