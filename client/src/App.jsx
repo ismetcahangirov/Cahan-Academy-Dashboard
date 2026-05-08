@@ -32,6 +32,9 @@ const Quizzes = lazy(() => import('./pages/quizzes/Quizzes'));
 const Exams = lazy(() => import('./pages/exams/Exams'));
 const Notifications = lazy(() => import('./pages/notifications/Notifications'));
 const Schedule = lazy(() => import('./pages/schedule/Schedule'));
+const UserDetail = lazy(() => import('./pages/users/UserDetail'));
+const StudentDetail = lazy(() => import('./pages/students/StudentDetail'));
+const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
 
 // Fallback Loading Component
 const PageLoader = () => {
@@ -79,16 +82,19 @@ function App() {
               {/* Admin only */}
               <Route element={<RoleRoute roles={['admin']} />}>
                 <Route path="/users" element={<Users />} />
+                <Route path="/users/:id" element={<UserDetail />} />
                 <Route path="/invitations" element={<Invitations />} />
               </Route>
  
               {/* Admin + Teacher */}
               <Route element={<RoleRoute roles={['admin', 'teacher']} />}>
                 <Route path="/teachers" element={<Teachers />} />
+                <Route path="/teachers/:id" element={<TeacherDetail />} />
               </Route>
  
               {/* All authenticated users */}
               <Route path="/students" element={<Students />} />
+              <Route path="/students/:id" element={<StudentDetail />} />
               <Route path="/groups" element={<Groups />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/attendance" element={<Attendance />} />
