@@ -14,7 +14,10 @@
     "student": "Студент",
     "logoutConfirm": "Вы уверены, что хотите выйти?",
     "lightMode": "Светлая тема",
-    "darkMode": "Темная тема"
+    "darkMode": "Темная тема",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "view": "Просмотр"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -476,5 +479,14 @@
     "sendLink": "Отправить ссылку",
     "successMessage": "Ссылка для восстановления пароля отправлена на ваш email",
     "emailPlaceholder": "example@cahan.az"
+  },
+  "detail": {
+    "back": "Назад",
+    "info": "Информация",
+    "name": "Полное имя",
+    "email": "Email",
+    "createdAt": "Дата регистрации",
+    "updatedAt": "Последнее обновление",
+    "notFound": "Запись не найдена"
   }
 }
