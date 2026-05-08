@@ -29,12 +29,6 @@ import Dropdown from '../../components/common/Dropdown';
 
 const RoleBadge = ({ role }) => {
   const { t } = useTranslation();
-  const styles = {
-    admin: 'bg-red-500/10 text-red-500 border-red-500/20',
-    teacher: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-    student: 'bg-green-500/10 text-green-500 border-green-500/20',
-  };
-
   const roleLabel = {
     admin: t('common.admin'),
     teacher: t('common.teacher'),
@@ -42,7 +36,7 @@ const RoleBadge = ({ role }) => {
   };
 
   return (
-    <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize', styles[role] || styles.student)}>
+    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize bg-bordo/10 text-bordo border-bordo/20">
       {roleLabel[role] || role}
     </span>
   );
@@ -51,14 +45,14 @@ const RoleBadge = ({ role }) => {
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
   const styles = {
-    active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-    inactive: 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
-    pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    active: 'bg-bordo text-white border-bordo',
+    inactive: 'bg-[var(--muted)] text-bordo border-bordo/20',
+    pending: 'bg-bordo/10 text-bordo border-bordo/20',
   };
   const dots = {
-    active: 'bg-emerald-500',
-    inactive: 'bg-zinc-500',
-    pending: 'bg-amber-500',
+    active: 'bg-white',
+    inactive: 'bg-bordo',
+    pending: 'bg-bordo',
   };
   const labels = {
     active: t('students.active'),
@@ -277,11 +271,11 @@ const Users = () => {
                           }
                           items={[
                             ...(user.status === 'pending'
-                              ? [{ label: t('users.approve'), icon: <CheckCircle2 size={14} />, onClick: () => handleApproveUser(user), className: 'text-emerald-500 hover:bg-emerald-500/10' }]
+                              ? [{ label: t('users.approve'), icon: <CheckCircle2 size={14} />, onClick: () => handleApproveUser(user), className: 'text-bordo hover:bg-bordo/10' }]
                               : []),
                             { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/users/${user._id}`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEditUser(user) },
-                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(user._id), className: 'text-red-500 hover:bg-red-500/10' }
+                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(user._id), className: 'text-bordo hover:bg-bordo/10' }
                           ]}
                         />
                       </div>
