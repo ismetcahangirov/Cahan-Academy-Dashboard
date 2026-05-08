@@ -141,9 +141,11 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
             isCollapsed && !isMobile ? "justify-center" : "justify-between"
           )}>
             <div className="flex items-center gap-3 overflow-hidden">
-              <div className="w-8 h-8 rounded-lg bg-bordo flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-xl">C</span>
-              </div>
+              <img
+                src="/cahan-logo.svg"
+                alt="Cahan Academy"
+                className="brand-logo w-9 h-9 object-contain shrink-0"
+              />
               <span
                 className={cn(
                   "text-[var(--foreground)] font-bold whitespace-nowrap",
