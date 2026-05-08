@@ -96,6 +96,11 @@ const Login = () => {
 
       <div className="w-full max-w-md bg-[var(--card)] backdrop-blur-xl rounded-2xl border border-[var(--border)] p-8 shadow-2xl relative z-10">
         <div className="text-center mb-8">
+          <img
+            src="/cahan-logo.svg"
+            alt="Cahan Academy"
+            className="mx-auto mb-4 h-16 w-16 object-contain"
+          />
           <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('auth.loginTitle')}</h1>
           <p className="text-[var(--muted-foreground)]/60">{t('auth.loginSubtitle')}</p>
         </div>
