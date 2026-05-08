@@ -88,6 +88,24 @@ describe('User API', () => {
       expect(res.body.users.length).toBeGreaterThanOrEqual(2);
     });
 
+    it('should filter users by status if admin', async () => {
+      await User.create({
+        name: 'Pending User',
+        email: 'pending-filter@example.com',
+        password: 'Password1',
+        role: 'student',
+        status: 'pending'
+      });
+
+      const res = await request(app)
+        .get('/api/users?status=pending')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.users).toHaveLength(1);
+      expect(res.body.users[0].status).toBe('pending');
+    });
+
     it('should fail if not admin', async () => {
       const res = await request(app)
         .get('/api/users')
@@ -106,6 +124,24 @@ describe('User API', () => {
 
       expect(res.statusCode).toEqual(200);
       expect(res.body.role).toBe('teacher');
+    });
+
+    it('should approve pending user if admin', async () => {
+      const pendingUser = await User.create({
+        name: 'Approve User',
+        email: 'approve@example.com',
+        password: 'Password1',
+        role: 'student',
+        status: 'pending'
+      });
+
+      const res = await request(app)
+        .put(`/api/users/${pendingUser._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'active' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.status).toBe('active');
     });
 
     it('should fail to update user if not admin', async () => {
