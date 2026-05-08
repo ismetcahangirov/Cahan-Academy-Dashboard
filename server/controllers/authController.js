@@ -3,6 +3,7 @@ import Invitation from '../models/Invitation.js';
 import { generateToken, generateRefreshToken } from '../utils/generateToken.js';
 import apiResponse from '../utils/apiResponse.js';
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -205,6 +206,7 @@ const registerViaInvitation = async (req, res) => {
       email: user.email,
       role: user.role,
       token: generateToken(user._id),
+      refreshToken: generateRefreshToken(user._id),
     }, 201);
   } else {
     return apiResponse.error(res, 'Invalid user data', 400);
