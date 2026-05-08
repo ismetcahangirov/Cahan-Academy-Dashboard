@@ -15,6 +15,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import Avatar from '../../components/common/Avatar';
 import { 
   useGetUsersQuery, 
   useDeleteUserMutation,
@@ -196,10 +197,11 @@ const Users = () => {
                   <tr key={user._id} className="group hover:bg-[var(--muted)]/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <img 
-                          src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=7B001C&color=fff`} 
-                          alt="" 
-                          className="w-10 h-10 rounded-full object-cover border border-[var(--border)] group-hover:border-bordo/50 transition-colors"
+                        <Avatar
+                          src={user.avatar}
+                          name={user.name}
+                          className="w-10 h-10 rounded-full border border-[var(--border)] group-hover:border-bordo/50 transition-colors"
+                          textSize="sm"
                         />
                         <div>
                           <p className="text-sm font-medium text-[var(--foreground)]">{user.name}</p>

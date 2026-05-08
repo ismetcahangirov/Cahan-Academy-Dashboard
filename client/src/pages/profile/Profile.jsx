@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Avatar from '../../components/common/Avatar';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -76,10 +77,11 @@ const Profile = () => {
           {/* Avatar Section */}
           <div className="relative flex justify-center sm:justify-start -mt-12 mb-8">
             <div className="relative">
-              <img 
-                src={form.avatar || `https://ui-avatars.com/api/?name=${form.name || 'U'}&background=7B001C&color=fff&size=128`} 
-                alt="Profile" 
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--card)] object-cover bg-[var(--card)]"
+              <Avatar
+                src={form.avatar}
+                name={form.name}
+                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--card)] bg-[var(--card)]"
+                textSize="3xl"
               />
               <div className="absolute bottom-0 right-0 bg-bordo p-2 rounded-full border-2 border-[var(--card)] text-white shadow-lg">
                 <Camera size={16} />
