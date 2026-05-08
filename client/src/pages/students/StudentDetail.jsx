@@ -17,7 +17,10 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useGetStudentByIdQuery, useGetStudentAttendanceStatsQuery } from '../../features/students/studentsApi';
+import {
+  useGetStudentByIdQuery,
+  useGetStudentAttendanceStatsQuery,
+} from '../../features/students/studentsApi';
 import { cn } from '../../lib/utils';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -28,10 +31,10 @@ const StatusBadge = ({ status }) => {
     <span className={cn(
       'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border',
       isActive
-        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-        : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+        ? 'bg-bordo/10 text-bordo border-bordo/30'
+        : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
     )}>
-      <span className={cn('w-2 h-2 rounded-full', isActive ? 'bg-emerald-500' : 'bg-zinc-500')} />
+      <span className={cn('w-2 h-2 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]')} />
       {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
@@ -39,8 +42,8 @@ const StatusBadge = ({ status }) => {
 
 const InfoRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0">
-    <div className="p-2 rounded-lg bg-[var(--muted)] shrink-0 mt-0.5">
-      <Icon size={15} className="text-[var(--muted-foreground)]" />
+    <div className="p-2 rounded-lg bg-bordo/8 shrink-0 mt-0.5">
+      <Icon size={15} className="text-bordo" />
     </div>
     <div>
       <p className="text-xs text-[var(--muted-foreground)]/60 font-medium uppercase tracking-wider mb-0.5">{label}</p>
@@ -49,10 +52,13 @@ const InfoRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const StatCard = ({ icon: Icon, label, value, color, bg }) => (
-  <div className="bg-[var(--muted)]/40 border border-[var(--border)] rounded-xl p-4 flex items-center gap-3">
-    <div className={cn('p-2.5 rounded-xl', bg)}>
-      <Icon size={18} className={color} />
+const StatCard = ({ icon: Icon, label, value, dimmed }) => (
+  <div className={cn(
+    'border border-[var(--border)] rounded-xl p-4 flex items-center gap-3',
+    dimmed ? 'bg-[var(--muted)]/30' : 'bg-bordo/8'
+  )}>
+    <div className={cn('p-2.5 rounded-xl', dimmed ? 'bg-[var(--muted)]' : 'bg-bordo/15')}>
+      <Icon size={18} className={dimmed ? 'text-[var(--muted-foreground)]' : 'text-bordo'} />
     </div>
     <div>
       <p className="text-xs text-[var(--muted-foreground)]/60">{label}</p>
@@ -70,9 +76,9 @@ const GroupCard = ({ group }) => {
   const isOnline = group?.schedule?.type === 'online';
 
   return (
-    <div className="flex items-start gap-4 p-4 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)] hover:bg-[var(--muted)]/60 transition-all">
-      <div className="p-2.5 rounded-xl bg-blue-500/10 shrink-0">
-        <BookOpen size={18} className="text-blue-400" />
+    <div className="flex items-start gap-4 p-4 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)] hover:bg-bordo/5 transition-all">
+      <div className="p-2.5 rounded-xl bg-bordo/10 shrink-0">
+        <BookOpen size={18} className="text-bordo" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -81,21 +87,14 @@ const GroupCard = ({ group }) => {
             <span className={cn(
               'text-xs px-2 py-0.5 rounded-full border font-medium',
               group.status === 'active'
-                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                : group.status === 'completed'
-                ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+                ? 'bg-bordo/10 text-bordo border-bordo/30'
+                : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
             )}>
               {group.status}
             </span>
           )}
-          {isOnline !== undefined && (
-            <span className={cn(
-              'text-xs px-2 py-0.5 rounded-full border font-medium inline-flex items-center gap-1',
-              isOnline
-                ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-            )}>
+          {group?.schedule?.type && (
+            <span className="text-xs px-2 py-0.5 rounded-full border font-medium inline-flex items-center gap-1 bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]">
               {isOnline ? <Wifi size={10} /> : <WifiOff size={10} />}
               {isOnline ? t('groups.online') : t('groups.offline')}
             </span>
@@ -128,7 +127,7 @@ const StudentDetail = () => {
   const { data: statsData, isLoading: statsLoading } = useGetStudentAttendanceStatsQuery(id);
 
   const student = studentData?.data || studentData?.student || studentData;
-  const stats = statsData?.data || statsData;
+  const stats   = statsData?.data || statsData;
 
   const present = stats?.present ?? 0;
   const absent  = stats?.absent  ?? 0;
@@ -138,7 +137,7 @@ const StudentDetail = () => {
 
   const formatDate = (date) => {
     if (!date) return '—';
-    const lang = i18n.resolvedLanguage || i18n.language;
+    const lang   = i18n.resolvedLanguage || i18n.language;
     const locale = lang.startsWith('ru') ? 'ru-RU' : lang.startsWith('az') ? 'az-AZ' : 'en-US';
     return new Date(date).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
   };
@@ -150,7 +149,7 @@ const StudentDetail = () => {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors text-sm font-medium"
+        className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-bordo transition-colors text-sm font-medium"
       >
         <ArrowLeft size={16} />
         {t('detail.back')}
@@ -164,7 +163,7 @@ const StudentDetail = () => {
 
       {isError && (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-[var(--muted-foreground)]/60">
-          <AlertCircle size={40} className="opacity-40" />
+          <AlertCircle size={40} className="text-bordo opacity-40" />
           <p>{t('detail.notFound')}</p>
         </div>
       )}
@@ -177,7 +176,7 @@ const StudentDetail = () => {
             <img
               src={student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || 'S')}&background=7B001C&color=fff&size=128`}
               alt={student.name}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-[var(--border)] shadow-lg"
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-bordo/30 shadow-lg"
             />
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-[var(--foreground)] truncate">{student.name}</h1>
@@ -200,30 +199,25 @@ const StudentDetail = () => {
                   {t('detail.attendance')}
                 </h2>
                 {attendanceRate !== null && (
-                  <span className={cn(
-                    'text-sm font-bold px-3 py-1 rounded-full',
-                    attendanceRate >= 80 ? 'bg-emerald-500/10 text-emerald-400' :
-                    attendanceRate >= 60 ? 'bg-amber-500/10 text-amber-400' :
-                    'bg-red-500/10 text-red-400'
-                  )}>
+                  <span className="text-sm font-bold px-3 py-1 rounded-full bg-bordo/10 text-bordo">
                     {attendanceRate}% {t('detail.rate')}
                   </span>
                 )}
               </div>
 
-              {/* Progress bar */}
+              {/* Progress bar: present=bordo, late=bordo/50, absent=muted */}
               {total > 0 && (
                 <div className="h-2 rounded-full bg-[var(--muted)] overflow-hidden flex">
-                  <div style={{ width: `${(present/total)*100}%` }} className="bg-emerald-500 transition-all" />
-                  <div style={{ width: `${(late/total)*100}%` }}    className="bg-amber-400 transition-all" />
-                  <div style={{ width: `${(absent/total)*100}%` }}  className="bg-red-500 transition-all" />
+                  <div style={{ width: `${(present / total) * 100}%` }} className="bg-bordo transition-all" />
+                  <div style={{ width: `${(late / total) * 100}%` }}    className="bg-bordo/40 transition-all" />
+                  <div style={{ width: `${(absent / total) * 100}%` }}  className="bg-[var(--muted-foreground)]/20 transition-all" />
                 </div>
               )}
 
               <div className="grid grid-cols-3 gap-3">
-                <StatCard icon={CheckCircle} label={t('attendance.present')} value={present} color="text-emerald-400" bg="bg-emerald-500/10" />
-                <StatCard icon={TrendingUp}  label={t('attendance.late')}    value={late}    color="text-amber-400"   bg="bg-amber-500/10" />
-                <StatCard icon={XCircle}     label={t('attendance.absent')}  value={absent}  color="text-red-400"     bg="bg-red-500/10" />
+                <StatCard icon={CheckCircle} label={t('attendance.present')} value={present} />
+                <StatCard icon={TrendingUp}  label={t('attendance.late')}    value={late}    dimmed />
+                <StatCard icon={XCircle}     label={t('attendance.absent')}  value={absent}  dimmed />
               </div>
             </div>
           )}
@@ -245,10 +239,10 @@ const StudentDetail = () => {
           {/* Info */}
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
             <h2 className="text-sm font-semibold text-[var(--foreground)] uppercase tracking-wider mb-4">{t('detail.info')}</h2>
-            <InfoRow icon={UserIcon}  label={t('detail.name')}      value={student.name} />
-            <InfoRow icon={Mail}      label={t('detail.email')}     value={student.email} />
-            <InfoRow icon={Calendar}  label={t('detail.createdAt')} value={formatDate(student.createdAt)} />
-            <InfoRow icon={Clock}     label={t('detail.updatedAt')} value={formatDate(student.updatedAt)} />
+            <InfoRow icon={UserIcon} label={t('detail.name')}      value={student.name} />
+            <InfoRow icon={Mail}     label={t('detail.email')}     value={student.email} />
+            <InfoRow icon={Calendar} label={t('detail.createdAt')} value={formatDate(student.createdAt)} />
+            <InfoRow icon={Clock}    label={t('detail.updatedAt')} value={formatDate(student.updatedAt)} />
           </div>
         </motion.div>
       )}
