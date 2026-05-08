@@ -1,4 +1,5 @@
 import User from '../models/userModel.js';
+import Group from '../models/Group.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
 /**
@@ -61,10 +62,16 @@ export const getTeacherById = async (req, res) => {
       return sendError(res, 'Teacher not found', 404);
     }
 
-    // Note: groups info will be added when Groups model is ready
+    // Fetch groups where this teacher is assigned
+    const groups = await Group.find({ teacher: teacher._id })
+      .select('name course status students schedule startDate endDate')
+      .populate('students', 'name avatar')
+      .sort('-createdAt');
+
     const teacherData = {
       ...teacher.toObject(),
-      groups: [],
+      groups,
+      groupCount: groups.length,
     };
 
     return sendSuccess(res, 'Teacher details fetched successfully', teacherData);
