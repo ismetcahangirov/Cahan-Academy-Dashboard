@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, User as UserIcon, Mail, Shield,
-  Calendar, Clock, AlertCircle, Loader2,
+  Calendar, Clock, AlertCircle,
 } from 'lucide-react';
 import { useGetUserByIdQuery } from '../../features/users/userApi';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
+import Spinner from '../../components/common/Spinner';
 
 const RoleBadge = ({ role }) => {
   const { t } = useTranslation();
@@ -72,7 +73,7 @@ const UserDetail = () => {
 
       {isLoading && (
         <div className="flex items-center justify-center py-24">
-          <Loader2 size={36} className="animate-spin text-bordo" />
+          <Spinner />
         </div>
       )}
 

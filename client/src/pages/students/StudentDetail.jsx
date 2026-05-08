@@ -9,7 +9,6 @@ import {
   Calendar,
   Clock,
   AlertCircle,
-  Loader2,
   CheckCircle,
   XCircle,
   TrendingUp,
@@ -23,6 +22,7 @@ import {
 } from '../../features/students/studentsApi';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
+import Spinner from '../../components/common/Spinner';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -158,7 +158,7 @@ const StudentDetail = () => {
 
       {isLoading && (
         <div className="flex items-center justify-center py-24">
-          <Loader2 size={36} className="animate-spin text-bordo" />
+          <Spinner />
         </div>
       )}
 

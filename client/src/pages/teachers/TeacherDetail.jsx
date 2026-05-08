@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft, User as UserIcon, Mail, BookOpen,
-  Calendar, Clock, AlertCircle, Loader2, Users, Wifi, WifiOff,
+  Calendar, Clock, AlertCircle, Users, Wifi, WifiOff,
 } from 'lucide-react';
 import { useGetTeacherByIdQuery } from '../../features/teachers/teachersApi';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
+import Spinner from '../../components/common/Spinner';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -114,7 +115,7 @@ const TeacherDetail = () => {
         <ArrowLeft size={16} />{t('detail.back')}
       </button>
 
-      {isLoading && <div className="flex items-center justify-center py-24"><Loader2 size={36} className="animate-spin text-bordo" /></div>}
+      {isLoading && <div className="flex items-center justify-center py-24"><Spinner /></div>}
 
       {isError && (
         <div className="flex flex-col items-center justify-center py-24 gap-3 text-[var(--muted-foreground)]/60">

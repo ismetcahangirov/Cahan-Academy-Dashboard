@@ -6,7 +6,6 @@ import {
   Lock, 
   CheckCircle2, 
   AlertCircle, 
-  Loader2,
   ChevronRight,
   ShieldCheck
 } from 'lucide-react';
@@ -14,6 +13,7 @@ import { useLazyVerifyInvitationQuery } from '../../features/invitations/invitat
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useTranslation, Trans } from 'react-i18next';
+import Spinner from '../../components/common/Spinner';
 
 const AcceptInvitation = () => {
   const { t } = useTranslation();
@@ -61,7 +61,7 @@ const AcceptInvitation = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="animate-spin text-bordo" size={48} />
+          <Spinner />
           <p className="text-[var(--foreground)]/60">{t('acceptInvitation.verifying')}</p>
         </div>
       </div>
@@ -174,7 +174,7 @@ const AcceptInvitation = () => {
               className="w-full bg-bordo hover:bg-red-700 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-bordo/20 flex items-center justify-center gap-2 group disabled:opacity-50"
             >
               {isSubmitting ? (
-                <Loader2 className="animate-spin" size={20} />
+                <Spinner size="sm" color="white" />
               ) : (
                 <>
                   <span>{t('acceptInvitation.completeBtn')}</span>

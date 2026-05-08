@@ -33,10 +33,10 @@ const StatusBadge = ({ status }) => {
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
       isActive 
-        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+        ? 'bg-bordo/10 text-bordo border-bordo/20' 
         : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
     )}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-[var(--muted-foreground)]/40')}></span>
+      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]/40')}></span>
       {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
@@ -87,9 +87,9 @@ const Teachers = () => {
   };
 
   const stats = [
-    { title: t('teachers.totalTeachers'), value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { title: t('teachers.activeTeachers'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-    { title: t('students.tableGroup'), value: 0, icon: BookOpen, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    { title: t('teachers.totalTeachers'), value: data?.pagination?.total || 0, icon: UsersIcon },
+    { title: t('teachers.activeTeachers'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap },
+    { title: t('students.tableGroup'), value: 0, icon: BookOpen },
   ];
 
   return (
@@ -117,14 +117,14 @@ const Teachers = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 flex items-center gap-4"
+            className="bg-bordo border border-bordo rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg shadow-bordo/20"
           >
-            <div className={cn('p-3 rounded-xl', stat.bg)}>
-              <stat.icon size={22} className={stat.color} />
+            <div className="p-3 rounded-xl bg-white text-bordo">
+              <stat.icon size={22} />
             </div>
             <div>
-              <p className="text-[var(--muted-foreground)]/60 text-sm">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-[var(--foreground)]">{stat.value}</h3>
+              <p className="text-white/75 text-sm">{stat.title}</p>
+              <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
             </div>
           </motion.div>
         ))}
@@ -207,7 +207,7 @@ const Teachers = () => {
                           items={[
                             { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/teachers/${teacher._id}`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(teacher) },
-                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(teacher._id), className: 'text-red-500 hover:bg-red-500/10' }
+                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(teacher._id), className: 'text-bordo hover:bg-bordo/10' }
                           ]}
                         />
                       </div>

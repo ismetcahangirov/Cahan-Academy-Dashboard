@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, ChevronLeft, Loader2, Send } from 'lucide-react';
+import { Mail, ChevronLeft, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../components/common/Spinner';
 
 const forgotPasswordSchema = (t) => z.object({
   email: z.string().email(t('auth.emailInvalid')),
@@ -68,7 +69,7 @@ const ForgotPassword = () => {
             className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Spinner size="sm" color="white" />
             ) : (
               <>
                 <Send className="w-5 h-5" />

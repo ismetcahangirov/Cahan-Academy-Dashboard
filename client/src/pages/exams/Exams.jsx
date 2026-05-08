@@ -16,6 +16,7 @@ import ExamResultsModal from './ExamResultsModal';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '../../components/common/Select';
+import Spinner from '../../components/common/Spinner';
 
 const Exams = () => {
   const { t } = useTranslation();
@@ -127,7 +128,7 @@ const Exams = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
+          <Spinner />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

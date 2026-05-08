@@ -9,6 +9,7 @@ import { useCreateExamMutation, useUpdateExamMutation } from '../../features/exa
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../../components/common/Spinner';
 
 const questionSchema = z.object({
   text: z.string().min(1, 'Sual mətni boş ola bilməz'),
@@ -498,7 +499,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                 className="flex-1 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
               >
                 {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <Spinner size="sm" color="white" />
                 ) : (
                   isEditing ? t('common.update') : t('common.create')
                 )}
