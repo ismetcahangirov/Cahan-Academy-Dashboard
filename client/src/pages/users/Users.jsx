@@ -7,7 +7,7 @@ import {
   Eye,
   Edit2, 
   Trash2, 
-  Shield, 
+  CheckCircle2,
   User as UserIcon,
   Filter,
   ChevronLeft,
@@ -50,16 +50,29 @@ const RoleBadge = ({ role }) => {
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
-  const isActive = status === 'active';
+  const styles = {
+    active: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    inactive: 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20',
+    pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+  };
+  const dots = {
+    active: 'bg-emerald-500',
+    inactive: 'bg-zinc-500',
+    pending: 'bg-amber-500',
+  };
+  const labels = {
+    active: t('students.active'),
+    inactive: t('students.inactive'),
+    pending: t('users.pending'),
+  };
+
   return (
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
-      isActive 
-        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-        : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+      styles[status] || styles.inactive
     )}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-zinc-500')}></span>
-      {isActive ? t('students.active') : t('students.inactive')}
+      <span className={cn('w-1.5 h-1.5 rounded-full', dots[status] || dots.inactive)}></span>
+      {labels[status] || status}
     </span>
   );
 };
@@ -70,12 +83,14 @@ const Users = () => {
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
   const { data, isLoading, isFetching } = useGetUsersQuery({ 
     page, 
     keyword,
+    status: statusFilter,
     pageSize: 10 
   });
 
@@ -108,6 +123,26 @@ const Users = () => {
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
+  };
+
+  const handleStatusFilter = (status) => {
+    setStatusFilter(status);
+    setPage(1);
+  };
+
+  const handleApproveUser = async (user) => {
+    try {
+      await updateUser({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: 'active',
+      }).unwrap();
+      toast.success(t('users.approveSuccess'));
+    } catch (err) {
+      toast.error(err?.data?.message || t('students.error'));
+    }
   };
 
   const handleModalSubmit = async (formData) => {
@@ -154,11 +189,28 @@ const Users = () => {
             className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </form>
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-sm hover:text-[var(--foreground)] hover:bg-[var(--border)] transition-all flex-1 md:flex-none">
-            <Filter size={16} />
-            {t('settings.notifications')}
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {[
+            { label: t('users.allStatuses'), value: '' },
+            { label: t('users.pending'), value: 'pending' },
+            { label: t('students.active'), value: 'active' },
+            { label: t('students.inactive'), value: 'inactive' },
+          ].map((item) => (
+            <button
+              key={item.value || 'all'}
+              type="button"
+              onClick={() => handleStatusFilter(item.value)}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-xl border text-sm transition-all flex-1 md:flex-none',
+                statusFilter === item.value
+                  ? 'bg-bordo text-white border-bordo shadow-lg shadow-bordo/20'
+                  : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
+              )}
+            >
+              <Filter size={16} />
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -224,6 +276,9 @@ const Users = () => {
                             </button>
                           }
                           items={[
+                            ...(user.status === 'pending'
+                              ? [{ label: t('users.approve'), icon: <CheckCircle2 size={14} />, onClick: () => handleApproveUser(user), className: 'text-emerald-500 hover:bg-emerald-500/10' }]
+                              : []),
                             { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/users/${user._id}`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEditUser(user) },
                             { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(user._id), className: 'text-red-500 hover:bg-red-500/10' }

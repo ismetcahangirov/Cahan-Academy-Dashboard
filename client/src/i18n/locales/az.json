@@ -46,6 +46,7 @@
     "haveAccount": "Artıq hesabınız var?",
     "loginLink": "Giriş edin",
     "registerSuccess": "Qeydiyyat uğurla tamamlandı!",
+    "registerPending": "Qeydiyyat tamamlandı. Admin təsdiqindən sonra daxil ola bilərsiniz.",
     "registerError": "Qeydiyyat uğursuz oldu",
     "nameShort": "Ad ən azı 2 simvoldan ibarət olmalıdır",
     "passMismatch": "Şifrələr uyğun gəlmir",
@@ -171,7 +172,12 @@
     "createBtn": "Yarat",
     "saveBtn": "Yadda saxla",
     "cancelBtn": "Ləğv et",
-    "nameShort": "Ad ən azı 3 simvol olmalıdır"
+    "nameShort": "Ad ən azı 3 simvol olmalıdır",
+    "status": "Status",
+    "allStatuses": "Hamısı",
+    "pending": "Gözləyir",
+    "approve": "Təsdiqlə",
+    "approveSuccess": "İstifadəçi təsdiqləndi"
   },
   "groups": {
     "title": "Qruplar",

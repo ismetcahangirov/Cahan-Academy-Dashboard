@@ -9,6 +9,7 @@ export const userApi = apiSlice.injectEndpoints({
           pageNumber: params?.page || 1,
           keyword: params?.keyword || '',
           pageSize: params?.pageSize || 10,
+          status: params?.status || '',
         },
       }),
       providesTags: ['User'],

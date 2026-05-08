@@ -8,7 +8,7 @@ import crypto from 'crypto';
 // @route   POST /api/auth/register
 // @access  Public
 const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   // Password strength validation
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
@@ -26,16 +26,17 @@ const register = async (req, res) => {
     name,
     email,
     password,
-    role: role || 'student', // Default to student
+    role: 'student',
+    status: 'pending',
   });
 
   if (user) {
-    return apiResponse.success(res, 'User registered successfully', {
+    return apiResponse.success(res, 'Registration submitted. Please wait for admin approval before logging in.', {
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id),
+      status: user.status,
     }, 201);
   } else {
     return apiResponse.error(res, 'Invalid user data', 400);
@@ -51,6 +52,10 @@ const login = async (req, res) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (user && (await user.matchPassword(password))) {
+    if (user.status === 'pending') {
+      return apiResponse.error(res, 'Your account is waiting for admin approval.', 403);
+    }
+
     if (user.status === 'inactive') {
       return apiResponse.error(res, 'Your account is inactive. Please contact admin.', 403);
     }

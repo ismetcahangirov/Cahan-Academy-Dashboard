@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useRegisterMutation } from '../features/auth/authApi';
-import { setCredentials, selectIsAuthenticated } from '../features/auth/authSlice';
+import { selectIsAuthenticated } from '../features/auth/authSlice';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -25,7 +25,6 @@ const registerSchema = (t) => z.object({
 const Register = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const [isLangOpen, setIsLangOpen] = useState(false);
   const langRef = useRef(null);
@@ -66,10 +65,9 @@ const Register = () => {
 
   const onSubmit = async (data) => {
     try {
-      const userData = await registerUser(data).unwrap();
-      dispatch(setCredentials(userData.data));
-      toast.success(t('auth.registerSuccess'));
-      navigate('/');
+      await registerUser(data).unwrap();
+      toast.success(t('auth.registerPending'));
+      navigate('/login');
     } catch (err) {
       toast.error(err?.data?.message || t('auth.registerError'));
     }

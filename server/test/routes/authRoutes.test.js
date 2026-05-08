@@ -24,7 +24,8 @@ describe('Auth API', () => {
 
       expect(res.statusCode).toEqual(201);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toHaveProperty('token');
+      expect(res.body.data).not.toHaveProperty('token');
+      expect(res.body.data.status).toBe('pending');
     });
 
     it('should not register user with existing email', async () => {
@@ -64,7 +65,8 @@ describe('Auth API', () => {
       await User.create({
         name: 'Login User',
         email: 'login@example.com',
-        password: 'Password1'
+        password: 'Password1',
+        status: 'active'
       });
 
       const res = await request(app)
@@ -77,6 +79,25 @@ describe('Auth API', () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('token');
+    });
+
+    it('should not login pending user before admin approval', async () => {
+      await User.create({
+        name: 'Pending User',
+        email: 'pending@example.com',
+        password: 'Password1',
+        status: 'pending'
+      });
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'pending@example.com',
+          password: 'Password1',
+        });
+
+      expect(res.statusCode).toEqual(403);
+      expect(res.body.success).toBe(false);
     });
 
     it('should not login with wrong password', async () => {
