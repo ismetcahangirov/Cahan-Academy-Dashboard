@@ -14,7 +14,10 @@
     "student": "Student",
     "logoutConfirm": "Are you sure you want to logout?",
     "lightMode": "Light Mode",
-    "darkMode": "Dark Mode"
+    "darkMode": "Dark Mode",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -469,5 +472,14 @@
     "sendLink": "Send link",
     "successMessage": "Password reset link sent to your email",
     "emailPlaceholder": "example@cahan.az"
+  },
+  "detail": {
+    "back": "Back",
+    "info": "Information",
+    "name": "Full Name",
+    "email": "Email",
+    "createdAt": "Registration Date",
+    "updatedAt": "Last Updated",
+    "notFound": "Record not found"
   }
 }

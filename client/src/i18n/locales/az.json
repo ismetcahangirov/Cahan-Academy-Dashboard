@@ -14,7 +14,10 @@
     "student": "Tələbə",
     "logoutConfirm": "Çıxış etmək istədiyinizə əminsiniz?",
     "lightMode": "İşıqlı rejim",
-    "darkMode": "Qaranlıq rejim"
+    "darkMode": "Qaranlıq rejim",
+    "edit": "Redaktə",
+    "delete": "Sil",
+    "view": "Bax"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -469,5 +472,14 @@
     "sendLink": "Linki göndər",
     "successMessage": "Şifrə yeniləmə linki emailinizə göndərildi",
     "emailPlaceholder": "nümunə@cahan.az"
+  },
+  "detail": {
+    "back": "Geri",
+    "info": "Məlumatlar",
+    "name": "Ad Soyad",
+    "email": "Email",
+    "createdAt": "Qeydiyyat tarixi",
+    "updatedAt": "Son yenilənmə",
+    "notFound": "Məlumat tapılmadı"
   }
 }
