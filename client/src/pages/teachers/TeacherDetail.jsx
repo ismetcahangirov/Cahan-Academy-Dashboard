@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useGetTeacherByIdQuery } from '../../features/teachers/teachersApi';
 import { cn } from '../../lib/utils';
+import Avatar from '../../components/common/Avatar';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -126,10 +127,11 @@ const TeacherDetail = () => {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
           {/* Header */}
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <img
-              src={teacher.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name||'T')}&background=7B001C&color=fff&size=128`}
-              alt={teacher.name}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-bordo/30 shadow-lg"
+            <Avatar
+              src={teacher.avatar}
+              name={teacher.name}
+              className="w-20 h-20 rounded-2xl border-2 border-bordo/30 shadow-lg"
+              textSize="2xl"
             />
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-[var(--foreground)] truncate">{teacher.name}</h1>

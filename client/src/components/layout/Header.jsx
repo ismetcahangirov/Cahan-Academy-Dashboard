@@ -7,6 +7,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetUnreadCountQuery } from '../../features/notifications/notificationsApi';
 import { useTranslation } from 'react-i18next';
 import Dropdown from '../common/Dropdown';
+import Avatar from '../common/Avatar';
 
 const Header = ({ setIsMobileOpen }) => {
   const user = useSelector(selectCurrentUser);
@@ -84,10 +85,11 @@ const Header = ({ setIsMobileOpen }) => {
             <span className="text-xs text-[var(--muted-foreground)]/60 capitalize">{t(`common.${user?.role || 'student'}`)}</span>
           </div>
           <Link to="/profile">
-            <img
-              src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || 'U'}&background=7B001C&color=fff`}
-              alt="Profile"
-              className="w-9 h-9 rounded-full object-cover border border-[var(--border)] cursor-pointer hover:border-bordo transition-colors"
+            <Avatar
+              src={user?.avatar}
+              name={user?.name}
+              className="w-9 h-9 rounded-full border border-[var(--border)] cursor-pointer hover:border-bordo transition-colors"
+              textSize="xs"
             />
           </Link>
         </div>
