@@ -9,6 +9,7 @@ describe('authSlice reducer', () => {
     initialState = {
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       loading: false,
       error: null,
@@ -23,6 +24,7 @@ describe('authSlice reducer', () => {
     const loggedInState = {
       user: { id: 1, name: 'Test User' },
       token: 'fake-token',
+      refreshToken: 'fake-refresh-token',
       isAuthenticated: true,
     };
     
@@ -31,6 +33,7 @@ describe('authSlice reducer', () => {
     
     expect(actual.user).toBeNull();
     expect(actual.token).toBeNull();
+    expect(actual.refreshToken).toBeNull();
     expect(actual.isAuthenticated).toBe(false);
   });
 });
