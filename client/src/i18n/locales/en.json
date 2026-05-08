@@ -480,6 +480,14 @@
     "email": "Email",
     "createdAt": "Registration Date",
     "updatedAt": "Last Updated",
-    "notFound": "Record not found"
+    "notFound": "Record not found",
+    "groups": "Groups",
+    "noGroups": "No groups found",
+    "attendance": "Attendance",
+    "rate": "attendance rate",
+    "totalGroups": "Total Groups",
+    "activeGroups": "Active",
+    "completedGroups": "Completed",
+    "totalStudents": "Total Students"
   }
 }

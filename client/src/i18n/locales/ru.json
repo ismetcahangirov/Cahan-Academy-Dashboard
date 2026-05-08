@@ -487,6 +487,14 @@
     "email": "Email",
     "createdAt": "Дата регистрации",
     "updatedAt": "Последнее обновление",
-    "notFound": "Запись не найдена"
+    "notFound": "Запись не найдена",
+    "groups": "Группы",
+    "noGroups": "Группы не найдены",
+    "attendance": "Посещаемость",
+    "rate": "посещаемость",
+    "totalGroups": "Всего групп",
+    "activeGroups": "Активных",
+    "completedGroups": "Завершённых",
+    "totalStudents": "Всего студентов"
   }
 }
