@@ -5,6 +5,7 @@ import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/e
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
+import Spinner from '../../components/common/Spinner';
 
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
@@ -144,7 +145,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           <div className="flex-1 overflow-auto custom-scrollbar p-6">
             {isLoadingExam ? (
               <div className="flex justify-center items-center h-full">
-                <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
+                <Spinner />
               </div>
             ) : filteredStudents.length === 0 ? (
               <div className="text-center text-[var(--muted-foreground)] py-12">
@@ -222,7 +223,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               className="px-6 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
             >
               {isSubmitting ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <Spinner size="sm" color="white" />
               ) : (
                 <>
                   <Save size={18} />

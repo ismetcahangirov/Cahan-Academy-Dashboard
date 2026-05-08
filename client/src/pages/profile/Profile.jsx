@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Camera, Loader2, Shield } from 'lucide-react';
+import { User, Mail, Camera, Shield } from 'lucide-react';
 import { useGetProfileQuery, useUpdateProfileMutation } from '../../features/profile/profileApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
+import Spinner from '../../components/common/Spinner';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -57,7 +58,7 @@ const Profile = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="animate-spin text-bordo w-12 h-12" />
+        <Spinner />
       </div>
     );
   }
@@ -152,7 +153,7 @@ const Profile = () => {
               disabled={isUpdating}
               className="flex items-center gap-2 bg-bordo hover:bg-bordo/80 text-white px-6 py-3 rounded-xl transition-colors font-medium disabled:opacity-50"
             >
-              {isUpdating && <Loader2 size={18} className="animate-spin" />}
+              {isUpdating && <Spinner size="sm" color="white" />}
               {t('profile.saveBtn')}
             </button>
           </div>

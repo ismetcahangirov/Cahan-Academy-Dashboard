@@ -17,6 +17,7 @@ import {
   useDeleteNotificationMutation,
 } from '../../features/notifications/notificationsApi';
 import toast from 'react-hot-toast';
+import Spinner from '../../components/common/Spinner';
 
 const Notifications = () => {
   const { t, i18n } = useTranslation();
@@ -56,7 +57,7 @@ const Notifications = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bordo"></div>
+        <Spinner />
       </div>
     );
   }

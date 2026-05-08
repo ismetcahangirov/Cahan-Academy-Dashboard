@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { X, Loader2, Save, User as UserIcon, Mail, Shield, UserCheck } from 'lucide-react';
+import { X, Save, User as UserIcon, Mail, Shield, UserCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
+import Spinner from '../../components/common/Spinner';
 
 const userSchema = (t) => z.object({
   name: z.string().min(3, t('users.nameShort')),
@@ -210,7 +211,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
                 className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50"
               >
                 {isLoading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <Spinner size="sm" color="white" />
                 ) : (
                   <Save size={18} />
                 )}

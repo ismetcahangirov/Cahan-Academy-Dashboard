@@ -3,8 +3,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Lock, Loader2, Save } from 'lucide-react';
+import { Lock, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../components/common/Spinner';
 
 const resetPasswordSchema = (t) => z.object({
   password: z.string().min(6, t('auth.passwordShort')),
@@ -82,7 +83,7 @@ const ResetPassword = () => {
             className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Spinner size="sm" color="white" />
             ) : (
               <>
                 <Save className="w-5 h-5" />

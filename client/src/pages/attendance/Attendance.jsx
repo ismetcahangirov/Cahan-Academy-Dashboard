@@ -97,27 +97,33 @@ const Attendance = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Group Selector */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-[var(--card)] border border-[var(--border)] p-5 rounded-2xl space-y-4">
-            <h3 className="font-bold text-[var(--foreground)] flex items-center gap-2 text-sm">
-              <Users size={16} className="text-bordo" />
+          <div className="bg-bordo border border-bordo p-5 rounded-2xl space-y-4 text-white shadow-lg shadow-bordo/20">
+            <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+              <Users size={16} className="text-white" />
               {t('attendance.selectGroup')}
             </h3>
             <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
-              {groupsData?.data?.map(group => (
+              {groupsData?.data?.map(group => {
+                const isActive = selectedGroup === group._id;
+                return (
                 <button
                   key={group._id}
                   onClick={() => setSelectedGroup(group._id)}
                   className={cn(
                     'w-full p-4 rounded-xl text-left transition-all border',
-                    selectedGroup === group._id
-                      ? 'bg-bordo/10 border-bordo/30 text-[var(--foreground)]'
-                      : 'bg-[var(--muted)]/20 border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
+                    isActive
+                      ? 'bg-white border-white text-bordo shadow-md'
+                      : 'bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/35'
                   )}
                 >
                   <div className="font-bold text-sm">{group.name}</div>
-                  <div className="text-[10px] text-[var(--muted-foreground)]/40 uppercase tracking-wider font-semibold mt-1">{group.course}</div>
+                  <div className={cn(
+                    'text-[10px] uppercase tracking-wider font-semibold mt-1',
+                    isActive ? 'text-bordo/65' : 'text-white/60'
+                  )}>{group.course}</div>
                 </button>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -191,12 +197,12 @@ const Attendance = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-1 bg-[var(--muted)] border border-[var(--border)] p-1 rounded-xl w-fit">
+                            <div className="flex items-center gap-1 bg-white border border-bordo/20 p-1 rounded-xl w-fit">
                               <button
                                 onClick={() => handleStatusChange(student._id || student, 'present')}
                                 className={cn(
                                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-                                  rec.status === 'present' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]'
+                                  rec.status === 'present' ? 'bg-bordo text-white shadow-md shadow-bordo/20' : 'text-bordo hover:bg-bordo/10'
                                 )}
                               >
                                 <CheckCircle2 size={13} /><span>{t('attendance.present')}</span>
@@ -205,7 +211,7 @@ const Attendance = () => {
                                 onClick={() => handleStatusChange(student._id || student, 'absent')}
                                 className={cn(
                                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-                                  rec.status === 'absent' ? 'bg-red-500 text-white shadow-md shadow-red-500/20' : 'text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]'
+                                  rec.status === 'absent' ? 'bg-bordo text-white shadow-md shadow-bordo/20' : 'text-bordo hover:bg-bordo/10'
                                 )}
                               >
                                 <XCircle size={13} /><span>{t('attendance.absent')}</span>
@@ -214,7 +220,7 @@ const Attendance = () => {
                                 onClick={() => handleStatusChange(student._id || student, 'late')}
                                 className={cn(
                                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-                                  rec.status === 'late' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20' : 'text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]'
+                                  rec.status === 'late' ? 'bg-bordo text-white shadow-md shadow-bordo/20' : 'text-bordo hover:bg-bordo/10'
                                 )}
                               >
                                 <Clock size={13} /><span>{t('attendance.late')}</span>

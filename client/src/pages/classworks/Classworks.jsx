@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { az, enUS, ru } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import Select from '../../components/common/Select';
+import Spinner from '../../components/common/Spinner';
 
 const dateLocales = {
   az: az,
@@ -191,7 +192,7 @@ const Classworks = () => {
         {/* Content */}
         {isLoading ? (
           <div className="flex justify-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bordo" />
+            <Spinner />
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-[var(--muted-foreground)]/30">
