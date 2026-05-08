@@ -22,6 +22,7 @@ import {
   useGetStudentAttendanceStatsQuery,
 } from '../../features/students/studentsApi';
 import { cn } from '../../lib/utils';
+import Avatar from '../../components/common/Avatar';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -173,10 +174,11 @@ const StudentDetail = () => {
 
           {/* Profile header */}
           <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <img
-              src={student.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(student.name || 'S')}&background=7B001C&color=fff&size=128`}
-              alt={student.name}
-              className="w-20 h-20 rounded-2xl object-cover border-2 border-bordo/30 shadow-lg"
+            <Avatar
+              src={student.avatar}
+              name={student.name}
+              className="w-20 h-20 rounded-2xl border-2 border-bordo/30 shadow-lg"
+              textSize="2xl"
             />
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-[var(--foreground)] truncate">{student.name}</h1>
