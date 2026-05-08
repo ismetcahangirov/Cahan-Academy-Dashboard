@@ -99,18 +99,18 @@ const GroupDetailModal = ({ groupId, onClose }) => {
             <>
               {/* Info Cards */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <GraduationCap size={18} className="text-blue-400" />
+                <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="p-2 bg-white border border-bordo/20 rounded-lg">
+                    <GraduationCap size={18} className="text-bordo" />
                   </div>
                   <div>
                     <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.teacher')}</p>
                     <p className="font-semibold text-[var(--foreground)] text-sm">{group?.teacher?.name || t('teachers.noTeachers')}</p>
                   </div>
                 </div>
-                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="p-2 bg-emerald-500/20 rounded-lg">
-                    <Users size={18} className="text-emerald-400" />
+                <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="p-2 bg-white border border-bordo/20 rounded-lg">
+                    <Users size={18} className="text-bordo" />
                   </div>
                   <div>
                     <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.totalStudents')}</p>
@@ -401,13 +401,13 @@ const Groups = () => {
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleEditClick(group)}
-                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
                       >
                         <Edit2 size={15} />
                       </button>
                       <button
                         onClick={() => handleDelete(group._id)}
-                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
+                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
                       >
                         <Trash2 size={15} />
                       </button>
@@ -447,7 +447,7 @@ const Groups = () => {
                           <span>{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
                           <span className={cn(
                             "px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border",
-                            group.schedule.type === 'online' ? "bg-blue-500/10 text-blue-400 border-blue-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20"
+                            group.schedule.type === 'online' ? "bg-bordo/10 text-bordo border-bordo/20" : "bg-white text-bordo border-bordo/20"
                           )}>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</span>
                         </div>
                       )}
@@ -459,8 +459,8 @@ const Groups = () => {
                   <span className={cn(
                     'px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border',
                     group.status === 'active'
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                      : 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
+                      ? 'bg-bordo text-white border-bordo'
+                      : 'bg-white text-bordo border-bordo/30'
                   )}>
                     {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
                   </span>

@@ -25,11 +25,11 @@ import { useTranslation } from 'react-i18next';
 
 const getStatusConfig = (status, t) => {
   switch (status) {
-    case 'pending': return { cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20', icon: <Clock size={12} />, label: t('invitations.statusPending') };
-    case 'accepted': return { cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: <CheckCircle size={12} />, label: t('invitations.statusAccepted') };
-    case 'expired': return { cls: 'bg-red-500/10 text-red-400 border-red-500/20', icon: <AlertCircle size={12} />, label: t('invitations.statusExpired') };
-    case 'cancelled': return { cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: <XCircle size={12} />, label: t('invitations.statusCancelled') };
-    default: return { cls: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20', icon: null, label: status };
+    case 'pending': return { cls: 'bg-bordo/10 text-bordo border-bordo/20', icon: <Clock size={12} />, label: t('invitations.statusPending') };
+    case 'accepted': return { cls: 'bg-bordo text-white border-bordo', icon: <CheckCircle size={12} />, label: t('invitations.statusAccepted') };
+    case 'expired': return { cls: 'bg-white text-bordo border-bordo/30', icon: <AlertCircle size={12} />, label: t('invitations.statusExpired') };
+    case 'cancelled': return { cls: 'bg-[var(--muted)] text-bordo border-bordo/20', icon: <XCircle size={12} />, label: t('invitations.statusCancelled') };
+    default: return { cls: 'bg-bordo/10 text-bordo border-bordo/20', icon: null, label: status };
   }
 };
 
@@ -127,12 +127,7 @@ const Invitations = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={cn(
-                          'px-2.5 py-0.5 rounded-full text-xs font-medium border',
-                          inv.role === 'teacher'
-                            ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                        )}>
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-bordo/10 text-bordo border-bordo/20">
                           {inv.role === 'teacher' ? t('common.teacher') : t('common.student')}
                         </span>
                       </td>
@@ -153,7 +148,7 @@ const Invitations = () => {
                         {inv.status === 'pending' && (
                           <button
                             onClick={() => handleDelete(inv._id)}
-                            className="p-2 text-[var(--muted-foreground)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                            className="p-2 text-[var(--muted-foreground)] hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
                           >
                             <Trash2 size={16} />
                           </button>
@@ -215,7 +210,7 @@ const Invitations = () => {
                       onClick={() => setFormData({ ...formData, role: 'teacher' })}
                       className={cn(
                         'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
-                        formData.role === 'teacher' ? 'border-bordo/50 bg-bordo/10 text-white' : 'border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                        formData.role === 'teacher' ? 'border-bordo bg-bordo text-white' : 'border-[var(--border)] bg-white text-bordo hover:bg-bordo/10'
                       )}
                     >
                       <UserCheck size={18} /><span>{t('common.teacher')}</span>
@@ -225,7 +220,7 @@ const Invitations = () => {
                       onClick={() => setFormData({ ...formData, role: 'student' })}
                       className={cn(
                         'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
-                        formData.role === 'student' ? 'border-emerald-500/50 bg-emerald-500/10 text-white' : 'border-[var(--border)] bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)]'
+                        formData.role === 'student' ? 'border-bordo bg-bordo text-white' : 'border-[var(--border)] bg-white text-bordo hover:bg-bordo/10'
                       )}
                     >
                       <GraduationCap size={18} /><span>{t('common.student')}</span>
