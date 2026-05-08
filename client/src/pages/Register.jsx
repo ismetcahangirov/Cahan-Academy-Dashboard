@@ -7,10 +7,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, Lock, User as UserIcon, LogIn, Loader2, Globe, ChevronDown } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, LogIn, Globe, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
+import Spinner from '../components/common/Spinner';
 
 const registerSchema = (t) => z.object({
   name: z.string().min(2, t('auth.nameShort')),
@@ -189,7 +190,7 @@ const Register = () => {
             className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
           >
             {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Spinner size="sm" color="white" />
             ) : (
               <>
                 <LogIn className="w-5 h-5" />

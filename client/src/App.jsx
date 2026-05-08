@@ -9,6 +9,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRoute from './components/RoleRoute';
 import { ThemeProvider } from './context/ThemeContext';
+import Spinner from './components/common/Spinner';
 
 // Lazy-loaded Pages
 const Login = lazy(() => import('./pages/Login'));
@@ -40,10 +41,10 @@ const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
 const PageLoader = () => {
   const { t } = useTranslation();
   return (
-    <div className="flex h-screen items-center justify-center bg-black">
+    <div className="flex h-screen items-center justify-center bg-[var(--background)]">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-10 h-10 border-4 border-white/10 border-t-bordo rounded-full animate-spin"></div>
-        <p className="text-white/50 text-sm font-medium animate-pulse">{t('common.loading')}</p>
+        <Spinner />
+        <p className="text-[var(--muted-foreground)] text-sm font-medium animate-pulse">{t('common.loading')}</p>
       </div>
     </div>
   );

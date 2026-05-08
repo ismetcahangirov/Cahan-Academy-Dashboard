@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Shield, Key, Bell, Globe, Loader2 } from 'lucide-react';
+import { Shield, Key, Bell, Globe } from 'lucide-react';
 import { useUpdatePasswordMutation } from '../../features/profile/profileApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Spinner from '../../components/common/Spinner';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -127,7 +128,7 @@ const Settings = () => {
                     disabled={isUpdating}
                     className="flex items-center justify-center gap-2 w-full sm:w-auto bg-bordo hover:bg-bordo/80 text-white px-6 py-2.5 rounded-xl transition-colors font-medium disabled:opacity-50"
                   >
-                    {isUpdating && <Loader2 size={18} className="animate-spin" />}
+                    {isUpdating && <Spinner size="sm" color="white" />}
                     {t('settings.updatePassword')}
                   </button>
                 </div>

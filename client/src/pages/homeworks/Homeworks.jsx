@@ -15,6 +15,7 @@ import {
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import Select from '../../components/common/Select';
+import Spinner from '../../components/common/Spinner';
 
 import { format } from 'date-fns';
 
@@ -81,7 +82,7 @@ const Homeworks = () => {
       {/* List */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-bordo border-t-transparent rounded-full animate-spin"></div>
+          <Spinner />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
