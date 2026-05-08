@@ -34,10 +34,10 @@ const StatusBadge = ({ status }) => {
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
       isActive 
-        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+        ? 'bg-bordo/10 text-bordo border-bordo/20' 
         : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
     )}>
-      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-[var(--muted-foreground)]/40')}></span>
+      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]/40')}></span>
       {isActive ? t('students.active') : t('students.inactive')}
     </span>
   );
@@ -88,13 +88,13 @@ const Students = () => {
   };
 
   const stats = [
-    { title: t('students.totalStudents'), value: data?.pagination?.total || 0, icon: UsersIcon, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-    { title: t('students.activeStudents'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { title: t('students.totalStudents'), value: data?.pagination?.total || 0, icon: UsersIcon },
+    { title: t('students.activeStudents'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap },
     { title: t('students.newStudents7Days'), value: data?.data?.filter(t => {
       const d = new Date(t.createdAt);
       const now = new Date();
       return d > new Date(now.setDate(now.getDate() - 7));
-    }).length || 0, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+    }).length || 0, icon: TrendingUp },
   ];
 
   return (
@@ -122,14 +122,14 @@ const Students = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 flex items-center gap-4"
+            className="bg-bordo border border-bordo rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg shadow-bordo/20"
           >
-            <div className={cn('p-3 rounded-xl', stat.bg)}>
-              <stat.icon size={22} className={stat.color} />
+            <div className="p-3 rounded-xl bg-white text-bordo">
+              <stat.icon size={22} />
             </div>
             <div>
-              <p className="text-[var(--muted-foreground)]/60 text-sm">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-[var(--foreground)]">{stat.value}</h3>
+              <p className="text-white/75 text-sm">{stat.title}</p>
+              <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
             </div>
           </motion.div>
         ))}
@@ -195,7 +195,7 @@ const Students = () => {
                     </td>
                     <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{student.email}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-500/10 text-blue-400 border-blue-500/20">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-bordo/10 text-bordo border-bordo/20">
                         <BookOpen size={12} />
                         {student.group || t('students.noGroup')}
                       </span>
@@ -213,7 +213,7 @@ const Students = () => {
                           items={[
                             { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/students/${student._id}`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
-                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-red-500 hover:bg-red-500/10' }
+                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-bordo hover:bg-bordo/10' }
                           ]}
                         />
                       </div>

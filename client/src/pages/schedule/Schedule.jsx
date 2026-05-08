@@ -12,6 +12,7 @@ import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '../../components/common/Select';
+import Spinner from '../../components/common/Spinner';
 
 const getDays = (t) => [
   { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
@@ -260,7 +261,7 @@ const Schedule = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-bordo"></div>
+        <Spinner />
       </div>
     );
   }

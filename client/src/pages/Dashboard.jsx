@@ -12,37 +12,37 @@ const StatCard = ({ title, value, icon: Icon, trend, delay, isLoading }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 hover:bg-[var(--muted)] transition-all group relative overflow-hidden"
+      className="bg-bordo border border-bordo rounded-2xl p-6 text-white shadow-lg shadow-bordo/20 transition-all group relative overflow-hidden"
     >
       {isLoading ? (
         <div className="animate-pulse space-y-4">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-              <div className="h-4 bg-[var(--muted)] rounded w-20"></div>
-              <div className="h-8 bg-[var(--muted)] rounded w-16"></div>
+              <div className="h-4 bg-white/25 rounded w-20"></div>
+              <div className="h-8 bg-white/35 rounded w-16"></div>
             </div>
-            <div className="w-12 h-12 bg-[var(--muted)] rounded-xl"></div>
+            <div className="w-12 h-12 bg-white/25 rounded-xl"></div>
           </div>
-          <div className="h-4 bg-[var(--muted)] rounded w-32 mt-4"></div>
+          <div className="h-4 bg-white/25 rounded w-32 mt-4"></div>
         </div>
       ) : (
         <>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[var(--muted-foreground)] text-sm mb-1">{title}</p>
-              <h3 className="text-2xl font-bold text-[var(--foreground)]">{value}</h3>
+              <p className="text-white/75 text-sm mb-1">{title}</p>
+              <h3 className="text-2xl font-bold text-white">{value}</h3>
             </div>
-            <div className="w-12 h-12 rounded-xl bg-bordo/10 flex items-center justify-center text-bordo group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-bordo group-hover:scale-110 transition-transform">
               <Icon size={24} />
             </div>
           </div>
           {trend !== undefined && (
             <div className="mt-4 flex items-center gap-2">
-              <div className="flex items-center text-green-500 text-xs font-medium">
+              <div className="flex items-center text-white text-xs font-medium">
                 <TrendingUp size={14} className="mr-1" />
                 {trend}%
               </div>
-              <span className="text-[var(--muted-foreground)]/60 text-xs">{t('dashboard.sinceLastMonth')}</span>
+              <span className="text-white/65 text-xs">{t('dashboard.sinceLastMonth')}</span>
             </div>
           )}
         </>
