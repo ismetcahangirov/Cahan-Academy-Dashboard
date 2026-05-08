@@ -4,6 +4,7 @@ import { X, Search, Save } from 'lucide-react';
 import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import Avatar from '../../components/common/Avatar';
 
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
@@ -166,10 +167,11 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                         <tr key={student._id} className="hover:bg-[var(--muted)]/20 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
-                              <img 
-                                src={student.avatar || `https://ui-avatars.com/api/?name=${student.name}&background=7B001C&color=fff`} 
-                                alt={student.name}
-                                className="w-8 h-8 rounded-full border border-[var(--border)] object-cover" 
+                              <Avatar
+                                src={student.avatar}
+                                name={student.name}
+                                className="w-8 h-8 rounded-full border border-[var(--border)]"
+                                textSize="xs"
                               />
                               <div>
                                 <div className="text-[var(--foreground)] text-sm font-medium">{student.name}</div>
