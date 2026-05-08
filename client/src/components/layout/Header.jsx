@@ -21,9 +21,9 @@ const Header = ({ setIsMobileOpen }) => {
 
 
   const languages = [
-    { code: 'az', name: 'AZE', flag: '🇦🇿' },
-    { code: 'en', name: 'ENG', flag: '🇺🇸' },
-    { code: 'ru', name: 'RUS', flag: '🇷🇺' }
+    { code: 'az', name: 'AZE' },
+    { code: 'en', name: 'ENG' },
+    { code: 'ru', name: 'RUS' }
   ];
 
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
@@ -66,11 +66,10 @@ const Header = ({ setIsMobileOpen }) => {
 
         {/* Language Selector */}
         <Dropdown
-          label={currentLang.code}
-          icon={<span className="text-lg">{currentLang.flag}</span>}
+          label={currentLang.code.toUpperCase()}
+          icon={<Globe size={16} />}
           items={languages.map(lang => ({
             label: lang.name,
-            icon: lang.flag,
             active: i18n.language === lang.code,
             onClick: () => i18n.changeLanguage(lang.code)
           }))}
