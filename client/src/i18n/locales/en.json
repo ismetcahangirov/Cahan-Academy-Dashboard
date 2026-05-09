@@ -69,6 +69,23 @@
     "new": "New",
     "noActivity": "No activity",
     "chartPlaceholder": "Activity chart will be here",
+    "activityChart": "Activity chart",
+    "activityChartSubtitle": "Dashboard activity over recent months",
+    "thisMonth": "This month",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
     "minutesAgo": "{{count}} minutes ago",
     "hoursAgo": "{{count}} hours ago",
     "daysAgo": "{{count}} days ago"
