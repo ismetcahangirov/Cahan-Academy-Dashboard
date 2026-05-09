@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock
+  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock, Link
 } from 'lucide-react';
 import {
   useGetClassworksQuery,
   useCreateClassworkMutation,
   useDeleteClassworkMutation,
+  useSubmitClassworkMutation,
+  useGradeClassworkMutation
 } from '../../features/classworks/classworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
@@ -27,13 +29,13 @@ const dateLocales = {
 // ─── Create Modal ────────────────────────────────────────────────
 const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ title: '', description: '', group: '' });
+  const [form, setForm] = useState({ title: '', description: '', group: '', dueDate: '' });
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.title || !form.description || !form.group) {
+    if (!form.title || !form.description || !form.group || !form.dueDate) {
       toast.error(t('settings.fillAll'));
       return;
     }
@@ -41,7 +43,7 @@ const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -79,6 +81,11 @@ const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
               className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none"
               placeholder={t('classworks.placeholderDesc')} />
           </div>
+          <div>
+            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.dueDateLabel')} *</label>
+            <input type="datetime-local" name="dueDate" value={form.dueDate} onChange={handleChange} required
+              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo" />
+          </div>
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose}
               className="px-4 py-2 text-sm text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] bg-[var(--muted)]/50 hover:bg-[var(--muted)] rounded-xl transition-colors">
@@ -113,15 +120,29 @@ const Classworks = () => {
   const user = useSelector(selectCurrentUser);
   const [search, setSearch] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
+  
   const [showCreate, setShowCreate] = useState(false);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
+  const [activeClasswork, setActiveClasswork] = useState(null);
 
   const { data: classworks = [], isLoading } = useGetClassworksQuery(selectedGroup || undefined);
   const { data: groupsResponse } = useGetGroupsQuery();
   const [createClasswork, { isLoading: isCreating }] = useCreateClassworkMutation();
   const [deleteClasswork] = useDeleteClassworkMutation();
+  const [submitClasswork, { isLoading: isSubmitting }] = useSubmitClassworkMutation();
+  const [gradeClasswork, { isLoading: isGrading }] = useGradeClassworkMutation();
 
   const groups = groupsResponse?.data || [];
   const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
+
+  const [submitNote, setSubmitNote] = useState('');
+  const [submitLinks, setSubmitLinks] = useState(['']);
+  const [gradeData, setGradeData] = useState({});
+
+  const addLink = () => setSubmitLinks(prev => [...prev, '']);
+  const removeLink = (i) => setSubmitLinks(prev => prev.filter((_, idx) => idx !== i));
+  const updateLink = (i, val) => setSubmitLinks(prev => prev.map((l, idx) => idx === i ? val : l));
 
   const filtered = classworks.filter((cw) =>
     cw.title?.toLowerCase().includes(search.toLowerCase()) ||
@@ -134,7 +155,7 @@ const Classworks = () => {
       toast.success(t('classworks.createSuccess'));
       setShowCreate(false);
     } catch (err) {
-      toast.error(err?.data?.message || t('students.error'));
+      toast.error(err?.data?.message || t('common.error'));
     }
   };
 
@@ -143,8 +164,66 @@ const Classworks = () => {
       await deleteClasswork(id).unwrap();
       toast.success(t('classworks.deleteSuccess'));
     } catch (err) {
-      toast.error(err?.data?.message || t('students.error'));
+      toast.error(err?.data?.message || t('common.error'));
     }
+  };
+
+  const handleSubmitClasswork = async (e) => {
+    e.preventDefault();
+    if (!activeClasswork) return;
+    try {
+      const validLinks = submitLinks.filter(l => l.trim() !== '');
+      const payload = { links: validLinks, note: submitNote };
+      await submitClasswork({ id: activeClasswork._id, data: payload }).unwrap();
+      toast.success(t('classworks.submitSuccess'));
+      setIsSubmitModalOpen(false);
+      setSubmitNote('');
+      setSubmitLinks(['']);
+      setActiveClasswork(null);
+    } catch (error) {
+      toast.error(error.data?.message || t('common.error'));
+    }
+  };
+
+  const handleGradeSubmission = async (e, studentId) => {
+    e.preventDefault();
+    if (!activeClasswork) return;
+    try {
+      const gData = gradeData[studentId] || {};
+      const payload = {
+        studentId,
+        grade: Number(gData.grade),
+        feedback: gData.feedback || ''
+      };
+      await gradeClasswork({ id: activeClasswork._id, data: payload }).unwrap();
+      toast.success(t('classworks.gradeSuccess'));
+    } catch (error) {
+      toast.error(error.data?.message || t('common.error'));
+    }
+  };
+
+  const openSubmitModal = (cw) => {
+    setActiveClasswork(cw);
+    setSubmitNote('');
+    setSubmitLinks(['']);
+    setIsSubmitModalOpen(true);
+  };
+
+  const openGradeModal = (cw) => {
+    setActiveClasswork(cw);
+    
+    // Initialize gradeData with existing submissions
+    const initialGrades = {};
+    if (cw.submissions) {
+      cw.submissions.forEach(sub => {
+        initialGrades[sub.student._id] = {
+          grade: sub.grade || '',
+          feedback: sub.feedback || ''
+        };
+      });
+    }
+    setGradeData(initialGrades);
+    setIsGradeModalOpen(true);
   };
 
   return (
@@ -206,7 +285,7 @@ const Classworks = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="group bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--foreground)]/20 transition-all flex flex-col shadow-sm"
+                className="group bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--foreground)]/20 transition-all flex flex-col shadow-sm relative"
               >
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-base font-semibold text-[var(--foreground)] line-clamp-1 flex-1 mr-2">{cw.title}</h3>
@@ -220,7 +299,7 @@ const Classworks = () => {
 
                 <p className="text-[var(--muted-foreground)]/60 text-sm line-clamp-2 mb-4 flex-1">{cw.description}</p>
 
-                <div className="space-y-2 text-xs text-[var(--muted-foreground)]/50 border-t border-[var(--border)] pt-3">
+                <div className="space-y-2 text-xs text-[var(--muted-foreground)]/50 border-t border-[var(--border)] pt-3 mb-4">
                   <div className="flex items-center gap-2">
                     <Users size={13} className="text-bordo shrink-0" />
                     <span>{t('common.group')}: {cw.group?.name || '—'}</span>
@@ -229,10 +308,33 @@ const Classworks = () => {
                     <Calendar size={13} className="text-bordo shrink-0" />
                     <span>{cw.date ? format(new Date(cw.date), 'd MMM yyyy', { locale: dateLocales[i18n.language] || az }) : '—'}</span>
                   </div>
+                  {cw.dueDate && (
+                    <div className="flex items-center gap-2">
+                      <Clock size={13} className="text-bordo shrink-0" />
+                      <span>{t('classworks.dueDate')}: <span className="font-medium">{format(new Date(cw.dueDate), 'd MMM yyyy, HH:mm', { locale: dateLocales[i18n.language] || az })}</span></span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
-                    {/* ... */}
                     <StatusBadge count={cw.submissions?.length || 0} total={cw.group?.students?.length || 0} />
                   </div>
+                </div>
+
+                <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between mt-auto">
+                  {user.role === 'student' ? (
+                    <button 
+                      onClick={() => openSubmitModal(cw)}
+                      className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium"
+                    >
+                      {t('classworks.submitClasswork')}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => openGradeModal(cw)}
+                      className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium"
+                    >
+                      {t('classworks.submissions')}
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -248,6 +350,224 @@ const Classworks = () => {
             onSubmit={handleCreate}
             isLoading={isCreating}
           />
+        )}
+      </AnimatePresence>
+
+      {/* SUBMIT MODAL (STUDENT) */}
+      <AnimatePresence>
+        {isSubmitModalOpen && activeClasswork && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-[var(--foreground)]">{t('classworks.submitClasswork')}</h3>
+                <button onClick={() => setIsSubmitModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="mb-5 p-4 bg-[var(--muted)]/50 rounded-lg border border-[var(--border)]">
+                <h4 className="font-semibold text-[var(--foreground)] mb-1">{activeClasswork.title}</h4>
+                <p className="text-sm text-[var(--muted-foreground)]">{activeClasswork.description}</p>
+              </div>
+
+              <form onSubmit={handleSubmitClasswork} className="space-y-4">
+                {/* Note */}
+                <div>
+                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
+                    {t('classworks.noteLabel') || 'Qeyd / Şərh'}
+                  </label>
+                  <textarea
+                    value={submitNote}
+                    onChange={(e) => setSubmitNote(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo resize-none"
+                    placeholder={t('classworks.notePlaceholder') || 'Müəllimə qeyd buraxın...'}
+                  />
+                </div>
+
+                {/* Multi-link */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-[var(--muted-foreground)]">
+                      {t('classworks.uploadFiles')}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={addLink}
+                      className="flex items-center gap-1 text-xs text-bordo hover:underline"
+                    >
+                      <Plus size={12} /> {t('classworks.addLink') || 'Link əlavə et'}
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {submitLinks.map((link, i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <Link size={14} className="text-[var(--muted-foreground)]/50 shrink-0" />
+                        <input
+                          type="text"
+                          value={link}
+                          onChange={(e) => updateLink(i, e.target.value)}
+                          className="flex-1 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo text-sm"
+                          placeholder="https://drive.google.com/..."
+                        />
+                        {submitLinks.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeLink(i)}
+                            className="text-[var(--muted-foreground)]/40 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsSubmitModalOpen(false)}
+                    className="px-4 py-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50"
+                  >
+                    {isSubmitting ? t('classworks.submittingBtn') : t('classworks.submitBtn')}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* GRADE MODAL (TEACHER) */}
+      <AnimatePresence>
+        {isGradeModalOpen && activeClasswork && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-[var(--foreground)]">{activeClasswork.title} - {t('classworks.submissions')}</h3>
+                  <p className="text-sm text-[var(--muted-foreground)] mt-1">{t('common.group')}: {activeClasswork.group?.name}</p>
+                </div>
+                <button onClick={() => setIsGradeModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {activeClasswork.submissions?.length === 0 ? (
+                <div className="py-8 text-center text-[var(--muted-foreground)]">
+                  <p>{t('classworks.noSubmissions')}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activeClasswork.submissions?.map((sub) => (
+                    <div key={sub._id} className="p-4 border border-[var(--border)] rounded-lg bg-[var(--muted)]/20">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <div>
+                          <div className="font-medium text-[var(--foreground)]">{sub.student?.name} {sub.student?.surname}</div>
+                          <div className="text-xs text-[var(--muted-foreground)] mt-1">
+                            {format(new Date(sub.submittedAt || sub.createdAt || new Date()), 'dd MMM yyyy, HH:mm')}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Student's Note */}
+                      {sub.note && (
+                        <div className="mb-4 bg-[var(--background)] p-3 rounded-lg border border-[var(--border)]">
+                          <p className="text-sm font-medium text-[var(--muted-foreground)] mb-1">{t('classworks.noteLabel') || 'Qeyd / Şərh'}:</p>
+                          <p className="text-sm text-[var(--foreground)] whitespace-pre-wrap">{sub.note}</p>
+                        </div>
+                      )}
+
+                      {/* Submitted Links */}
+                      {sub.files && sub.files.length > 0 && (
+                        <div className="mb-4 space-y-2 bg-[var(--background)] p-3 rounded-lg border border-[var(--border)]">
+                          <p className="text-sm font-medium text-[var(--muted-foreground)] mb-1">
+                            {sub.files.length} {t('classworks.linkOrFile') || 'link'}
+                          </p>
+                          <div className="space-y-1">
+                            {sub.files.map((file, idx) => (
+                              <a
+                                key={idx}
+                                href={file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-bordo hover:underline flex items-center gap-2 py-1"
+                              >
+                                <Link size={14} className="shrink-0" /> 
+                                <span className="truncate">{file}</span>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+
+                      <form onSubmit={(e) => handleGradeSubmission(e, sub.student?._id)} className="flex flex-col sm:flex-row gap-3">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder={t('classworks.grade')}
+                          value={gradeData[sub.student?._id]?.grade || ''}
+                          onChange={(e) => setGradeData(prev => ({
+                            ...prev,
+                            [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
+                          }))}
+                          className="w-full sm:w-24 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
+                        />
+                        <input
+                          type="text"
+                          placeholder={t('classworks.feedback')}
+                          value={gradeData[sub.student?._id]?.feedback || ''}
+                          onChange={(e) => setGradeData(prev => ({
+                            ...prev,
+                            [sub.student?._id]: { ...prev[sub.student?._id], feedback: e.target.value }
+                          }))}
+                          className="flex-1 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
+                        />
+                        <button
+                          type="submit"
+                          disabled={isGrading}
+                          className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {t('classworks.gradeBtn')}
+                        </button>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
