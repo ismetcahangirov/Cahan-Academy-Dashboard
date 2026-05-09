@@ -69,6 +69,23 @@
     "new": "Yeni",
     "noActivity": "Aktivlik yoxdur",
     "chartPlaceholder": "Aktivlik qrafiki burada olacaq",
+    "activityChart": "Aktivlik qrafiki",
+    "activityChartSubtitle": "Son aylar üzrə dashboard aktivliyi",
+    "thisMonth": "Bu ay",
+    "months": {
+      "jan": "Yan",
+      "feb": "Fev",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "İyn",
+      "jul": "İyl",
+      "aug": "Avq",
+      "sep": "Sen",
+      "oct": "Okt",
+      "nov": "Noy",
+      "dec": "Dek"
+    },
     "minutesAgo": "{{count}} dəqiqə əvvəl",
     "hoursAgo": "{{count}} saat əvvəl",
     "daysAgo": "{{count}} gün əvvəl"
