@@ -13,7 +13,13 @@ vi.mock('react-redux', () => ({
 }));
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+  useTranslation: () => ({
+    t: (key, options) => {
+      if (key === 'dashboard.welcome') return `Xoş gəldiniz, ${options?.name}!`;
+      if (key === 'dashboard.activityChart') return 'Aktivlik qrafiki';
+      return key;
+    },
+  }),
 }));
 
 vi.mock('../features/dashboard/dashboardApi', () => ({
@@ -28,5 +34,6 @@ describe('Dashboard Component', () => {
     // Test that the welcome text is rendered
     expect(screen.getByText(/Xoş gəldiniz/i)).toBeTruthy();
     expect(screen.getByText(/Test Admin/i)).toBeTruthy();
+    expect(screen.getByText(/Aktivlik qrafiki/i)).toBeTruthy();
   });
 });

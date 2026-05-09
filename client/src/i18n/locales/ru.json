@@ -69,6 +69,23 @@
     "new": "Новое",
     "noActivity": "Нет активности",
     "chartPlaceholder": "Здесь будет график активности",
+    "activityChart": "График активности",
+    "activityChartSubtitle": "Активность dashboard за последние месяцы",
+    "thisMonth": "Этот месяц",
+    "months": {
+      "jan": "Янв",
+      "feb": "Фев",
+      "mar": "Мар",
+      "apr": "Апр",
+      "may": "Май",
+      "jun": "Июн",
+      "jul": "Июл",
+      "aug": "Авг",
+      "sep": "Сен",
+      "oct": "Окт",
+      "nov": "Ноя",
+      "dec": "Дек"
+    },
     "minutesAgo": "{{count}} минут назад",
     "hoursAgo": "{{count}} часов назад",
     "daysAgo": "{{count}} дней назад"
