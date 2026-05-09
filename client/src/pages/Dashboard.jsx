@@ -39,7 +39,7 @@ const getActivityData = (stats) => {
   });
 };
 
-const ActivityChart = ({ stats, isLoading }) => {
+const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
   const { t } = useTranslation();
   const isDark = useDarkMode();
   const [hoveredPoint, setHoveredPoint] = useState(null);
@@ -80,8 +80,8 @@ const ActivityChart = ({ stats, isLoading }) => {
         <div className="h-full flex flex-col">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-lg font-bold text-[var(--foreground)]">{t('dashboard.activityChart')}</h3>
-              <p className="text-[var(--muted-foreground)] text-sm mt-1">{t('dashboard.activityChartSubtitle')}</p>
+              <h3 className="text-lg font-bold text-[var(--foreground)]">{title || t('dashboard.activityChart')}</h3>
+              <p className="text-[var(--muted-foreground)] text-sm mt-1">{subtitle || t('dashboard.activityChartSubtitle')}</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold leading-none text-bordo">{points[points.length - 1].value}</p>
@@ -111,7 +111,7 @@ const ActivityChart = ({ stats, isLoading }) => {
                     {t(`dashboard.months.${hoveredPoint.month}`)}
                   </p>
                   <p className="text-xl font-bold leading-tight">{hoveredPoint.value}</p>
-                  <p className="text-[10px] opacity-70">{t('dashboard.activityChart')}</p>
+                  <p className="text-[10px] opacity-70">{title || t('dashboard.activityChart')}</p>
                   {/* Arrow */}
                   <div
                     className="absolute left-1/2 -translate-x-1/2 w-2 h-2 rotate-45"
@@ -130,7 +130,7 @@ const ActivityChart = ({ stats, isLoading }) => {
               className="w-full h-full"
               viewBox="0 0 360 210"
               role="img"
-              aria-label={t('dashboard.activityChart')}
+              aria-label={title || t('dashboard.activityChart')}
               onMouseLeave={() => setHoveredPoint(null)}
             >
               <defs>
@@ -292,44 +292,101 @@ const Dashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title={t('dashboard.totalUsers')} 
-          value={stats?.users?.total || 0} 
-          icon={Users} 
-          trend={12} 
-          delay={0.1} 
-          isLoading={statsLoading}
-        />
-        <StatCard 
-          title={t('dashboard.activeCourses')} 
-          value={stats?.courses?.total || 0} 
-          icon={BookOpen} 
-          trend={stats?.courses?.trend || 0} 
-          delay={0.2} 
-          isLoading={statsLoading}
-        />
-        <StatCard 
-          title={t('dashboard.groups')} 
-          value={stats?.groups?.total || 0} 
-          icon={GraduationCap} 
-          trend={stats?.groups?.trend || 0} 
-          delay={0.3} 
-          isLoading={statsLoading}
-        />
-        <StatCard 
-          title={t('dashboard.learningHours')} 
-          value={`${stats?.learningHours?.total || 0}s`} 
-          icon={Clock} 
-          trend={stats?.learningHours?.trend || 0} 
-          delay={0.4} 
-          isLoading={statsLoading}
-        />
+        {user?.role === 'admin' && (
+          <>
+            <StatCard 
+              title={t('dashboard.totalUsers')} 
+              value={stats?.users?.total || 0} 
+              icon={Users} 
+              trend={12} 
+              delay={0.1} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.activeCourses')} 
+              value={stats?.courses?.total || 0} 
+              icon={BookOpen} 
+              trend={stats?.courses?.trend || 0} 
+              delay={0.2} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.groups')} 
+              value={stats?.groups?.total || 0} 
+              icon={GraduationCap} 
+              trend={stats?.groups?.trend || 0} 
+              delay={0.3} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.learningHours')} 
+              value={`${stats?.learningHours?.total || 0}s`} 
+              icon={Clock} 
+              trend={stats?.learningHours?.trend || 0} 
+              delay={0.4} 
+              isLoading={statsLoading}
+            />
+          </>
+        )}
+
+        {user?.role === 'teacher' && (
+          <>
+            <StatCard 
+              title={t('dashboard.myGroups')} 
+              value={stats?.groups?.total || 0} 
+              icon={GraduationCap} 
+              delay={0.1} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.myStudents')} 
+              value={stats?.students?.total || 0} 
+              icon={Users} 
+              delay={0.2} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.avgAttendance')} 
+              value={`${stats?.avgAttendance?.total || 0}%`} 
+              icon={TrendingUp} 
+              delay={0.3} 
+              isLoading={statsLoading}
+            />
+            <div className="hidden lg:block"></div>
+          </>
+        )}
+
+        {user?.role === 'student' && (
+          <>
+            <StatCard 
+              title={t('dashboard.enrolledGroups')} 
+              value={stats?.enrolledGroups?.total || 0} 
+              icon={GraduationCap} 
+              delay={0.1} 
+              isLoading={statsLoading}
+            />
+            <StatCard 
+              title={t('dashboard.myAttendance')} 
+              value={`${stats?.myAttendance?.total || 0}%`} 
+              icon={TrendingUp} 
+              delay={0.2} 
+              isLoading={statsLoading}
+            />
+            <div className="hidden lg:block"></div>
+            <div className="hidden lg:block"></div>
+          </>
+        )}
       </div>
 
       {/* Activity and Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <ActivityChart stats={stats} isLoading={statsLoading} />
+          <ActivityChart 
+            stats={stats} 
+            isLoading={statsLoading} 
+            title={user?.role === 'student' ? t('dashboard.myActivity') : user?.role === 'teacher' ? t('dashboard.groupActivity') : undefined}
+            subtitle={user?.role === 'student' ? t('dashboard.myActivitySubtitle') : user?.role === 'teacher' ? t('dashboard.groupActivitySubtitle') : undefined}
+          />
         </div>
         
         {/* Recent Activity */}
