@@ -134,7 +134,7 @@ export const deleteClasswork = asyncHandler(async (req, res) => {
 // @route   POST /api/classworks/:id/submit
 // @access  Private/Student
 export const submitClasswork = asyncHandler(async (req, res) => {
-  const { files } = req.body;
+  const { files, links, note } = req.body;
   const classwork = await Classwork.findById(req.params.id);
 
   if (!classwork) {
@@ -142,20 +142,28 @@ export const submitClasswork = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
+  // Merge files + links into one array
+  const allFiles = [
+    ...(Array.isArray(files) ? files : []),
+    ...(Array.isArray(links) ? links : []),
+  ].filter(Boolean);
+
   const existingIndex = classwork.submissions.findIndex(
     sub => sub.student.toString() === req.user._id.toString()
   );
 
   if (existingIndex !== -1) {
-    classwork.submissions[existingIndex].files = files || classwork.submissions[existingIndex].files;
+    classwork.submissions[existingIndex].files = allFiles.length ? allFiles : classwork.submissions[existingIndex].files;
     classwork.submissions[existingIndex].submittedAt = Date.now();
     classwork.submissions[existingIndex].status = 'submitted';
+    classwork.submissions[existingIndex].note = note ?? classwork.submissions[existingIndex].note;
   } else {
     classwork.submissions.push({
       student: req.user._id,
-      files: files || [],
+      files: allFiles,
       submittedAt: Date.now(),
       status: 'submitted',
+      note: note || '',
     });
   }
 

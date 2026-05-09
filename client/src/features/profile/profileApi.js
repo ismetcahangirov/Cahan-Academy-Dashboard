@@ -1,11 +1,11 @@
 import { apiSlice } from '../../app/api/apiSlice';
 
-export const profileApi = apiSlice.injectEndpoints({
+export const profileApi = apiSlice.injectEndpoints(({
   endpoints: (builder) => ({
     getProfile: builder.query({
       query: () => '/users/profile',
       providesTags: ['Profile'],
-      transformResponse: (response) => response.data,
+      // Backend returns { success, data: user } — keep the full shape
     }),
     updateProfile: builder.mutation({
       query: (data) => ({
@@ -14,7 +14,7 @@ export const profileApi = apiSlice.injectEndpoints({
         body: data,
       }),
       invalidatesTags: ['Profile'],
-      transformResponse: (response) => response.data,
+      // Backend returns { success, data: user } — keep the full shape
     }),
     updatePassword: builder.mutation({
       query: (data) => ({
@@ -24,7 +24,7 @@ export const profileApi = apiSlice.injectEndpoints({
       }),
     }),
   }),
-});
+}));
 
 export const {
   useGetProfileQuery,

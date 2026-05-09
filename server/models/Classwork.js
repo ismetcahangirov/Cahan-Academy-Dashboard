@@ -28,6 +28,10 @@ const classworkSubmissionSchema = new mongoose.Schema(
     feedback: {
       type: String,
     },
+    note: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
@@ -54,6 +58,9 @@ const classworkSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    dueDate: {
+      type: Date,
     },
     date: {
       type: Date,

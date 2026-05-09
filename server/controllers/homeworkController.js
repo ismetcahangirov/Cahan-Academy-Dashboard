@@ -136,13 +136,19 @@ export const deleteHomework = asyncHandler(async (req, res) => {
 // @route   POST /api/homeworks/:id/submit
 // @access  Private/Student
 export const submitHomework = asyncHandler(async (req, res) => {
-  const { files } = req.body;
+  const { files, links, note } = req.body;
   const homework = await Homework.findById(req.params.id);
 
   if (!homework) {
     res.status(404);
     throw new Error('Tapşırıq tapılmadı');
   }
+
+  // Merge files + links into one array
+  const allFiles = [
+    ...(Array.isArray(files) ? files : []),
+    ...(Array.isArray(links) ? links : []),
+  ].filter(Boolean);
 
   const existingIndex = homework.submissions.findIndex(
     sub => sub.student.toString() === req.user._id.toString()
@@ -151,15 +157,17 @@ export const submitHomework = asyncHandler(async (req, res) => {
   const status = new Date() > new Date(homework.dueDate) ? 'late' : 'submitted';
 
   if (existingIndex !== -1) {
-    homework.submissions[existingIndex].files = files || homework.submissions[existingIndex].files;
+    homework.submissions[existingIndex].files = allFiles.length ? allFiles : homework.submissions[existingIndex].files;
     homework.submissions[existingIndex].submittedAt = Date.now();
     homework.submissions[existingIndex].status = status;
+    homework.submissions[existingIndex].note = note ?? homework.submissions[existingIndex].note;
   } else {
     homework.submissions.push({
       student: req.user._id,
-      files: files || [],
+      files: allFiles,
       submittedAt: Date.now(),
       status,
+      note: note || '',
     });
   }
 
