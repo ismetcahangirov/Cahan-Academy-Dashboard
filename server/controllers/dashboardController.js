@@ -57,44 +57,134 @@ const countByMonth = async (Model, dateField, months, extraMatch = {}) => {
 // @access  Private
 export const getStats = async (req, res) => {
   try {
-    // ── Ümumi statistika ──────────────────────────────────────────────────────
-    const totalUsers    = await User.countDocuments();
-    const activeUsers   = await User.countDocuments({ status: 'active' });
-    const admins        = await User.countDocuments({ role: 'admin' });
-    const teachers      = await User.countDocuments({ role: 'teacher' });
-    const students      = await User.countDocuments({ role: 'student' });
-    const totalCourses  = await Course.countDocuments();
-    const totalGroups   = await Group.countDocuments();
-    const learningHours = totalGroups * 48;
-
-    // ── Son 7 ayın real aktivliyi ─────────────────────────────────────────────
+    const role = req.user.role;
+    const userId = req.user._id;
     const months = getLast7Months();
 
-    const [userMap, groupMap, attendanceMap] = await Promise.all([
-      countByMonth(User,       'createdAt',  months),
-      countByMonth(Group,      'createdAt',  months),
-      countByMonth(Attendance, 'createdAt',  months),
-    ]);
+    let dashboardData = {};
 
-    const monthlyActivity = months.map(({ year, month, label }) => {
-      const key = `${year}-${month}`;
-      const newUsers      = userMap[key]       || 0;
-      const newGroups     = groupMap[key]      || 0;
-      const attendances   = attendanceMap[key] || 0;
-      // Ağırlıqlı aktivlik: istifadəçi*3 + qrup*5 + davamiyyət*1
-      const value = newUsers * 3 + newGroups * 5 + attendances;
-      return { month: label, value };
-    });
+    if (role === 'admin') {
+      const totalUsers    = await User.countDocuments();
+      const activeUsers   = await User.countDocuments({ status: 'active' });
+      const admins        = await User.countDocuments({ role: 'admin' });
+      const teachers      = await User.countDocuments({ role: 'teacher' });
+      const students      = await User.countDocuments({ role: 'student' });
+      const totalCourses  = await Course.countDocuments();
+      const totalGroups   = await Group.countDocuments();
+      const learningHours = totalGroups * 48;
 
-    res.status(200).json({
-      success: true,
-      data: {
+      const [userMap, groupMap, attendanceMap] = await Promise.all([
+        countByMonth(User,       'createdAt',  months),
+        countByMonth(Group,      'createdAt',  months),
+        countByMonth(Attendance, 'createdAt',  months),
+      ]);
+
+      const monthlyActivity = months.map(({ year, month, label }) => {
+        const key = `${year}-${month}`;
+        const newUsers      = userMap[key]       || 0;
+        const newGroups     = groupMap[key]      || 0;
+        const attendances   = attendanceMap[key] || 0;
+        const value = newUsers * 3 + newGroups * 5 + attendances;
+        return { month: label, value };
+      });
+
+      dashboardData = {
         users: { total: totalUsers, active: activeUsers, admins, teachers, students },
         courses:      { total: totalCourses,  trend: 8  },
         groups:       { total: totalGroups,   trend: 15 },
         learningHours:{ total: learningHours, trend: 5  },
         monthlyActivity,
-      },
+      };
+
+    } else if (role === 'teacher') {
+      const totalGroups = await Group.countDocuments({ teacher: userId });
+      
+      const teacherGroups = await Group.find({ teacher: userId }, 'students');
+      const uniqueStudents = new Set();
+      teacherGroups.forEach(g => {
+        g.students.forEach(sId => uniqueStudents.add(sId.toString()));
+      });
+      const totalStudents = uniqueStudents.size;
+
+      // Calculate avg attendance for teacher's groups
+      const attendances = await Attendance.find({ teacher: userId });
+      let totalRecords = 0;
+      let presentRecords = 0;
+      attendances.forEach(att => {
+        att.records.forEach(rec => {
+          totalRecords++;
+          if (rec.status === 'present' || rec.status === 'late') {
+            presentRecords++;
+          }
+        });
+      });
+      const avgAttendance = totalRecords === 0 ? 0 : Math.round((presentRecords / totalRecords) * 100);
+
+      const [groupMap, attendanceMap] = await Promise.all([
+        countByMonth(Group, 'createdAt', months, { teacher: userId }),
+        countByMonth(Attendance, 'createdAt', months, { teacher: userId }),
+      ]);
+
+      const monthlyActivity = months.map(({ year, month, label }) => {
+        const key = `${year}-${month}`;
+        const newGroups = groupMap[key] || 0;
+        const attCount = attendanceMap[key] || 0;
+        return { month: label, value: newGroups * 5 + attCount };
+      });
+
+      dashboardData = {
+        groups: { total: totalGroups, trend: 0 },
+        students: { total: totalStudents, trend: 0 },
+        avgAttendance: { total: avgAttendance, trend: 0 },
+        monthlyActivity,
+      };
+
+    } else if (role === 'student') {
+      const enrolledGroups = await Group.countDocuments({ students: userId });
+      
+      // Calculate student's personal attendance
+      const studentAttendances = await Attendance.find({ 'records.student': userId });
+      let totalRecords = 0;
+      let presentRecords = 0;
+      studentAttendances.forEach(att => {
+        const myRecord = att.records.find(r => r.student.toString() === userId.toString());
+        if (myRecord) {
+          totalRecords++;
+          if (myRecord.status === 'present' || myRecord.status === 'late') {
+            presentRecords++;
+          }
+        }
+      });
+      const attendanceRate = totalRecords === 0 ? 0 : Math.round((presentRecords / totalRecords) * 100);
+
+      const [attendanceMap] = await Promise.all([
+        Attendance.aggregate([
+          { $match: { "records.student": userId, createdAt: { $gte: months[0].start, $lte: months[months.length - 1].end } } },
+          { $unwind: "$records" },
+          { $match: { "records.student": userId, "records.status": { $in: ["present", "late"] } } },
+          { $group: { _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } }, count: { $sum: 1 } } }
+        ]).then(res => {
+          const map = {};
+          res.forEach(({ _id, count }) => { map[`${_id.year}-${_id.month}`] = count; });
+          return map;
+        })
+      ]);
+
+      const monthlyActivity = months.map(({ year, month, label }) => {
+        const key = `${year}-${month}`;
+        return { month: label, value: attendanceMap[key] || 0 };
+      });
+
+      dashboardData = {
+        enrolledGroups: { total: enrolledGroups, trend: 0 },
+        myAttendance: { total: attendanceRate, trend: 0 },
+        monthlyActivity,
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      data: dashboardData,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
