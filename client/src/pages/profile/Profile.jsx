@@ -159,7 +159,7 @@ const Profile = () => {
                 <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
                 <input
                   type="text"
-                  value={t(`sidebar.roles.${form.role}`) || form.role}
+                  value={t(`common.${form.role}`) || form.role}
                   disabled
                   className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)]/50 cursor-not-allowed"
                 />
