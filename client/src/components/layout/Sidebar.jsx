@@ -68,6 +68,8 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       baseLinks.push(
         { name: t('sidebar.myStudents'), path: '/students', icon: Users },
         { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
+        { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },
         { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
         { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
         { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
@@ -77,6 +79,8 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
     } else {
       baseLinks.push(
         { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
+        { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },
         { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
         { name: t('sidebar.quizzes'), path: '/quizzes', icon: Trophy },
         { name: t('sidebar.mySchedule'), path: '/schedule', icon: Calendar },
