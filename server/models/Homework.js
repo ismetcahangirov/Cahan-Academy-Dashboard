@@ -28,6 +28,10 @@ const submissionSchema = new mongoose.Schema(
     feedback: {
       type: String,
     },
+    note: {
+      type: String,
+      default: '',
+    },
   },
   {
     timestamps: true,
