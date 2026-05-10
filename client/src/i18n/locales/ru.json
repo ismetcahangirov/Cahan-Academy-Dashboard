@@ -580,5 +580,48 @@
     "activeGroups": "Активных",
     "completedGroups": "Завершённых",
     "totalStudents": "Всего студентов"
+  },
+  "payments": {
+    "title": "Оплаты",
+    "newPlan": "Новый план",
+    "createPlan": "Создать план",
+    "planCreated": "План оплаты создан",
+    "planUpdated": "План оплаты обновлён",
+    "planDeleted": "План оплаты удалён",
+    "deleteConfirm": "Вы уверены, что хотите удалить этот план?",
+    "noPlans": "Нет планов оплаты для этого студента",
+    "noActivePayments": "Нет активных планов оплаты",
+    "amount": "Сумма (AZN)",
+    "paymentType": "Тип оплаты",
+    "startDate": "Дата начала",
+    "endDate": "Дата окончания (необязательно)",
+    "endDateHint": "Если пусто, будет создано до 24 периодов",
+    "description": "Примечание",
+    "descriptionPlaceholder": "Примечание об оплате...",
+    "invalidAmount": "Сумма должна быть больше 0",
+    "dueDate": "Срок оплаты",
+    "paidDate": "Дата оплаты",
+    "statusLabel": "Статус",
+    "paid": "оплачено",
+    "overdue": "просрочено",
+    "approve": "Подтвердить",
+    "approved": "Оплата подтверждена",
+    "unapprove": "Отменить",
+    "unapproved": "Подтверждение отменено",
+    "nextPayment": "Следующий платёж",
+    "allPaid": "Все платежи выполнены",
+    "overdueAlert": "У вас {{count}} просроченных платежа!",
+    "types": {
+      "once": "Одноразовый",
+      "weekly": "Еженедельный",
+      "monthly": "Ежемесячный",
+      "semi-annually": "Полугодовой",
+      "annually": "Ежегодный"
+    },
+    "status": {
+      "pending": "Ожидается",
+      "paid": "Оплачено",
+      "overdue": "Просрочено"
+    }
   }
 }

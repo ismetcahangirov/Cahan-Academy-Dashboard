@@ -12,7 +12,8 @@ import {
   GraduationCap,
   TrendingUp,
   BookOpen,
-  MoreHorizontal
+  MoreHorizontal,
+  Banknote
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
@@ -212,6 +213,7 @@ const Students = () => {
                           }
                           items={[
                             { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/students/${student._id}`) },
+                            { label: t('payments.title'), icon: <Banknote size={14} />, onClick: () => navigate(`/students/${student._id}/payments`) },
                             { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
                             { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-bordo hover:bg-bordo/10' }
                           ]}
