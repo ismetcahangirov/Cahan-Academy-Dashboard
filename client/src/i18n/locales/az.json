@@ -573,5 +573,48 @@
     "activeGroups": "Aktiv",
     "completedGroups": "Tamamlanmış",
     "totalStudents": "Cəmi tələbə"
+  },
+  "payments": {
+    "title": "Ödənişlər",
+    "newPlan": "Yeni Plan",
+    "createPlan": "Plan Yarat",
+    "planCreated": "Ödəniş planı yaradıldı",
+    "planUpdated": "Ödəniş planı yeniləndi",
+    "planDeleted": "Ödəniş planı silindi",
+    "deleteConfirm": "Bu planı silmək istədiyinizə əminsiniz?",
+    "noPlans": "Bu tələbə üçün ödəniş planı yoxdur",
+    "noActivePayments": "Aktiv ödəniş planı yoxdur",
+    "amount": "Məbləğ (AZN)",
+    "paymentType": "Ödəniş növü",
+    "startDate": "Başlanğıc tarixi",
+    "endDate": "Bitmə tarixi (ixtiyari)",
+    "endDateHint": "Boş qoyulsa, maksimum 24 dövr yaradılır",
+    "description": "Qeyd",
+    "descriptionPlaceholder": "Ödəniş haqqında qeyd...",
+    "invalidAmount": "Məbləğ 0-dan böyük olmalıdır",
+    "dueDate": "Son tarix",
+    "paidDate": "Ödəniş tarixi",
+    "statusLabel": "Status",
+    "paid": "ödənilib",
+    "overdue": "gecikir",
+    "approve": "Təsdiqlə",
+    "approved": "Ödəniş təsdiqləndi",
+    "unapprove": "Geri al",
+    "unapproved": "Təsdiq geri alındı",
+    "nextPayment": "Növbəti ödəniş",
+    "allPaid": "Bütün ödənişlər tamamlanıb",
+    "overdueAlert": "{{count}} gecikən ödənişiniz var!",
+    "types": {
+      "once": "Bir dəfəlik",
+      "weekly": "Həftəlik",
+      "monthly": "Aylıq",
+      "semi-annually": "Yarım illik",
+      "annually": "İllik"
+    },
+    "status": {
+      "pending": "Gözlənilir",
+      "paid": "Ödənilib",
+      "overdue": "Gecikib"
+    }
   }
 }
