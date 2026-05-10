@@ -29,9 +29,9 @@ const getActivityData = (stats) => {
     return stats.monthlyActivity.map(({ month, value }) => ({ month, value }));
   }
   // Fallback: statistikadan təxmini hesabla
-  const users        = stats?.users?.total        || 0;
-  const courses      = stats?.courses?.total      || 0;
-  const groups       = stats?.groups?.total       || 0;
+  const users = stats?.users?.total || 0;
+  const courses = stats?.courses?.total || 0;
+  const groups = stats?.groups?.total || 0;
   const learningHours = stats?.learningHours?.total || 0;
   const base = Math.max(8, users + courses * 3 + groups * 2 + Math.round(learningHours / 6));
   return activityMonths.map((month, index) => {
@@ -46,10 +46,10 @@ const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
   // Dark modda rənglər əks olunur: ağ ↔ bordo
-  const C_LINE  = isDark ? '#FFFFFF' : '#7B001C';
-  const C_DOT   = isDark ? '#7B001C' : '#FFFFFF';
-  const GRAD_OP0 = isDark ? '0.30'   : '0.35';
-  const GRAD_OP1 = isDark ? '0.04'   : '0.05';
+  const C_LINE = isDark ? '#FFFFFF' : '#7B001C';
+  const C_DOT = isDark ? '#7B001C' : '#FFFFFF';
+  const GRAD_OP0 = isDark ? '0.30' : '0.35';
+  const GRAD_OP1 = isDark ? '0.04' : '0.05';
   const data = getActivityData(stats);
   const maxValue = Math.max(...data.map((item) => item.value), 1);
   const points = data.map((item, index) => {
@@ -251,7 +251,7 @@ const ActivityItem = ({ activity }) => {
     const date = new Date(dateString);
     const now = new Date();
     const diff = Math.floor((now - date) / 1000 / 60); // minutes
-    
+
     if (diff < 60) return t('dashboard.minutesAgo', { count: diff });
     if (diff < 1440) return t('dashboard.hoursAgo', { count: Math.floor(diff / 60) });
     return t('dashboard.daysAgo', { count: Math.floor(diff / 1440) });
@@ -313,8 +313,8 @@ const PaymentWidget = () => {
   return (
     <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-bordo/10">
-          <Banknote size={15} className="text-bordo" />
+        <div className="p-1.5 rounded-lg bg-bordo text-white shadow-sm shadow-bordo/20">
+          <Banknote size={15} />
         </div>
         <h3 className="text-sm font-semibold text-[var(--foreground)]">{t('payments.title')}</h3>
       </div>
@@ -339,7 +339,7 @@ const PaymentWidget = () => {
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-bordo font-medium">{fmtDate(nextDue.dueDate)}</p>
+            <p className="text-xs font-medium" style={{ color: 'var(--bordo-contrast)' }}>{fmtDate(nextDue.dueDate)}</p>
           </div>
         </div>
       ) : (
@@ -381,36 +381,36 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {user?.role === 'admin' && (
           <>
-            <StatCard 
-              title={t('dashboard.totalUsers')} 
-              value={stats?.users?.total || 0} 
-              icon={Users} 
-              trend={12} 
-              delay={0.1} 
+            <StatCard
+              title={t('dashboard.totalUsers')}
+              value={stats?.users?.total || 0}
+              icon={Users}
+              trend={12}
+              delay={0.1}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.activeCourses')} 
-              value={stats?.courses?.total || 0} 
-              icon={BookOpen} 
-              trend={stats?.courses?.trend || 0} 
-              delay={0.2} 
+            <StatCard
+              title={t('dashboard.activeCourses')}
+              value={stats?.courses?.total || 0}
+              icon={BookOpen}
+              trend={stats?.courses?.trend || 0}
+              delay={0.2}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.groups')} 
-              value={stats?.groups?.total || 0} 
-              icon={GraduationCap} 
-              trend={stats?.groups?.trend || 0} 
-              delay={0.3} 
+            <StatCard
+              title={t('dashboard.groups')}
+              value={stats?.groups?.total || 0}
+              icon={GraduationCap}
+              trend={stats?.groups?.trend || 0}
+              delay={0.3}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.learningHours')} 
-              value={`${stats?.learningHours?.total || 0}s`} 
-              icon={Clock} 
-              trend={stats?.learningHours?.trend || 0} 
-              delay={0.4} 
+            <StatCard
+              title={t('dashboard.learningHours')}
+              value={`${stats?.learningHours?.total || 0}s`}
+              icon={Clock}
+              trend={stats?.learningHours?.trend || 0}
+              delay={0.4}
               isLoading={statsLoading}
             />
           </>
@@ -418,25 +418,25 @@ const Dashboard = () => {
 
         {user?.role === 'teacher' && (
           <>
-            <StatCard 
-              title={t('dashboard.myGroups')} 
-              value={stats?.groups?.total || 0} 
-              icon={GraduationCap} 
-              delay={0.1} 
+            <StatCard
+              title={t('dashboard.myGroups')}
+              value={stats?.groups?.total || 0}
+              icon={GraduationCap}
+              delay={0.1}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.myStudents')} 
-              value={stats?.students?.total || 0} 
-              icon={Users} 
-              delay={0.2} 
+            <StatCard
+              title={t('dashboard.myStudents')}
+              value={stats?.students?.total || 0}
+              icon={Users}
+              delay={0.2}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.avgAttendance')} 
-              value={`${stats?.avgAttendance?.total || 0}%`} 
-              icon={TrendingUp} 
-              delay={0.3} 
+            <StatCard
+              title={t('dashboard.avgAttendance')}
+              value={`${stats?.avgAttendance?.total || 0}%`}
+              icon={TrendingUp}
+              delay={0.3}
               isLoading={statsLoading}
             />
             <div className="hidden lg:block"></div>
@@ -445,18 +445,18 @@ const Dashboard = () => {
 
         {user?.role === 'student' && (
           <>
-            <StatCard 
-              title={t('dashboard.enrolledGroups')} 
-              value={stats?.enrolledGroups?.total || 0} 
-              icon={GraduationCap} 
-              delay={0.1} 
+            <StatCard
+              title={t('dashboard.enrolledGroups')}
+              value={stats?.enrolledGroups?.total || 0}
+              icon={GraduationCap}
+              delay={0.1}
               isLoading={statsLoading}
             />
-            <StatCard 
-              title={t('dashboard.myAttendance')} 
-              value={`${stats?.myAttendance?.total || 0}%`} 
-              icon={TrendingUp} 
-              delay={0.2} 
+            <StatCard
+              title={t('dashboard.myAttendance')}
+              value={`${stats?.myAttendance?.total || 0}%`}
+              icon={TrendingUp}
+              delay={0.2}
               isLoading={statsLoading}
             />
             <div className="hidden lg:block" />
@@ -468,23 +468,23 @@ const Dashboard = () => {
       {/* Activity and Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
-          <ActivityChart 
-            stats={stats} 
-            isLoading={statsLoading} 
+          <ActivityChart
+            stats={stats}
+            isLoading={statsLoading}
             title={user?.role === 'student' ? t('dashboard.myActivity') : user?.role === 'teacher' ? t('dashboard.groupActivity') : undefined}
             subtitle={user?.role === 'student' ? t('dashboard.myActivitySubtitle') : user?.role === 'teacher' ? t('dashboard.groupActivitySubtitle') : undefined}
           />
           {/* Payment widget only for students */}
           {user?.role === 'student' && <PaymentWidget />}
         </div>
-        
+
         {/* Recent Activity */}
         <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col h-[400px]">
           <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center justify-between">
             {t('dashboard.recentActivity')}
-            <span className="text-xs font-normal text-bordo bg-bordo/10 px-2 py-1 rounded-full">{t('dashboard.new')}</span>
+            <span className="text-xs font-normal px-2 py-1 rounded-full bg-bordo text-white shadow-sm">{t('dashboard.new')}</span>
           </h3>
-          
+
           <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-1">
             {activitiesLoading ? (
               // Activity Skeletons
