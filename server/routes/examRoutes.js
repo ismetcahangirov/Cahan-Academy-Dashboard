@@ -6,6 +6,7 @@ import {
   updateExam,
   deleteExam,
   addExamResults,
+  submitStudentExam,
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -25,5 +26,8 @@ router.route('/:id')
 
 router.route('/:id/results')
   .post(authorize('admin', 'teacher'), addExamResults);
+
+router.route('/:id/submit')
+  .post(authorize('student'), submitStudentExam);
 
 export default router;

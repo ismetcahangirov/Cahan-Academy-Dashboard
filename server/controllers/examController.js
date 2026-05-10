@@ -85,6 +85,12 @@ export const getExamById = asyncHandler(async (req, res) => {
     examObj.results = examObj.results.filter(
       r => r.student._id.toString() === req.user._id.toString()
     );
+    if (examObj.questions && examObj.questions.length > 0) {
+      examObj.questions = examObj.questions.map(q => {
+        const { correctAnswer, ...rest } = q;
+        return rest;
+      });
+    }
     return res.status(200).json({
       success: true,
       data: examObj,
@@ -241,5 +247,66 @@ export const addExamResults = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     data: exam,
+  });
+});
+
+// @desc    Submit exam answers (Student)
+// @route   POST /api/exams/:id/submit
+// @access  Private/Student
+export const submitStudentExam = asyncHandler(async (req, res) => {
+  const { answers } = req.body;
+  const exam = await Exam.findById(req.params.id);
+
+  if (!exam) {
+    res.status(404);
+    throw new Error('İmtahan tapılmadı');
+  }
+
+  const isStudentInGroup = await Group.exists({
+    _id: exam.group,
+    students: req.user._id
+  });
+
+  if (!isStudentInGroup) {
+    res.status(403);
+    throw new Error('Bu imtahana daxil olmaq icazəniz yoxdur');
+  }
+
+  const existingResult = exam.results.find(r => r.student.toString() === req.user._id.toString());
+  if (existingResult) {
+    res.status(400);
+    throw new Error('Siz artıq bu imtahanı vermisiniz');
+  }
+
+  let totalScore = 0;
+  let maxPossibleScore = 0;
+
+  exam.questions.forEach((question) => {
+    const pts = question.points || 1;
+    maxPossibleScore += pts;
+    
+    if (question.type === 'multiple-choice' || question.type === 'true-false') {
+      const studentAnswer = answers && answers[question._id.toString()];
+      if (studentAnswer && studentAnswer === question.correctAnswer) {
+        totalScore += pts;
+      }
+    }
+  });
+
+  const normalizedScore = maxPossibleScore > 0 
+    ? Math.round((totalScore / maxPossibleScore) * 100) 
+    : 0;
+
+  exam.results.push({
+    student: req.user._id,
+    score: normalizedScore,
+    feedback: ''
+  });
+
+  await exam.save();
+
+  res.status(200).json({
+    success: true,
+    data: { score: normalizedScore }
   });
 });

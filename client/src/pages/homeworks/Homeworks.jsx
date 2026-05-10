@@ -3,13 +3,16 @@ import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, Search, Calendar, 
-  Users, FileText, X, Trash2, Link
+  Users, FileText, X, Trash2, Link, Pen
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { 
   useGetHomeworksQuery, 
   useCreateHomeworkMutation,
+  useUpdateHomeworkMutation,
+  useDeleteHomeworkMutation,
   useSubmitHomeworkMutation,
+  useRemoveHomeworkSubmissionMutation,
   useGradeHomeworkMutation
 } from '../../features/homeworks/homeworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
@@ -39,6 +42,7 @@ const Homeworks = () => {
   // Mutations
   const [createHomework, { isLoading: isCreating }] = useCreateHomeworkMutation();
   const [submitHomework, { isLoading: isSubmitting }] = useSubmitHomeworkMutation();
+  const [removeSubmission, { isLoading: isRemoving }] = useRemoveHomeworkSubmissionMutation();
   const [gradeHomework, { isLoading: isGrading }] = useGradeHomeworkMutation();
 
   const homeworks = homeworksResponse || [];
@@ -54,16 +58,49 @@ const Homeworks = () => {
   // Grade Modal Form State
   const [gradeData, setGradeData] = useState({});
 
+  const [deleteHomework] = useDeleteHomeworkMutation();
+  const [updateHomework, { isLoading: isUpdating }] = useUpdateHomeworkMutation();
+
   const handleCreateHomework = async (e) => {
     e.preventDefault();
     try {
-      await createHomework(createData).unwrap();
-      toast.success(t('homeworks.createSuccess'));
+      if (activeHomework && isCreateModalOpen && createData._id) {
+        // Edit mode
+        await updateHomework({ id: createData._id, data: createData }).unwrap();
+        toast.success(t('homeworks.updateSuccess') || 'Ev tapşırığı uğurla yeniləndi');
+      } else {
+        await createHomework(createData).unwrap();
+        toast.success(t('homeworks.createSuccess'));
+      }
       setIsCreateModalOpen(false);
       setCreateData({ title: '', description: '', group: '', dueDate: '' });
+      setActiveHomework(null);
     } catch (error) {
       toast.error(error.data?.message || t('common.error'));
     }
+  };
+
+  const handleDeleteHomework = async (id) => {
+    if (window.confirm(t('common.deleteConfirm') || 'Silmək istədiyinizə əminsiniz?')) {
+      try {
+        await deleteHomework(id).unwrap();
+        toast.success(t('homeworks.deleteSuccess') || 'Ev tapşırığı uğurla silindi');
+      } catch (error) {
+        toast.error(error.data?.message || t('common.error'));
+      }
+    }
+  };
+
+  const openEditModal = (hw) => {
+    setActiveHomework(hw);
+    setCreateData({
+      _id: hw._id,
+      title: hw.title,
+      description: hw.description || '',
+      group: typeof hw.group === 'object' ? hw.group._id : hw.group,
+      dueDate: hw.dueDate ? new Date(hw.dueDate).toISOString().slice(0, 16) : ''
+    });
+    setIsCreateModalOpen(true);
   };
 
   const handleSubmitHomework = async (e) => {
@@ -71,6 +108,10 @@ const Homeworks = () => {
     if (!activeHomework) return;
     try {
       const validLinks = submitLinks.filter(l => l.trim() !== '');
+      if (validLinks.length === 0 && submitNote.trim() === '') {
+        toast.error(t('homeworks.submitEmptyError') || 'Zəhmət olmasa link və ya qeyd daxil edin');
+        return;
+      }
       const payload = {
         links: validLinks,
         note: submitNote,
@@ -83,6 +124,17 @@ const Homeworks = () => {
       setActiveHomework(null);
     } catch (error) {
       toast.error(error.data?.message || t('common.error'));
+    }
+  };
+
+  const handleDeleteSubmission = async (id) => {
+    if (window.confirm(t('common.deleteConfirm') || 'Silmək istədiyinizə əminsiniz?')) {
+      try {
+        await removeSubmission(id).unwrap();
+        toast.success(t('homeworks.deleteSuccess') || 'Göndəriş silindi');
+      } catch (error) {
+        toast.error(error.data?.message || t('common.error'));
+      }
     }
   };
 
@@ -105,8 +157,14 @@ const Homeworks = () => {
 
   const openSubmitModal = (hw) => {
     setActiveHomework(hw);
-    setSubmitNote('');
-    setSubmitLinks(['']);
+    const mySub = hw.submissions?.find(s => s.student?._id === user._id || s.student === user._id);
+    if (mySub) {
+      setSubmitNote(mySub.note || '');
+      setSubmitLinks(mySub.files?.length > 0 ? mySub.files : ['']);
+    } else {
+      setSubmitNote('');
+      setSubmitLinks(['']);
+    }
     setIsSubmitModalOpen(true);
   };
 
@@ -144,7 +202,11 @@ const Homeworks = () => {
 
         {['admin', 'teacher'].includes(user.role) && (
           <button
-            onClick={() => setIsCreateModalOpen(true)}
+            onClick={() => {
+              setActiveHomework(null);
+              setCreateData({ title: '', description: '', group: '', dueDate: '' });
+              setIsCreateModalOpen(true);
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
           >
             <Plus size={20} />
@@ -194,6 +256,22 @@ const Homeworks = () => {
             >
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">{hw.title}</h3>
+                {['admin', 'teacher'].includes(user.role) && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => openEditModal(hw)}
+                      className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
+                    >
+                      <Pen size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteHomework(hw._id)}
+                      className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
               </div>
               
               <p className="text-[var(--muted-foreground)] mb-6 line-clamp-2 text-sm flex-grow">{hw.description}</p>
@@ -214,14 +292,68 @@ const Homeworks = () => {
               </div>
 
               {/* Action Area based on role */}
-              <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between mt-auto">
+              <div className="pt-4 border-t border-[var(--border)] flex flex-col justify-end mt-auto w-full">
                 {user.role === 'student' ? (
-                  <button 
-                    onClick={() => openSubmitModal(hw)}
-                    className="w-full py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
-                  >
-                    {t('homeworks.viewAndSubmit')}
-                  </button>
+                  (() => {
+                    const mySub = hw.submissions?.find(s => s.student?._id === user._id || s.student === user._id);
+                    const isGraded = mySub?.status === 'graded';
+                    
+                    if (isGraded) {
+                      return (
+                        <div className="w-full flex flex-col gap-2">
+                          <div className="flex items-center justify-between bg-bordo/10 border border-bordo/20 rounded-lg p-3">
+                            <span className="text-sm font-medium text-bordo">
+                              {t('homeworks.graded') || 'Qiymətləndirilib'}
+                            </span>
+                            <span className="text-sm font-bold text-bordo">
+                              {mySub.grade} / 100
+                            </span>
+                          </div>
+                          {mySub.feedback && (
+                            <div className="text-xs text-[var(--muted-foreground)] bg-[var(--muted)]/50 p-3 rounded-lg border border-[var(--border)] italic">
+                              "{mySub.feedback}"
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    const isPastDeadline = hw.dueDate ? new Date() > new Date(hw.dueDate) : false;
+                    const hasSubmitted = !!mySub;
+                    
+                    if (isPastDeadline && !hasSubmitted) {
+                      return (
+                        <div className="w-full text-center py-2 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/50 rounded-lg">
+                          {t('classworks.deadlinePassed') || 'Deadline bitib'}
+                        </div>
+                      );
+                    }
+
+                    return hasSubmitted ? (
+                      <div className="flex gap-2 w-full">
+                        <button 
+                          onClick={() => openSubmitModal(hw)}
+                          className="flex-1 py-2 bg-bordo/10 hover:bg-bordo/20 text-bordo rounded-lg transition-colors text-sm font-medium"
+                        >
+                          {t('common.edit') || 'Redaktə et'}
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteSubmission(hw._id)}
+                          disabled={isRemoving}
+                          className="flex-1 py-2 bg-[var(--input)] border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                        >
+                          {t('common.delete') || 'Sil'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => openSubmitModal(hw)}
+                        className="w-full py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
+                      >
+                        {t('classworks.submitClasswork') || 'Göndər'}
+                      </button>
+                    );
+                  })()
                 ) : (
                   <div className="flex items-center justify-between w-full">
                     <div className="text-sm text-[var(--muted-foreground)]">
@@ -264,7 +396,9 @@ const Homeworks = () => {
               className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-md shadow-xl"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-[var(--foreground)]">{t('homeworks.newHomework')}</h3>
+                <h3 className="text-xl font-bold text-[var(--foreground)]">
+                  {createData._id ? t('common.edit') || 'Redaktə et' : t('homeworks.newHomework')}
+                </h3>
                 <button onClick={() => setIsCreateModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
                   <X size={20} />
                 </button>
@@ -335,10 +469,12 @@ const Homeworks = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={isCreating}
+                    disabled={isCreating || isUpdating}
                     className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50"
                   >
-                    {isCreating ? t('homeworks.creatingBtn') : t('homeworks.createBtn')}
+                    {createData._id 
+                      ? (isUpdating ? t('common.updating') || 'Yenilənir...' : t('common.update') || 'Yenilə')
+                      : (isCreating ? t('homeworks.creatingBtn') : t('homeworks.createBtn'))}
                   </button>
                 </div>
               </form>
@@ -497,6 +633,9 @@ const Homeworks = () => {
                             {sub.status === 'late' && (
                               <span className="ml-2 text-red-400">• {t('homeworks.late') || 'Gecikmiş'}</span>
                             )}
+                            {sub.status === 'graded' && (
+                              <span className="ml-2 text-bordo">• {t('homeworks.graded') || 'Qiymətləndirilib'} ({sub.grade}/100)</span>
+                            )}
                           </div>
                           {/* Student note */}
                           {sub.note && (
@@ -524,18 +663,18 @@ const Homeworks = () => {
                       </div>
                       
                       <form onSubmit={(e) => handleGradeSubmission(e, sub.student?._id)} className="flex flex-col sm:flex-row gap-3 mt-3 pt-3 border-t border-[var(--border)]">
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder={t('homeworks.grade')}
-                          value={gradeData[sub.student?._id]?.grade || ''}
-                          onChange={(e) => setGradeData(prev => ({
-                            ...prev,
-                            [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
-                          }))}
-                          className="w-full sm:w-24 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
-                        />
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            placeholder={t('homeworks.grade') || 'Xal (0-100)'}
+                            value={gradeData[sub.student?._id]?.grade || ''}
+                            onChange={(e) => setGradeData(prev => ({
+                              ...prev,
+                              [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
+                            }))}
+                            className="w-full sm:w-28 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
+                          />
                         <input
                           type="text"
                           placeholder={t('homeworks.feedback')}

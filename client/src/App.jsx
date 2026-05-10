@@ -36,6 +36,7 @@ const Schedule = lazy(() => import('./pages/schedule/Schedule'));
 const UserDetail = lazy(() => import('./pages/users/UserDetail'));
 const StudentDetail = lazy(() => import('./pages/students/StudentDetail'));
 const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
+const TakeExam = lazy(() => import('./pages/exams/TakeExam'));
 
 // Fallback Loading Component
 const PageLoader = () => {
@@ -102,6 +103,7 @@ function App() {
               <Route path="/homeworks" element={<Homeworks />} />
               <Route path="/classworks" element={<Classworks />} />
               <Route path="/exams" element={<Exams />} />
+              <Route path="/exams/:id/take" element={<RoleRoute roles={['student']}><TakeExam /></RoleRoute>} />
               <Route path="/quizzes" element={<Quizzes />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/schedule" element={<Schedule />} />
