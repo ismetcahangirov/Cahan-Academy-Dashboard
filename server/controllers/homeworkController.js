@@ -24,6 +24,7 @@ export const getHomeworks = asyncHandler(async (req, res) => {
   const homeworks = await Homework.find(query)
     .populate('group', 'name')
     .populate('teacher', 'name')
+    .populate('submissions.student', 'name surname avatar')
     .sort('-createdAt');
 
   return apiResponse.success(res, 'Ev tapşırıqları uğurla gətirildi', homeworks);
@@ -36,7 +37,7 @@ export const getHomeworkById = asyncHandler(async (req, res) => {
   const homework = await Homework.findById(req.params.id)
     .populate('group', 'name')
     .populate('teacher', 'name avatar')
-    .populate('submissions.student', 'name email avatar');
+    .populate('submissions.student', 'name surname email avatar');
 
   if (!homework) {
     res.status(404);
@@ -207,4 +208,27 @@ export const gradeHomework = asyncHandler(async (req, res) => {
 
   await homework.save();
   return apiResponse.success(res, 'Tapşırıq uğurla qiymətləndirildi', homework);
+});
+
+// @desc    Remove homework submission (Student)
+// @route   DELETE /api/homeworks/:id/submit
+// @access  Private/Student
+export const removeHomeworkSubmission = asyncHandler(async (req, res) => {
+  const homework = await Homework.findById(req.params.id);
+
+  if (!homework) {
+    res.status(404);
+    throw new Error('Tapşırıq tapılmadı');
+  }
+
+  const existingIndex = homework.submissions.findIndex(
+    sub => sub.student.toString() === req.user._id.toString() || sub.student._id?.toString() === req.user._id.toString()
+  );
+
+  if (existingIndex !== -1) {
+    homework.submissions.splice(existingIndex, 1);
+    await homework.save();
+  }
+
+  return apiResponse.success(res, 'Tapşırıq göndərişi uğurla silindi', homework);
 });

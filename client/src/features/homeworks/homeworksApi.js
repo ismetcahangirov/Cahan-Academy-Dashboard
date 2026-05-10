@@ -66,6 +66,16 @@ export const homeworksApi = apiSlice.injectEndpoints({
         'Homework',
       ],
     }),
+    removeHomeworkSubmission: builder.mutation({
+      query: (id) => ({
+        url: `/homeworks/${id}/submit`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Homework', id },
+        'Homework',
+      ],
+    }),
   }),
 });
 
@@ -76,5 +86,6 @@ export const {
   useUpdateHomeworkMutation,
   useDeleteHomeworkMutation,
   useSubmitHomeworkMutation,
+  useRemoveHomeworkSubmissionMutation,
   useGradeHomeworkMutation,
 } = homeworksApi;
