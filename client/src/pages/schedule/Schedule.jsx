@@ -270,8 +270,10 @@ const Schedule = () => {
     <>
       <div className="space-y-6">
         <div className="flex justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Calendar className="text-bordo" />
+          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
+            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+              <Calendar size={20} />
+            </div>
             {t('schedule.title')}
           </h1>
           {isAdminOrTeacher && (
@@ -312,7 +314,7 @@ const Schedule = () => {
                         key={entry._id}
                         className="group relative flex items-start gap-3 p-3 rounded-xl bg-[var(--muted)] hover:bg-[var(--muted)]/80 border border-[var(--border)] transition-all"
                       >
-                        <div className="p-2 rounded-lg bg-bordo/20 text-bordo shrink-0">
+                        <div className="p-2 rounded-lg bg-bordo text-white shrink-0 shadow-sm shadow-bordo/20">
                           <BookOpen size={16} />
                         </div>
                         <div className="flex-1 min-w-0">

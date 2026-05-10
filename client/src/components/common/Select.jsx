@@ -120,9 +120,13 @@ const Select = ({
               className={cn(
                 'flex items-center gap-3 w-full px-5 py-3 text-sm transition-all text-left',
                 value === option.value
-                  ? 'bg-bordo/10 text-bordo font-semibold'
+                  ? 'font-semibold'
                   : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
               )}
+              style={{ 
+                color: value === option.value ? 'var(--bordo-contrast)' : undefined,
+                backgroundColor: value === option.value ? 'var(--bordo-muted)' : undefined 
+              }}
             >
               <span className="flex-1 truncate">{option.label}</span>
               {value === option.value && (

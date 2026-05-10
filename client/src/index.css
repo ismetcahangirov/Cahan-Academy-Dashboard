@@ -4,7 +4,7 @@
   --color-bordo: #7B001C;
   --color-white: #FFFFFF;
   --color-black: #0F0F0F;
-  
+
   --font-sans: "Times New Roman", Times, serif;
 }
 
@@ -21,6 +21,8 @@
   --muted-foreground: #64748b;
   --accent: #f1f5f9;
   --accent-foreground: #0f172a;
+  --bordo-contrast: #7B001C;
+  --bordo-muted: rgba(123, 0, 28, 0.1);
 }
 
 .dark {
@@ -36,6 +38,8 @@
   --muted-foreground: #94a3b8;
   --accent: #1e293b;
   --accent-foreground: #f8fafc;
+  --bordo-contrast: #FFFFFF;
+  --bordo-muted: rgba(123, 0, 28, 0.2);
 }
 
 body {
@@ -64,6 +68,7 @@ select {
   * {
     border-color: var(--border);
   }
+
   body {
     @apply antialiased;
   }

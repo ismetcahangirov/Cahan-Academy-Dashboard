@@ -192,7 +192,12 @@ const Homeworks = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('homeworks.title')}</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
+            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+              <FileText size={20} />
+            </div>
+            {t('homeworks.title')}
+          </h1>
           <p className="text-[var(--muted-foreground)] mt-1">
             {user.role === 'student' 
               ? t('homeworks.studentSubtitle') 
@@ -255,7 +260,12 @@ const Homeworks = () => {
               className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 hover:bg-[var(--muted)]/50 transition-all group relative flex flex-col"
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">{hw.title}</h3>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+                    <FileText size={18} />
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">{hw.title}</h3>
+                </div>
                 {['admin', 'teacher'].includes(user.role) && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
@@ -301,11 +311,11 @@ const Homeworks = () => {
                     if (isGraded) {
                       return (
                         <div className="w-full flex flex-col gap-2">
-                          <div className="flex items-center justify-between bg-bordo/10 border border-bordo/20 rounded-lg p-3">
-                            <span className="text-sm font-medium text-bordo">
+                          <div className="flex items-center justify-between border border-bordo/20 rounded-lg p-3" style={{ backgroundColor: 'var(--primary)' }}>
+                            <span className="text-sm font-medium text-white">
                               {t('homeworks.graded') || 'Qiymətləndirilib'}
                             </span>
-                            <span className="text-sm font-bold text-bordo">
+                            <span className="text-sm font-bold text-white">
                               {mySub.grade} / 100
                             </span>
                           </div>
@@ -356,8 +366,8 @@ const Homeworks = () => {
                   })()
                 ) : (
                   <div className="flex items-center justify-between w-full">
-                    <div className="text-sm text-[var(--muted-foreground)]">
-                      <span className="text-[var(--foreground)] font-medium">{t('homeworks.submissionsCount', { count: hw.submissions?.length || 0 })}</span>
+                    <div className="text-sm" style={{ color: 'var(--foreground)' }}>
+                      <span className="font-medium">{t('homeworks.submissionsCount', { count: hw.submissions?.length || 0 })}</span>
                     </div>
                     <button 
                       onClick={() => openGradeModal(hw)}
