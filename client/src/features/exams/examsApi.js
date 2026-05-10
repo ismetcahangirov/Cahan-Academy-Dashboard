@@ -49,6 +49,14 @@ export const examsApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Exam', id }, 'Exam'],
     }),
+    submitStudentExam: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/exams/${id}/submit`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Exam', id }, 'Exam'],
+    }),
   }),
 });
 
@@ -59,4 +67,5 @@ export const {
   useUpdateExamMutation,
   useDeleteExamMutation,
   useAddExamResultsMutation,
+  useSubmitStudentExamMutation,
 } = examsApi;

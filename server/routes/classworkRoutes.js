@@ -7,6 +7,7 @@ import {
   updateClasswork,
   deleteClasswork,
   submitClasswork,
+  removeClassworkSubmission,
   gradeClasswork
 } from '../controllers/classworkController.js';
 
@@ -22,7 +23,8 @@ router.route('/:id')
   .delete(protect, authorize('admin', 'teacher'), deleteClasswork);
 
 router.route('/:id/submit')
-  .post(protect, authorize('student'), submitClasswork);
+  .post(protect, authorize('student'), submitClasswork)
+  .delete(protect, authorize('student'), removeClassworkSubmission);
 
 router.route('/:id/grade')
   .put(protect, authorize('admin', 'teacher'), gradeClasswork);

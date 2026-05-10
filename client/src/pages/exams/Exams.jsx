@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, MoreVertical, Clock, 
@@ -142,16 +143,16 @@ const Exams = () => {
               {['admin', 'teacher'].includes(user.role) && (
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                   <button 
-                    onClick={handleEdit}
-                    className="p-1.5 bg-blue-500/20 text-blue-400 hover:bg-blue-500/40 rounded-lg transition-colors"
+                    onClick={() => handleEdit(exam)}
+                    className="p-1.5 bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--foreground)]/10 rounded-lg transition-colors text-sm"
                   >
-                    {t('exams.edit')}
+                    {t('common.edit') || 'Redaktə et'}
                   </button>
                   <button 
                     onClick={() => handleDelete(exam._id)}
-                    className="p-1.5 bg-red-500/20 text-red-400 hover:bg-red-500/40 rounded-lg transition-colors"
+                    className="p-1.5 bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors text-sm"
                   >
-                    {t('exams.delete')}
+                    {t('common.delete') || 'Sil'}
                   </button>
                 </div>
               )}
@@ -185,12 +186,17 @@ const Exams = () => {
                 {user.role === 'student' ? (
                   <div className="w-full flex items-center justify-between">
                     {exam.results && exam.results.length > 0 ? (
-                      <div className="text-sm font-medium text-green-400 bg-green-400/10 px-3 py-1.5 rounded-lg flex items-center gap-2">
+                      <div className="text-sm font-medium text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg flex items-center gap-2 w-full justify-center border border-green-500/20">
                         <PenTool size={16} />
                         {t('exams.result')}: {exam.results[0].score}/100
                       </div>
                     ) : (
-                      <div className="text-sm text-[var(--muted-foreground)] italic">{t('exams.noResult')}</div>
+                      <Link 
+                        to={`/exams/${exam._id}/take`}
+                        className="w-full text-center py-2 bg-bordo text-white rounded-lg transition-colors text-sm font-medium hover:bg-bordo/90"
+                      >
+                        {t('exams.takeExam') || 'İmtahana başla'}
+                      </Link>
                     )}
                   </div>
                 ) : (

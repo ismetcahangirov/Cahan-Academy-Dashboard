@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock, Link
+  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock, Link, Pen
 } from 'lucide-react';
 import {
   useGetClassworksQuery,
   useCreateClassworkMutation,
+  useUpdateClassworkMutation,
   useDeleteClassworkMutation,
   useSubmitClassworkMutation,
+  useRemoveClassworkSubmissionMutation,
   useGradeClassworkMutation
 } from '../../features/classworks/classworksApi';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
@@ -26,94 +28,6 @@ const dateLocales = {
   ru: ru
 };
 
-// ─── Create Modal ────────────────────────────────────────────────
-const CreateModal = ({ groups, onClose, onSubmit, isLoading }) => {
-  const { t } = useTranslation();
-  const [form, setForm] = useState({ title: '', description: '', group: '', dueDate: '' });
-
-  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.title || !form.description || !form.group || !form.dueDate) {
-      toast.error(t('settings.fillAll'));
-      return;
-    }
-    onSubmit(form);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md p-6"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('classworks.newClasswork')}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.titleLabel')} *</label>
-            <input name="title" value={form.title} onChange={handleChange} required
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-              placeholder={t('classworks.placeholderTitle')} />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.groupLabel')} *</label>
-            <Select
-              value={form.group}
-              onChange={(val) => setForm(p => ({ ...p, group: val }))}
-              options={[
-                { label: t('classworks.placeholderGroup'), value: '' },
-                ...groups.map(g => ({ label: g.name, value: g._id }))
-              ]}
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.descLabel')} *</label>
-            <textarea name="description" value={form.description} onChange={handleChange} required rows={3}
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none"
-              placeholder={t('classworks.placeholderDesc')} />
-          </div>
-          <div>
-            <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.dueDateLabel')} *</label>
-            <input type="datetime-local" name="dueDate" value={form.dueDate} onChange={handleChange} required
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo" />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] bg-[var(--muted)]/50 hover:bg-[var(--muted)] rounded-xl transition-colors">
-              {t('common.cancel')}
-            </button>
-            <button type="submit" disabled={isLoading}
-              className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
-              {isLoading ? t('classworks.creatingBtn') : t('classworks.createBtn')}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
-
-// ─── Status Badge ────────────────────────────────────────────────
-const StatusBadge = ({ count, total }) => {
-  const { t } = useTranslation();
-  if (total === 0) return <span className="text-xs text-[var(--muted-foreground)]/30">{t('classworks.noSubmissions')}</span>;
-  const pct = Math.round((count / total) * 100);
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded-full ${pct === 100 ? 'bg-green-500/20 text-green-400' : 'bg-bordo/20 text-bordo'}`}>
-      {t('classworks.submissionsCount', { count, total })}
-    </span>
-  );
-};
-
 // ─── Main Page ────────────────────────────────────────────────────
 const Classworks = () => {
   const { t, i18n } = useTranslation();
@@ -121,7 +35,8 @@ const Classworks = () => {
   const [search, setSearch] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
   
-  const [showCreate, setShowCreate] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createData, setCreateData] = useState({ title: '', description: '', group: '', dueDate: '' });
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isGradeModalOpen, setIsGradeModalOpen] = useState(false);
   const [activeClasswork, setActiveClasswork] = useState(null);
@@ -129,8 +44,10 @@ const Classworks = () => {
   const { data: classworks = [], isLoading } = useGetClassworksQuery(selectedGroup || undefined);
   const { data: groupsResponse } = useGetGroupsQuery();
   const [createClasswork, { isLoading: isCreating }] = useCreateClassworkMutation();
+  const [updateClasswork, { isLoading: isUpdating }] = useUpdateClassworkMutation();
   const [deleteClasswork] = useDeleteClassworkMutation();
   const [submitClasswork, { isLoading: isSubmitting }] = useSubmitClassworkMutation();
+  const [removeClassworkSubmission, { isLoading: isRemoving }] = useRemoveClassworkSubmissionMutation();
   const [gradeClasswork, { isLoading: isGrading }] = useGradeClassworkMutation();
 
   const groups = groupsResponse?.data || [];
@@ -149,23 +66,45 @@ const Classworks = () => {
     cw.description?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleCreate = async (data) => {
+  const handleCreateClasswork = async (e) => {
+    e.preventDefault();
     try {
-      await createClasswork(data).unwrap();
-      toast.success(t('classworks.createSuccess'));
-      setShowCreate(false);
-    } catch (err) {
-      toast.error(err?.data?.message || t('common.error'));
+      if (activeClasswork && isCreateModalOpen && createData._id) {
+        await updateClasswork({ id: createData._id, data: createData }).unwrap();
+        toast.success(t('classworks.updateSuccess') || 'Sinif işi uğurla yeniləndi');
+      } else {
+        await createClasswork(createData).unwrap();
+        toast.success(t('classworks.createSuccess'));
+      }
+      setIsCreateModalOpen(false);
+      setCreateData({ title: '', description: '', group: '', dueDate: '' });
+      setActiveClasswork(null);
+    } catch (error) {
+      toast.error(error.data?.message || t('common.error'));
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteClasswork(id).unwrap();
-      toast.success(t('classworks.deleteSuccess'));
-    } catch (err) {
-      toast.error(err?.data?.message || t('common.error'));
+  const handleDeleteClasswork = async (id) => {
+    if (window.confirm(t('common.deleteConfirm') || 'Silmək istədiyinizə əminsiniz?')) {
+      try {
+        await deleteClasswork(id).unwrap();
+        toast.success(t('classworks.deleteSuccess') || 'Sinif işi uğurla silindi');
+      } catch (error) {
+        toast.error(error.data?.message || t('common.error'));
+      }
     }
+  };
+
+  const openEditModal = (cw) => {
+    setActiveClasswork(cw);
+    setCreateData({
+      _id: cw._id,
+      title: cw.title,
+      description: cw.description || '',
+      group: typeof cw.group === 'object' ? cw.group._id : cw.group,
+      dueDate: cw.dueDate ? new Date(cw.dueDate).toISOString().slice(0, 16) : ''
+    });
+    setIsCreateModalOpen(true);
   };
 
   const handleSubmitClasswork = async (e) => {
@@ -173,6 +112,10 @@ const Classworks = () => {
     if (!activeClasswork) return;
     try {
       const validLinks = submitLinks.filter(l => l.trim() !== '');
+      if (validLinks.length === 0 && submitNote.trim() === '') {
+        toast.error(t('classworks.submitEmptyError') || 'Zəhmət olmasa link və ya qeyd daxil edin');
+        return;
+      }
       const payload = { links: validLinks, note: submitNote };
       await submitClasswork({ id: activeClasswork._id, data: payload }).unwrap();
       toast.success(t('classworks.submitSuccess'));
@@ -182,6 +125,17 @@ const Classworks = () => {
       setActiveClasswork(null);
     } catch (error) {
       toast.error(error.data?.message || t('common.error'));
+    }
+  };
+
+  const handleDeleteSubmission = async (id) => {
+    if (window.confirm(t('common.deleteConfirm') || 'Silmək istədiyinizə əminsiniz?')) {
+      try {
+        await removeClassworkSubmission(id).unwrap();
+        toast.success(t('classworks.deleteSuccess') || 'Göndəriş silindi');
+      } catch (error) {
+        toast.error(error.data?.message || t('common.error'));
+      }
     }
   };
 
@@ -204,15 +158,19 @@ const Classworks = () => {
 
   const openSubmitModal = (cw) => {
     setActiveClasswork(cw);
-    setSubmitNote('');
-    setSubmitLinks(['']);
+    const mySub = cw.submissions?.find(s => s.student?._id === user._id || s.student === user._id);
+    if (mySub) {
+      setSubmitNote(mySub.note || '');
+      setSubmitLinks(mySub.files?.length > 0 ? mySub.files : ['']);
+    } else {
+      setSubmitNote('');
+      setSubmitLinks(['']);
+    }
     setIsSubmitModalOpen(true);
   };
 
   const openGradeModal = (cw) => {
     setActiveClasswork(cw);
-    
-    // Initialize gradeData with existing submissions
     const initialGrades = {};
     if (cw.submissions) {
       cw.submissions.forEach(sub => {
@@ -229,7 +187,6 @@ const Classworks = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-2">
@@ -239,15 +196,20 @@ const Classworks = () => {
             <p className="text-[var(--muted-foreground)]/40 text-sm mt-1">{t('classworks.subtitle')}</p>
           </div>
           {isAdminOrTeacher && (
-            <button onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-bordo hover:bg-bordo/80 text-white rounded-xl text-sm transition-colors">
-              <Plus size={16} />
-              {t('classworks.addNew')}
+            <button
+              onClick={() => {
+                setActiveClasswork(null);
+                setCreateData({ title: '', description: '', group: '', dueDate: '' });
+                setIsCreateModalOpen(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
+            >
+              <Plus size={20} />
+              <span>{t('classworks.addNew')}</span>
             </button>
           )}
         </div>
 
-        {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={16} />
@@ -268,7 +230,6 @@ const Classworks = () => {
           )}
         </div>
 
-        {/* Content */}
         {isLoading ? (
           <div className="flex justify-center py-16">
             <Spinner />
@@ -290,10 +251,20 @@ const Classworks = () => {
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="text-base font-semibold text-[var(--foreground)] line-clamp-1 flex-1 mr-2">{cw.title}</h3>
                   {isAdminOrTeacher && (
-                    <button onClick={() => handleDelete(cw._id)}
-                      className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all">
-                      <Trash2 size={14} />
-                    </button>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => openEditModal(cw)}
+                        className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
+                      >
+                        <Pen size={14} />
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteClasswork(cw._id)}
+                        className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -315,18 +286,74 @@ const Classworks = () => {
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <StatusBadge count={cw.submissions?.length || 0} total={cw.group?.students?.length || 0} />
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${cw.submissions?.length === (cw.group?.students?.length || 0) && (cw.group?.students?.length || 0) > 0 ? 'bg-green-500/20 text-green-400' : 'bg-bordo/20 text-bordo'}`}>
+                      {t('classworks.submissionsCount', { count: cw.submissions?.length || 0, total: cw.group?.students?.length || 0 })}
+                    </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between mt-auto">
+                <div className="pt-3 border-t border-[var(--border)] flex flex-col justify-end mt-auto w-full">
                   {user.role === 'student' ? (
-                    <button 
-                      onClick={() => openSubmitModal(cw)}
-                      className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium"
-                    >
-                      {t('classworks.submitClasswork')}
-                    </button>
+                    (() => {
+                      const mySub = cw.submissions?.find(s => s.student?._id === user._id || s.student === user._id);
+                      const isGraded = mySub?.status === 'graded';
+                      
+                      if (isGraded) {
+                        return (
+                          <div className="w-full flex flex-col gap-2">
+                            <div className="flex items-center justify-between bg-bordo/10 border border-bordo/20 rounded-lg p-2.5">
+                              <span className="text-xs font-medium text-bordo">
+                                {t('classworks.graded') || 'Qiymətləndirilib'}
+                              </span>
+                              <span className="text-xs font-bold text-bordo">
+                                {mySub.grade} / 100
+                              </span>
+                            </div>
+                            {mySub.feedback && (
+                              <div className="text-xs text-[var(--muted-foreground)] bg-[var(--muted)]/50 p-2.5 rounded-lg border border-[var(--border)] italic">
+                                "{mySub.feedback}"
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+
+                      const isPastDeadline = cw.dueDate ? new Date() > new Date(cw.dueDate) : false;
+                      const hasSubmitted = !!mySub;
+                      
+                      if (isPastDeadline && !hasSubmitted) {
+                        return (
+                          <div className="w-full text-center py-1.5 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/50 rounded-lg">
+                            {t('classworks.deadlinePassed') || 'Deadline bitib'}
+                          </div>
+                        );
+                      }
+
+                      return hasSubmitted ? (
+                        <div className="flex gap-2 w-full">
+                          <button 
+                            onClick={() => openSubmitModal(cw)}
+                            className="flex-1 py-1.5 bg-bordo/10 hover:bg-bordo/20 text-bordo rounded-lg transition-colors text-xs font-medium"
+                          >
+                            {t('common.edit') || 'Redaktə et'}
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteSubmission(cw._id)}
+                            disabled={isRemoving}
+                            className="flex-1 py-1.5 bg-[var(--input)] border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium disabled:opacity-50"
+                          >
+                            {t('common.delete') || 'Sil'}
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => openSubmitModal(cw)}
+                          className="w-full py-1.5 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium"
+                        >
+                          {t('classworks.submitClasswork')}
+                        </button>
+                      );
+                    })()
                   ) : (
                     <button 
                       onClick={() => openGradeModal(cw)}
@@ -343,17 +370,70 @@ const Classworks = () => {
       </div>
 
       <AnimatePresence>
-        {showCreate && (
-          <CreateModal
-            groups={groups}
-            onClose={() => setShowCreate(false)}
-            onSubmit={handleCreate}
-            isLoading={isCreating}
-          />
+        {isCreateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md p-6"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-semibold text-[var(--foreground)]">
+                  {createData._id ? t('common.edit') || 'Redaktə et' : t('classworks.newClasswork')}
+                </h2>
+                <button onClick={() => setIsCreateModalOpen(false)} className="p-2 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleCreateClasswork} className="space-y-4">
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.titleLabel')} *</label>
+                  <input name="title" value={createData.title} onChange={(e) => setCreateData(p => ({...p, title: e.target.value}))} required
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
+                    placeholder={t('classworks.placeholderTitle')} />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.groupLabel')} *</label>
+                  <Select
+                    value={createData.group}
+                    onChange={(val) => setCreateData(p => ({ ...p, group: val }))}
+                    options={[
+                      { label: t('classworks.placeholderGroup'), value: '' },
+                      ...groups.map(g => ({ label: g.name, value: g._id }))
+                    ]}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.descLabel')} *</label>
+                  <textarea value={createData.description} onChange={(e) => setCreateData(p => ({...p, description: e.target.value}))} required rows={3}
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none"
+                    placeholder={t('classworks.placeholderDesc')} />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--muted-foreground)] mb-1">{t('classworks.dueDateLabel')} *</label>
+                  <input type="datetime-local" value={createData.dueDate} onChange={(e) => setCreateData(p => ({...p, dueDate: e.target.value}))} required
+                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo" />
+                </div>
+                <div className="flex justify-end gap-3 pt-2">
+                  <button type="button" onClick={() => setIsCreateModalOpen(false)}
+                    className="px-4 py-2 text-sm text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] bg-[var(--muted)]/50 hover:bg-[var(--muted)] rounded-xl transition-colors">
+                    {t('common.cancel')}
+                  </button>
+                  <button type="submit" disabled={isCreating || isUpdating}
+                    className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
+                    {createData._id 
+                      ? (isUpdating ? t('common.updating') || 'Yenilənir...' : t('common.update') || 'Yenilə')
+                      : (isCreating ? t('classworks.creatingBtn') : t('classworks.createBtn'))}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* SUBMIT MODAL (STUDENT) */}
       <AnimatePresence>
         {isSubmitModalOpen && activeClasswork && (
           <motion.div
@@ -381,7 +461,6 @@ const Classworks = () => {
               </div>
 
               <form onSubmit={handleSubmitClasswork} className="space-y-4">
-                {/* Note */}
                 <div>
                   <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
                     {t('classworks.noteLabel') || 'Qeyd / Şərh'}
@@ -395,7 +474,6 @@ const Classworks = () => {
                   />
                 </div>
 
-                {/* Multi-link */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium text-[var(--muted-foreground)]">
@@ -495,6 +573,12 @@ const Classworks = () => {
                           <div className="font-medium text-[var(--foreground)]">{sub.student?.name} {sub.student?.surname}</div>
                           <div className="text-xs text-[var(--muted-foreground)] mt-1">
                             {format(new Date(sub.submittedAt || sub.createdAt || new Date()), 'dd MMM yyyy, HH:mm')}
+                            {sub.status === 'late' && (
+                              <span className="ml-2 text-red-400">• {t('homeworks.late') || 'Gecikmiş'}</span>
+                            )}
+                            {sub.status === 'graded' && (
+                              <span className="ml-2 text-bordo">• {t('classworks.graded') || 'Qiymətləndirilib'} ({sub.grade}/100)</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -536,13 +620,13 @@ const Classworks = () => {
                           type="number"
                           min="0"
                           max="100"
-                          placeholder={t('classworks.grade')}
+                          placeholder={t('classworks.grade') || 'Xal (0-100)'}
                           value={gradeData[sub.student?._id]?.grade || ''}
                           onChange={(e) => setGradeData(prev => ({
                             ...prev,
                             [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
                           }))}
-                          className="w-full sm:w-24 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
+                          className="w-full sm:w-28 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
                         />
                         <input
                           type="text"

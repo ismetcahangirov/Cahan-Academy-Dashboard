@@ -434,7 +434,8 @@
     "addLink": "Add link",
     "linkOrFile": "link or file URL",
     "viewFile": "View file",
-    "late": "Late"
+    "late": "Late",
+    "graded": "Graded"
   },
   "classworks": {
     "title": "Classworks",
@@ -471,7 +472,8 @@
     "noteLabel": "Note / Comment",
     "notePlaceholder": "Leave a note for the teacher...",
     "addLink": "Add link",
-    "viewFile": "View file"
+    "viewFile": "View file",
+    "graded": "Graded"
   },
   "quizzes": {
     "title": "Quizzes",

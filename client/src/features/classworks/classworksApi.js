@@ -66,6 +66,16 @@ export const classworksApi = apiSlice.injectEndpoints({
         'Classwork',
       ],
     }),
+    removeClassworkSubmission: builder.mutation({
+      query: (id) => ({
+        url: `/classworks/${id}/submit`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Classwork', id },
+        'Classwork',
+      ],
+    }),
   }),
 });
 
@@ -76,5 +86,6 @@ export const {
   useUpdateClassworkMutation,
   useDeleteClassworkMutation,
   useSubmitClassworkMutation,
+  useRemoveClassworkSubmissionMutation,
   useGradeClassworkMutation,
 } = classworksApi;

@@ -434,7 +434,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                     onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: optIndex.toString() })}
                                     className={`p-1.5 rounded-full transition-all ${
                                       watch(`questions.${index}.correctAnswer`) === optIndex.toString() 
-                                        ? "text-emerald-500 bg-emerald-500/10" 
+                                        ? "text-bordo bg-bordo/10" 
                                         : "text-[var(--muted-foreground)]/20 hover:text-[var(--muted-foreground)]/40"
                                     }`}
                                   >
@@ -458,7 +458,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                 onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: 'true' })}
                                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
                                   watch(`questions.${index}.correctAnswer`) === 'true'
-                                    ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-500"
+                                    ? "bg-bordo/10 border-bordo/50 text-bordo"
                                     : "bg-[var(--muted)]/50 border-[var(--border)] text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]"
                                 }`}
                               >
@@ -469,7 +469,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                                 onClick={() => update(index, { ...watch(`questions.${index}`), correctAnswer: 'false' })}
                                 className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-all ${
                                   watch(`questions.${index}.correctAnswer`) === 'false'
-                                    ? "bg-red-500/10 border-red-500/50 text-red-500"
+                                    ? "bg-bordo/10 border-bordo/50 text-bordo"
                                     : "bg-[var(--muted)]/50 border-[var(--border)] text-[var(--muted-foreground)]/40 hover:bg-[var(--muted)]"
                                 }`}
                               >
