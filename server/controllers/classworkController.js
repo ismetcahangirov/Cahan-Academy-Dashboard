@@ -24,6 +24,7 @@ export const getClassworks = asyncHandler(async (req, res) => {
   const classworks = await Classwork.find(query)
     .populate('group', 'name')
     .populate('teacher', 'name')
+    .populate('submissions.student', 'name surname avatar')
     .sort('-createdAt');
 
   return apiResponse.success(res, 'Sinif işləri uğurla gətirildi', classworks);
@@ -36,7 +37,7 @@ export const getClassworkById = asyncHandler(async (req, res) => {
   const classwork = await Classwork.findById(req.params.id)
     .populate('group', 'name')
     .populate('teacher', 'name avatar')
-    .populate('submissions.student', 'name email avatar');
+    .populate('submissions.student', 'name surname email avatar');
 
   if (!classwork) {
     res.status(404);
@@ -203,4 +204,27 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
 
   await classwork.save();
   return apiResponse.success(res, 'Sinif işi uğurla qiymətləndirildi', classwork);
+});
+
+// @desc    Remove classwork submission (Student)
+// @route   DELETE /api/classworks/:id/submit
+// @access  Private/Student
+export const removeClassworkSubmission = asyncHandler(async (req, res) => {
+  const classwork = await Classwork.findById(req.params.id);
+
+  if (!classwork) {
+    res.status(404);
+    throw new Error('Sinif işi tapılmadı');
+  }
+
+  const existingIndex = classwork.submissions.findIndex(
+    sub => sub.student.toString() === req.user._id.toString() || sub.student._id?.toString() === req.user._id.toString()
+  );
+
+  if (existingIndex !== -1) {
+    classwork.submissions.splice(existingIndex, 1);
+    await classwork.save();
+  }
+
+  return apiResponse.success(res, 'Sinif işi göndərişi uğurla silindi', classwork);
 });

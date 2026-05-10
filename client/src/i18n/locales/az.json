@@ -434,7 +434,8 @@
     "addLink": "Link əlavə et",
     "linkOrFile": "link və ya fayl URL",
     "viewFile": "Fayla bax",
-    "late": "Gecikmiş"
+    "late": "Gecikmiş",
+    "graded": "Qiymətləndirilib"
   },
   "classworks": {
     "title": "Sinif İşləri",
@@ -471,7 +472,8 @@
     "noteLabel": "Qeyd / Şərh",
     "notePlaceholder": "Müəllimə qeyd buraxın...",
     "addLink": "Link əlavə et",
-    "viewFile": "Fayla bax"
+    "viewFile": "Fayla bax",
+    "graded": "Qiymətləndirilib"
   },
   "quizzes": {
     "title": "Quizlər",

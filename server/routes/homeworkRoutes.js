@@ -7,6 +7,7 @@ import {
   updateHomework,
   deleteHomework,
   submitHomework,
+  removeHomeworkSubmission,
   gradeHomework
 } from '../controllers/homeworkController.js';
 
@@ -22,9 +23,10 @@ router.route('/:id')
   .put(protect, authorize('admin', 'teacher'), updateHomework)
   .delete(protect, authorize('admin', 'teacher'), deleteHomework);
 
-// Tələbə tapşırıq təhvil verir
+// Tələbə tapşırıq təhvil verir və ya silir
 router.route('/:id/submit')
-  .post(protect, authorize('student'), submitHomework);
+  .post(protect, authorize('student'), submitHomework)
+  .delete(protect, authorize('student'), removeHomeworkSubmission);
 
 // Müəllim tapşırığı qiymətləndirir
 router.route('/:id/grade')
