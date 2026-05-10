@@ -394,7 +394,7 @@ const Groups = () => {
                 className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 hover:border-bordo/30 transition-all"
               >
                 <div className="flex justify-between items-start">
-                  <div className="p-2.5 bg-bordo/10 border border-bordo/20 rounded-xl text-bordo">
+                  <div className="p-2.5 bg-bordo text-white rounded-xl shadow-sm shadow-bordo/20">
                     <BookOpen size={20} />
                   </div>
                   {isAdmin && (
@@ -445,10 +445,13 @@ const Groups = () => {
                       {(group.schedule.startTime || group.schedule.endTime) && (
                         <div className="flex items-center gap-2 pl-5 text-xs text-[var(--muted-foreground)]/60">
                           <span>{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
-                          <span className={cn(
-                            "px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border",
-                            group.schedule.type === 'online' ? "bg-bordo/10 text-bordo border-bordo/20" : "bg-white text-bordo border-bordo/20"
-                          )}>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</span>
+                          <span 
+                            className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border border-bordo/20"
+                            style={{ 
+                              backgroundColor: group.schedule.type === 'online' ? 'var(--bordo-muted)' : 'var(--background)',
+                              color: 'var(--bordo-contrast)'
+                            }}
+                          >{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</span>
                         </div>
                       )}
                     </div>

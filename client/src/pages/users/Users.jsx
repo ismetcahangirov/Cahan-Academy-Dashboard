@@ -36,7 +36,10 @@ const RoleBadge = ({ role }) => {
   };
 
   return (
-    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize bg-bordo/10 text-bordo border-bordo/20">
+    <span 
+      className="px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize"
+      style={{ backgroundColor: 'var(--bordo-muted)', color: 'var(--bordo-contrast)', borderColor: 'rgba(123, 0, 28, 0.2)' }}
+    >
       {roleLabel[role] || role}
     </span>
   );
@@ -46,8 +49,8 @@ const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
   const styles = {
     active: 'bg-bordo text-white border-bordo',
-    inactive: 'bg-[var(--muted)] text-bordo border-bordo/20',
-    pending: 'bg-bordo/10 text-bordo border-bordo/20',
+    inactive: 'bg-[var(--muted)] border-bordo/20',
+    pending: 'border-bordo/20',
   };
   const dots = {
     active: 'bg-white',
@@ -61,10 +64,13 @@ const StatusBadge = ({ status }) => {
   };
 
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
-      styles[status] || styles.inactive
-    )}>
+    <span 
+      className={cn(
+        'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
+        styles[status] || styles.inactive
+      )}
+      style={status !== 'active' ? { backgroundColor: status === 'pending' ? 'var(--bordo-muted)' : undefined, color: 'var(--bordo-contrast)' } : {}}
+    >
       <span className={cn('w-1.5 h-1.5 rounded-full', dots[status] || dots.inactive)}></span>
       {labels[status] || status}
     </span>
@@ -159,7 +165,12 @@ const Users = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('users.title')}</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
+            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+              <UsersIcon size={20} />
+            </div>
+            {t('users.title')}
+          </h1>
           <p className="text-[var(--muted-foreground)] text-sm mt-1">{t('users.subtitle')}</p>
         </div>
         <button 

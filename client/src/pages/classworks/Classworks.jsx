@@ -189,8 +189,10 @@ const Classworks = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-2">
-              <BookOpen className="text-bordo" />
+            <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
+              <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+                <BookOpen size={20} />
+              </div>
               {t('classworks.title')}
             </h1>
             <p className="text-[var(--muted-foreground)]/40 text-sm mt-1">{t('classworks.subtitle')}</p>
@@ -248,8 +250,13 @@ const Classworks = () => {
                 transition={{ delay: i * 0.04 }}
                 className="group bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 hover:border-[var(--foreground)]/20 transition-all flex flex-col shadow-sm relative"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-base font-semibold text-[var(--foreground)] line-clamp-1 flex-1 mr-2">{cw.title}</h3>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-bordo text-white rounded-xl shadow-sm shadow-bordo/20">
+                      <BookOpen size={18} />
+                    </div>
+                    <h3 className="text-base font-semibold text-[var(--foreground)] line-clamp-1">{cw.title}</h3>
+                  </div>
                   {isAdminOrTeacher && (
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
@@ -286,7 +293,14 @@ const Classworks = () => {
                     </div>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${cw.submissions?.length === (cw.group?.students?.length || 0) && (cw.group?.students?.length || 0) > 0 ? 'bg-green-500/20 text-green-400' : 'bg-bordo/20 text-bordo'}`}>
+                    <span 
+                      className={`text-xs px-2 py-0.5 rounded-full border border-bordo/20 ${
+                        cw.submissions?.length === (cw.group?.students?.length || 0) && (cw.group?.students?.length || 0) > 0 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : ''
+                      }`}
+                      style={!(cw.submissions?.length === (cw.group?.students?.length || 0) && (cw.group?.students?.length || 0) > 0) ? { backgroundColor: 'var(--bordo-muted)', color: 'var(--bordo-contrast)' } : {}}
+                    >
                       {t('classworks.submissionsCount', { count: cw.submissions?.length || 0, total: cw.group?.students?.length || 0 })}
                     </span>
                   </div>
@@ -301,11 +315,11 @@ const Classworks = () => {
                       if (isGraded) {
                         return (
                           <div className="w-full flex flex-col gap-2">
-                            <div className="flex items-center justify-between bg-bordo/10 border border-bordo/20 rounded-lg p-2.5">
-                              <span className="text-xs font-medium text-bordo">
+                            <div className="flex items-center justify-between border border-bordo/20 rounded-lg p-2.5" style={{ backgroundColor: 'var(--primary)' }}>
+                              <span className="text-xs font-medium text-white">
                                 {t('classworks.graded') || 'Qiymətləndirilib'}
                               </span>
-                              <span className="text-xs font-bold text-bordo">
+                              <span className="text-xs font-bold text-white">
                                 {mySub.grade} / 100
                               </span>
                             </div>

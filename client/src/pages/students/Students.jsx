@@ -35,9 +35,11 @@ const StatusBadge = ({ status }) => {
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
       isActive 
-        ? 'bg-bordo/10 text-bordo border-bordo/20' 
+        ? 'border-bordo/20' 
         : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
-    )}>
+    )}
+    style={{ color: 'var(--bordo-contrast)', backgroundColor: isActive ? 'var(--bordo-muted)' : undefined }}
+    >
       <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]/40')}></span>
       {isActive ? t('students.active') : t('students.inactive')}
     </span>
@@ -103,7 +105,12 @@ const Students = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('students.title')}</h1>
+          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
+            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
+              <UsersIcon size={20} />
+            </div>
+            {t('students.title')}
+          </h1>
           <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('students.subtitle')}</p>
         </div>
         <button
@@ -125,7 +132,7 @@ const Students = () => {
             transition={{ delay: idx * 0.1 }}
             className="bg-bordo border border-bordo rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg shadow-bordo/20"
           >
-            <div className="p-3 rounded-xl bg-white text-bordo">
+            <div className="p-3 rounded-xl bg-white text-bordo shadow-sm">
               <stat.icon size={22} />
             </div>
             <div>
@@ -196,7 +203,7 @@ const Students = () => {
                     </td>
                     <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{student.email}</td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-bordo/10 text-bordo border-bordo/20">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-bordo text-white shadow-sm shadow-bordo/10">
                         <BookOpen size={12} />
                         {student.group || t('students.noGroup')}
                       </span>
