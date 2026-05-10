@@ -37,6 +37,7 @@ const UserDetail = lazy(() => import('./pages/users/UserDetail'));
 const StudentDetail = lazy(() => import('./pages/students/StudentDetail'));
 const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
 const TakeExam = lazy(() => import('./pages/exams/TakeExam'));
+const StudentPayments = lazy(() => import('./pages/payments/StudentPayments'));
 
 // Fallback Loading Component
 const PageLoader = () => {
@@ -86,6 +87,7 @@ function App() {
                 <Route path="/users" element={<Users />} />
                 <Route path="/users/:id" element={<UserDetail />} />
                 <Route path="/invitations" element={<Invitations />} />
+                <Route path="/students/:id/payments" element={<StudentPayments />} />
               </Route>
  
               {/* Admin + Teacher */}

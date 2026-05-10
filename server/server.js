@@ -21,6 +21,7 @@ import quizRoutes from './routes/quizRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import scheduleRoutes from './routes/scheduleRoutes.js';
 import examRoutes from './routes/examRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 import seedAdmin from './scripts/seedAdmin.js';
 
 dotenv.config();
@@ -145,6 +146,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/exams', examRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // ------------------------------------------------------------
 // Root route & error handling

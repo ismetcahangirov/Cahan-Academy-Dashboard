@@ -1,8 +1,9 @@
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../features/auth/authSlice';
 import { motion } from 'framer-motion';
-import { Users, GraduationCap, BookOpen, Clock, TrendingUp } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Clock, TrendingUp, Banknote, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useGetStatsQuery, useGetActivitiesQuery } from '../features/dashboard/dashboardApi';
+import { useGetMyPaymentsQuery } from '../features/payments/paymentsApi';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 
@@ -267,6 +268,92 @@ const ActivityItem = ({ activity }) => {
   );
 };
 
+// ─── Student Payment Widget ─────────────────────────────────────────────────
+const PaymentWidget = () => {
+  const { t, i18n } = useTranslation();
+  const { data, isLoading } = useGetMyPaymentsQuery();
+  const payments = data?.data ?? [];
+
+  const fmtDate = (d) =>
+    new Date(d).toLocaleDateString(
+      i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
+    );
+
+  if (isLoading) {
+    return (
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 animate-pulse">
+        <div className="h-4 bg-[var(--muted)] rounded w-32 mb-3" />
+        <div className="h-10 bg-[var(--muted)] rounded w-full" />
+      </div>
+    );
+  }
+
+  if (payments.length === 0) {
+    return (
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <Banknote size={16} className="text-bordo" />
+          <h3 className="text-sm font-semibold text-[var(--foreground)]">{t('payments.title')}</h3>
+        </div>
+        <p className="text-xs text-[var(--muted-foreground)]/60">{t('payments.noActivePayments')}</p>
+      </div>
+    );
+  }
+
+  // Find most relevant entries across all plans
+  const allEntries = payments.flatMap((plan) =>
+    plan.history.map((h) => ({ ...h, planAmount: plan.amount }))
+  );
+  const overdue = allEntries.filter((e) => e.status === 'overdue');
+  const pending = allEntries
+    .filter((e) => e.status === 'pending')
+    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+  const nextDue = pending[0];
+
+  return (
+    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 rounded-lg bg-bordo/10">
+          <Banknote size={15} className="text-bordo" />
+        </div>
+        <h3 className="text-sm font-semibold text-[var(--foreground)]">{t('payments.title')}</h3>
+      </div>
+
+      {/* Overdue alert */}
+      {overdue.length > 0 && (
+        <div className="flex items-start gap-2 bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 rounded-xl p-3 mb-3">
+          <AlertCircle size={15} className="text-[var(--destructive)] shrink-0 mt-0.5" />
+          <p className="text-xs text-[var(--destructive)] font-medium">
+            {t('payments.overdueAlert', { count: overdue.length })}
+          </p>
+        </div>
+      )}
+
+      {/* Next payment */}
+      {nextDue ? (
+        <div className="flex items-center justify-between bg-bordo/5 border border-bordo/10 rounded-xl px-3 py-2.5">
+          <div>
+            <p className="text-xs text-[var(--muted-foreground)]/60">{t('payments.nextPayment')}</p>
+            <p className="text-sm font-semibold text-[var(--foreground)] mt-0.5">
+              {nextDue.planAmount} AZN
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-bordo font-medium">{fmtDate(nextDue.dueDate)}</p>
+          </div>
+        </div>
+      ) : (
+        overdue.length === 0 && (
+          <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
+            <CheckCircle2 size={14} className="text-bordo" />
+            {t('payments.allPaid')}
+          </div>
+        )
+      )}
+    </div>
+  );
+};
+
 const Dashboard = () => {
   const { t } = useTranslation();
   const user = useSelector(selectCurrentUser);
@@ -372,8 +459,8 @@ const Dashboard = () => {
               delay={0.2} 
               isLoading={statsLoading}
             />
-            <div className="hidden lg:block"></div>
-            <div className="hidden lg:block"></div>
+            <div className="hidden lg:block" />
+            <div className="hidden lg:block" />
           </>
         )}
       </div>
@@ -387,6 +474,8 @@ const Dashboard = () => {
             title={user?.role === 'student' ? t('dashboard.myActivity') : user?.role === 'teacher' ? t('dashboard.groupActivity') : undefined}
             subtitle={user?.role === 'student' ? t('dashboard.myActivitySubtitle') : user?.role === 'teacher' ? t('dashboard.groupActivitySubtitle') : undefined}
           />
+          {/* Payment widget only for students */}
+          {user?.role === 'student' && <PaymentWidget />}
         </div>
         
         {/* Recent Activity */}
