@@ -47,7 +47,6 @@ app.use(helmet());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://cahan-academy-dashboard.vercel.app',  // ← hardcode əlavə et
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -57,18 +56,7 @@ app.use(
       // Allow non‑browser requests (no origin)
       if (!origin) return callback(null, true);
 
-      // Production mode – only allow the explicit CLIENT_URL.
-      if (process.env.NODE_ENV === 'production') {
-        const prodOrigin = process.env.CLIENT_URL;
-        // If CLIENT_URL is missing we fall back to allowing any origin
-        // (ideally it should always be set in production)
-        if (!prodOrigin || prodOrigin === '*' || prodOrigin === origin) {
-          return callback(null, true);
-        }
-      }
-
-      // Development mode – whitelist array
-      if (allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
         return callback(null, true);
       }
 
