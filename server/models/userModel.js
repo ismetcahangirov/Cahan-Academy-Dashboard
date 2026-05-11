@@ -34,6 +34,11 @@ const userSchema = mongoose.Schema(
       enum: ['active', 'inactive', 'pending'],
       default: 'pending',
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Allows null for users who didn't use Google
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
