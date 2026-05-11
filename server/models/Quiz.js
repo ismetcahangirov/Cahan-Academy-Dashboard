@@ -1,18 +1,24 @@
 import mongoose from 'mongoose';
 
+console.log('Quiz Model Loaded - Version 2 (with text/type fields)');
+
 const questionSchema = new mongoose.Schema({
-  questionText: {
+  text: {
     type: String,
     required: true,
+  },
+  type: {
+    type: String,
+    enum: ['multiple-choice', 'true-false', 'open-ended'],
+    default: 'multiple-choice',
   },
   options: [
     {
       type: String,
-      required: true,
     },
   ],
   correctAnswer: {
-    type: Number, // Index of the correct option
+    type: String,
     required: true,
   },
   points: {
@@ -31,7 +37,7 @@ const quizAttemptSchema = new mongoose.Schema(
     answers: [
       {
         questionId: mongoose.Schema.Types.ObjectId,
-        selectedOption: Number,
+        selectedOption: String,
         isCorrect: Boolean,
       },
     ],
