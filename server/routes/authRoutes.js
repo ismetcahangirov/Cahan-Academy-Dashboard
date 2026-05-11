@@ -7,6 +7,7 @@ import {
   forgotPassword,
   resetPassword,
   registerViaInvitation,
+  googleLogin,
 } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
@@ -26,5 +27,6 @@ router.post('/logout', protect, logout);
 router.post('/forgot-password', authLimiter, forgotPassword);
 router.post('/reset-password/:token', authLimiter, resetPassword);
 router.post('/register-invitation/:token', registerViaInvitation);
+router.post('/google', googleLogin);
 
 export default router;
