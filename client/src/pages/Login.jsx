@@ -66,7 +66,7 @@ const Login = () => {
 
   const onGoogleSuccess = async (response) => {
     try {
-      const userData = await googleLogin({ token: response.credential }).unwrap();
+      const userData = await googleLogin({ credential: response.credential }).unwrap();
       dispatch(setCredentials(userData.data));
       toast.success(t('auth.googleLoginSuccess'));
       navigate('/');

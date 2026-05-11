@@ -4,6 +4,9 @@ import { generateToken, generateRefreshToken } from '../utils/generateToken.js';
 import apiResponse from '../utils/apiResponse.js';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -213,4 +216,66 @@ const registerViaInvitation = async (req, res) => {
   }
 };
 
-export { register, login, refreshToken, logout, forgotPassword, resetPassword, registerViaInvitation };
+// @desc    Google Login
+// @route   POST /api/auth/google
+// @access  Public
+const googleLogin = async (req, res) => {
+  const { credential } = req.body;
+
+  if (!credential) {
+    return apiResponse.error(res, 'Credential is required', 400);
+  }
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user if doesn't exist
+      user = await User.create({
+        name,
+        email,
+        password: crypto.randomBytes(16).toString('hex'), // Random password for OAuth users
+        role: 'student', // Default role
+        status: 'active', // Google users are pre-verified
+        googleId,
+        avatar: picture,
+      });
+    } else {
+      // Update existing user's googleId if not present
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+      
+      if (user.status === 'pending') {
+        return apiResponse.error(res, 'Hesabınız admin tərəfindən təsdiqlənməyib.', 403);
+      }
+
+      if (user.status === 'inactive') {
+        return apiResponse.error(res, 'Hesabınız aktiv deyil.', 403);
+      }
+    }
+
+    return apiResponse.success(res, 'Google login successful', {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+      refreshToken: generateRefreshToken(user._id),
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    return apiResponse.error(res, 'Google login failed', 401);
+  }
+};
+
+export { register, login, refreshToken, logout, forgotPassword, resetPassword, registerViaInvitation, googleLogin };
