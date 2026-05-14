@@ -31,9 +31,20 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
 
+const getDays = (t) => [
+  t('schedule.days.monday'),
+  t('schedule.days.tuesday'),
+  t('schedule.days.wednesday'),
+  t('schedule.days.thursday'),
+  t('schedule.days.friday'),
+  t('schedule.days.saturday'),
+  t('schedule.days.sunday')
+];
+
 // ─── Group Detail Modal ──────────────────────────────────────────────────────
 const GroupDetailModal = ({ groupId, onClose }) => {
   const { t, i18n } = useTranslation();
+  const DAYS = getDays(t);
   const [studentSearch, setStudentSearch] = useState('');
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
@@ -130,7 +141,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                   </p>
                   <p className="text-sm font-medium text-[var(--foreground)]">
                     {group.schedule.repetitionType === 'weekly' 
-                      ? group.schedule.days.join(', ')
+                      ? group.schedule.days.map(d => (!isNaN(parseInt(d)) && parseInt(d) >= 0 && parseInt(d) <= 6) ? DAYS[parseInt(d)] : d).join(', ')
                       : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                     {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
                   </p>
@@ -233,6 +244,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
   const { t, i18n } = useTranslation();
+  const DAYS = getDays(t);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState(null);
   const [selectedGroupId, setSelectedGroupId] = useState(null);
@@ -336,15 +348,7 @@ const Groups = () => {
       group.course?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const DAYS = [
-    t('schedule.days.monday'),
-    t('schedule.days.tuesday'),
-    t('schedule.days.wednesday'),
-    t('schedule.days.thursday'),
-    t('schedule.days.friday'),
-    t('schedule.days.saturday'),
-    t('schedule.days.sunday')
-  ];
+
 
   return (
     <div className="space-y-6">
@@ -435,7 +439,7 @@ const Groups = () => {
                         <Calendar size={14} className="text-[var(--muted-foreground)]/30" />
                         <span>
                           {group.schedule.repetitionType === 'weekly' 
-                            ? group.schedule.days.join(', ')
+                            ? group.schedule.days.map(d => (!isNaN(parseInt(d)) && parseInt(d) >= 0 && parseInt(d) <= 6) ? DAYS[parseInt(d)] : d).join(', ')
                             : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
                         </span>
                         <span className="text-[10px] text-[var(--muted-foreground)]/40 ml-auto">
