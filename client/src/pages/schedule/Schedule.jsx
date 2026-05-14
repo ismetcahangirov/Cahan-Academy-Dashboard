@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Plus, Clock, MapPin, BookOpen, Trash2, X } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, Clock, MapPin, BookOpen, Trash2 } from 'lucide-react';
 import {
   useGetScheduleQuery,
-  useCreateScheduleEntryMutation,
   useDeleteScheduleEntryMutation,
 } from '../../features/schedule/scheduleApi';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../features/auth/authSlice';
-import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 
 const getDays = (t) => [
@@ -24,190 +21,12 @@ const getDays = (t) => [
   { label: t('schedule.days.sunday'), short: t('schedule.days.sun') },
 ];
 
-const AddEntryModal = ({ onClose, onSubmit, isLoading, groups = [] }) => {
-  const { t } = useTranslation();
-  const DAYS = getDays(t);
-  const [form, setForm] = useState({
-    subject: '',
-    group: '',
-    teacher: '',
-    dayOfWeek: 0,
-    startTime: '',
-    endTime: '',
-    room: '',
-    type: 'offline',
-    note: '',
-    repetitionType: 'weekly',
-    specificDate: '',
-  });
-
-  const handleChange = (name, value) => {
-    if (name === 'group' && value) {
-      const selectedGroup = groups.find(g => g._id === value);
-      if (selectedGroup) {
-        setForm(prev => ({
-          ...prev,
-          group: value,
-          subject: selectedGroup.name,
-          teacher: selectedGroup.teacher?._id || selectedGroup.teacher // handle populated or ID
-        }));
-        return;
-      }
-    }
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!form.subject || !form.startTime || !form.endTime) {
-      toast.error(t('groups.fillAllFields'));
-      return;
-    }
-    onSubmit(form);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/60 backdrop-blur-sm p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-md p-6"
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-[var(--foreground)]">{t('schedule.addNew')}</h2>
-          <button onClick={onClose} className="p-2 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-          <div className="space-y-1.5">
-            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('common.group')} ({t('common.optional')})</label>
-            <Select
-              value={form.group}
-              onChange={(val) => handleChange('group', val)}
-              options={[
-                { label: t('groups.selectGroup'), value: '' },
-                ...groups.map(g => ({ label: g.name, value: g._id }))
-              ]}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.subject')} *</label>
-            <input name="subject" value={form.subject} onChange={(e) => handleChange('subject', e.target.value)}
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-              placeholder={t('schedule.subjectPlaceholder')} required />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('schedule.repetition')}</label>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, repetitionType: 'weekly' })}
-                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'weekly' ? 'bg-bordo border-bordo/50 text-white' : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]'
-                }`}
-              >
-                {t('schedule.weekly')}
-              </button>
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, repetitionType: 'once' })}
-                className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all border ${
-                  form.repetitionType === 'once' ? 'bg-bordo border-bordo/50 text-white' : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)]'
-                }`}
-              >
-                {t('schedule.once')}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {form.repetitionType === 'weekly' ? (
-              <div className="space-y-1.5">
-                <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.day')} *</label>
-                <Select
-                  value={form.dayOfWeek}
-                  onChange={(val) => handleChange('dayOfWeek', val)}
-                  options={DAYS.map((d, i) => ({ label: d.label, value: i }))}
-                />
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.date')} *</label>
-                <input 
-                  type="date" 
-                  name="specificDate" 
-                  value={form.specificDate} 
-                  onChange={(e) => handleChange('specificDate', e.target.value)}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-                  required 
-                />
-              </div>
-            )}
-            <div className="space-y-1.5">
-              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.format')}</label>
-              <Select
-                value={form.type}
-                onChange={(val) => handleChange('type', val)}
-                options={[
-                  { label: 'Offline', value: 'offline' },
-                  { label: 'Online', value: 'online' },
-                ]}
-              />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.room')}</label>
-            <input name="room" value={form.room} onChange={(e) => handleChange('room', e.target.value)}
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-              placeholder={form.type === 'online' ? t('schedule.linkPlaceholder') : t('schedule.roomPlaceholder')} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.startTime')} *</label>
-              <input type="time" name="startTime" value={form.startTime} onChange={(e) => handleChange('startTime', e.target.value)}
-                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-                required />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm text-[var(--muted-foreground)]/70">{t('schedule.endTime')} *</label>
-              <input type="time" name="endTime" value={form.endTime} onChange={(e) => handleChange('endTime', e.target.value)}
-                className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo"
-                required />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-sm text-[var(--muted-foreground)]/70">{t('groups.note')}</label>
-            <textarea name="note" value={form.note} onChange={(e) => handleChange('note', e.target.value)}
-              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo resize-none h-20"
-              placeholder={t('schedule.notePlaceholder')} />
-          </div>
-          <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] bg-[var(--muted)] hover:bg-[var(--muted)]/80 rounded-xl transition-colors">
-              {t('common.cancel')}
-            </button>
-            <button type="submit" disabled={isLoading}
-              className="px-4 py-2 text-sm text-white bg-bordo hover:bg-bordo/80 rounded-xl transition-colors disabled:opacity-50">
-              {isLoading ? t('schedule.adding') : t('common.add')}
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
-  );
-};
 
 const Schedule = () => {
   const { t } = useTranslation();
   const DAYS = getDays(t);
   const user = useSelector(selectCurrentUser);
-  const [showModal, setShowModal] = useState(false);
   const { data: schedule = [], isLoading } = useGetScheduleQuery({});
-  const { data: groupsData } = useGetGroupsQuery();
-  const groups = groupsData?.data || [];
-  const [createEntry, { isLoading: isCreating }] = useCreateScheduleEntryMutation();
   const [deleteEntry] = useDeleteScheduleEntryMutation();
 
   const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
@@ -227,27 +46,7 @@ const Schedule = () => {
     }).sort((a, b) => a.startTime.localeCompare(b.startTime))
   );
 
-  const handleAdd = async (data) => {
-    try {
-      const payload = {
-        ...data,
-        teacher: user?._id,
-      };
 
-      if (data.repetitionType === 'weekly') {
-        payload.dayOfWeek = Number(data.dayOfWeek);
-        delete payload.specificDate;
-      } else {
-        delete payload.dayOfWeek;
-      }
-
-      await createEntry(payload).unwrap();
-      toast.success(t('schedule.addSuccess'));
-      setShowModal(false);
-    } catch (error) {
-      toast.error(error?.data?.message || t('students.error'));
-    }
-  };
 
   const handleDelete = async (id) => {
     try {
@@ -276,15 +75,7 @@ const Schedule = () => {
             </div>
             {t('schedule.title')}
           </h1>
-          {isAdminOrTeacher && (
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-            >
-              <Plus size={18} />
-              {t('schedule.addNew')}
-            </button>
-          )}
+
         </div>
 
         <div className="grid gap-4">
@@ -373,16 +164,7 @@ const Schedule = () => {
         </div>
       </div>
 
-      <AnimatePresence>
-        {showModal && (
-          <AddEntryModal
-            onClose={() => setShowModal(false)}
-            onSubmit={handleAdd}
-            isLoading={isCreating}
-            groups={groups}
-          />
-        )}
-      </AnimatePresence>
+
     </>
   );
 };
