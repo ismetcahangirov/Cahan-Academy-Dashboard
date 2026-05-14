@@ -50,14 +50,14 @@ export const getScheduleById = asyncHandler(async (req, res) => {
 // @route   POST /api/schedule
 // @access  Private (Admin, Teacher)
 export const createScheduleEntry = asyncHandler(async (req, res) => {
-  const { group, subject, teacher, dayOfWeek, startTime, endTime, room, type, note, repetitionType, specificDate } = req.body;
+  const { group, subject, teacher, days, startTime, endTime, room, type, note, repetitionType, specificDate } = req.body;
 
   if (!group || !subject || !teacher || !startTime || !endTime) {
     res.status(400);
     throw new Error('Bütün məcburi sahələri doldurun');
   }
 
-  if (repetitionType === 'weekly' && dayOfWeek === undefined) {
+  if (repetitionType === 'weekly' && (!days || days.length === 0)) {
     res.status(400);
     throw new Error('Gün seçilməlidir');
   }
@@ -67,8 +67,38 @@ export const createScheduleEntry = asyncHandler(async (req, res) => {
     throw new Error('Tarix seçilməlidir');
   }
 
-  const entry = await Schedule.create({ group, subject, teacher, dayOfWeek, startTime, endTime, room, type, note, repetitionType, specificDate });
-  const populated = await entry.populate([
+  let entriesToCreate = [];
+
+  if (repetitionType === 'weekly') {
+    for (const d of days) {
+      entriesToCreate.push({ group, subject, teacher, dayOfWeek: d, startTime, endTime, room, type, note, repetitionType, specificDate });
+    }
+  } else {
+    entriesToCreate.push({ group, subject, teacher, startTime, endTime, room, type, note, repetitionType, specificDate });
+  }
+
+  const createdEntries = await Schedule.insertMany(entriesToCreate);
+
+  // Sync back to Group details
+  const groupDoc = await Group.findById(group);
+  if (groupDoc) {
+    groupDoc.schedule = {
+      repetitionType,
+      days: repetitionType === 'weekly' ? days : [],
+      specificDate: repetitionType === 'once' ? specificDate : null,
+      startTime,
+      endTime,
+      type,
+      note
+    };
+    await groupDoc.save();
+    
+    // Clean up old schedule entries for this group that are not the newly created ones
+    const newIds = createdEntries.map(e => e._id);
+    await Schedule.deleteMany({ group: groupDoc._id, _id: { $nin: newIds } });
+  }
+
+  const populated = await Schedule.findById(createdEntries[0]._id).populate([
     { path: 'group', select: 'name' },
     { path: 'teacher', select: 'name avatar' },
   ]);
