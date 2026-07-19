@@ -16,11 +16,10 @@ app.use(errorHandler);
 
 const token = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-describe('Meeting API', () => {
+describe('Meeting API — moderator gate', () => {
   let teacher, student, outsider, admin, group, schedule;
 
   beforeEach(async () => {
-    // Fake ONLY Date so real timers/IO (mongoose, supertest) keep working.
     vi.useFakeTimers({ toFake: ['Date'] });
     // 2026-07-20 06:30Z = 10:30 Asia/Baku (Monday), inside 10:00-12:00.
     vi.setSystemTime(new Date('2026-07-20T06:30:00Z'));
@@ -39,46 +38,78 @@ describe('Meeting API', () => {
   afterEach(() => { vi.useRealTimers(); });
 
   const join = (tok, body = {}) =>
-    request(app)
-      .post(`/api/meetings/join-or-create/${schedule._id}`)
-      .set('Authorization', `Bearer ${tok}`)
-      .send(body);
+    request(app).post(`/api/meetings/join-or-create/${schedule._id}`).set('Authorization', `Bearer ${tok}`).send(body);
+  const start = (tok, id) =>
+    request(app).post(`/api/meetings/${id}/start`).set('Authorization', `Bearer ${tok}`);
 
-  it('teacher joins and receives a room name + display name', async () => {
+  it('teacher opens the room and is marked host', async () => {
     const res = await join(token(teacher._id));
     expect(res.statusCode).toBe(200);
     expect(res.body.data.roomName).toMatch(/^cahanacademy-/);
-    expect(res.body.data.displayName).toBe('T');
-    expect(res.body.data.jitsiDomain).toBe('meet.jit.si');
+    expect(res.body.data.isHost).toBe(true);
+    expect(res.body.data.token).toBeNull(); // JWT not configured on the free server
   });
 
-  it('student in the group can join', async () => {
-    expect((await join(token(student._id))).statusCode).toBe(200);
+  it('admin is host', async () => {
+    const res = await join(token(admin._id));
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data.isHost).toBe(true);
   });
 
-  it('admin can join', async () => {
-    expect((await join(token(admin._id))).statusCode).toBe(200);
+  it('student is blocked until the host has started', async () => {
+    await join(token(teacher._id)); // host opens the room (startedAt still null)
+    const before = await join(token(student._id));
+    expect(before.statusCode).toBe(403);
   });
 
-  it('outsider is forbidden (403)', async () => {
+  it('student can join after the host starts the meeting', async () => {
+    const t = await join(token(teacher._id));
+    const meetingId = t.body.data.meetingId;
+    expect((await start(token(teacher._id), meetingId)).statusCode).toBe(200);
+
+    const s = await join(token(student._id));
+    expect(s.statusCode).toBe(200);
+    expect(s.body.data.isHost).toBe(false);
+    expect(s.body.data.roomName).toBe(t.body.data.roomName);
+  });
+
+  it('student cannot start the meeting', async () => {
+    const t = await join(token(teacher._id));
+    expect((await start(token(student._id), t.body.data.meetingId)).statusCode).toBe(403);
+  });
+
+  it('outsider is forbidden', async () => {
     expect((await join(token(outsider._id))).statusCode).toBe(403);
   });
 
-  it('rejects a non-online schedule (400)', async () => {
-    schedule.type = 'offline';
-    await schedule.save();
+  it('rejects a non-online schedule', async () => {
+    schedule.type = 'offline'; await schedule.save();
     expect((await join(token(teacher._id))).statusCode).toBe(400);
   });
 
-  it('forbids joining before the window (403)', async () => {
+  it('forbids joining before the time window', async () => {
     vi.setSystemTime(new Date('2026-07-20T03:00:00Z')); // 07:00 Baku, before 09:50
     expect((await join(token(teacher._id))).statusCode).toBe(403);
   });
 
-  it('is idempotent: same occurrence -> same room, one Meeting doc', async () => {
+  it('is idempotent for the host: same room, one Meeting doc', async () => {
     const r1 = await join(token(teacher._id));
-    const r2 = await join(token(student._id));
+    const r2 = await join(token(teacher._id));
     expect(r1.body.data.roomName).toBe(r2.body.data.roomName);
     expect(await Meeting.countDocuments({ schedule: schedule._id })).toBe(1);
+  });
+
+  it('issues a moderator JWT for the host when JWT is configured', async () => {
+    process.env.JITSI_JWT_APP_ID = 'app';
+    process.env.JITSI_JWT_SECRET = 'sec';
+    try {
+      const res = await join(token(teacher._id));
+      expect(typeof res.body.data.token).toBe('string');
+      const decoded = jwt.verify(res.body.data.token, 'sec');
+      expect(decoded.context.user.moderator).toBe(true);
+    } finally {
+      delete process.env.JITSI_JWT_APP_ID;
+      delete process.env.JITSI_JWT_SECRET;
+    }
   });
 });
