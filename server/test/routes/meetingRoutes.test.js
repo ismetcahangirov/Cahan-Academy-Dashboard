@@ -56,10 +56,12 @@ describe('Meeting API — moderator gate', () => {
     expect(res.body.data.isHost).toBe(true);
   });
 
-  it('student is blocked until the host has started', async () => {
+  it('student sees a waiting state until the host has started', async () => {
     await join(token(teacher._id)); // host opens the room (startedAt still null)
     const before = await join(token(student._id));
-    expect(before.statusCode).toBe(403);
+    expect(before.statusCode).toBe(200);
+    expect(before.body.data.waiting).toBe(true);
+    expect(before.body.data.roomName).toBeUndefined();
   });
 
   it('student can join after the host starts the meeting', async () => {
