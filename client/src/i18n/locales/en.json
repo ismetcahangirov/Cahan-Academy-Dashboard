@@ -323,6 +323,7 @@
     "deleteSuccess": "Lesson deleted",
     "noLessons": "No lessons today",
     "lessonCount": "lessons",
+    "join": "Join",
     "days": {
       "monday": "Monday",
       "tuesday": "Tuesday",
@@ -339,6 +340,10 @@
       "sat": "Sat",
       "sun": "Sun"
     }
+  },
+  "meeting": {
+    "joinFailed": "Could not join the meeting",
+    "connecting": "Connecting..."
   },
   "exams": {
     "title": "Exams",
