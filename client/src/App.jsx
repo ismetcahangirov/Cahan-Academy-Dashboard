@@ -38,6 +38,7 @@ const StudentDetail = lazy(() => import('./pages/students/StudentDetail'));
 const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
 const TakeExam = lazy(() => import('./pages/exams/TakeExam'));
 const StudentPayments = lazy(() => import('./pages/payments/StudentPayments'));
+const MeetingRoom = lazy(() => import('./pages/meeting/MeetingRoom'));
 
 // Fallback Loading Component
 const PageLoader = () => {
@@ -79,6 +80,8 @@ function App() {
  
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
+            {/* Full-screen meeting room (no sidebar) */}
+            <Route path="/meeting/:scheduleId" element={<MeetingRoom />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
  
