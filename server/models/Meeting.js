@@ -11,6 +11,7 @@ const meetingSchema = new mongoose.Schema(
     startTime: { type: String },
     endTime: { type: String },
     status: { type: String, enum: ['active', 'ended'], default: 'active' },
+    startedAt: { type: Date, default: null }, // set when the host (teacher/admin) actually joins the room
     participants: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

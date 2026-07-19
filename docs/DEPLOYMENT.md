@@ -137,6 +137,9 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 CLIENT_URL=https://cahan-academy-dashboard.vercel.app
 ACADEMY_TIMEZONE=Asia/Baku
 JITSI_DOMAIN=meet.jit.si
+# Optional — enforced moderator control (self-hosted Jitsi / JaaS only):
+JITSI_JWT_APP_ID=
+JITSI_JWT_SECRET=
 ```
 
 ---
