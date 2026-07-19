@@ -135,6 +135,8 @@ EMAIL_PASS=your_email_password
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 CLIENT_URL=https://cahan-academy-dashboard.vercel.app
+ACADEMY_TIMEZONE=Asia/Baku
+JITSI_DOMAIN=meet.jit.si
 ```
 
 ---
