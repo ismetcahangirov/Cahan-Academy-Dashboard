@@ -10,6 +10,12 @@ export const meetingsApi = apiSlice.injectEndpoints({
       }),
       transformResponse: (response) => response.data,
     }),
+    startMeeting: builder.mutation({
+      query: (meetingId) => ({
+        url: `/meetings/${meetingId}/start`,
+        method: 'POST',
+      }),
+    }),
     leaveMeeting: builder.mutation({
       query: (meetingId) => ({
         url: `/meetings/${meetingId}/leave`,
@@ -19,4 +25,8 @@ export const meetingsApi = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useJoinOrCreateMeetingMutation, useLeaveMeetingMutation } = meetingsApi;
+export const {
+  useJoinOrCreateMeetingMutation,
+  useStartMeetingMutation,
+  useLeaveMeetingMutation,
+} = meetingsApi;

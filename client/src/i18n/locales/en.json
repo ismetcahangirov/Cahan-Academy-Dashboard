@@ -343,7 +343,9 @@
   },
   "meeting": {
     "joinFailed": "Could not join the meeting",
-    "connecting": "Connecting..."
+    "connecting": "Connecting...",
+    "waitingForHost": "Waiting for the teacher to start the class...",
+    "back": "Back"
   },
   "exams": {
     "title": "Exams",

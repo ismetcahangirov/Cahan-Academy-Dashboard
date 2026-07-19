@@ -343,7 +343,9 @@
   },
   "meeting": {
     "joinFailed": "Görüşə qoşulmaq mümkün olmadı",
-    "connecting": "Qoşulur..."
+    "connecting": "Qoşulur...",
+    "waitingForHost": "Müəllim dərsi başlatana qədər gözləyin...",
+    "back": "Geri"
   },
   "exams": {
     "title": "İmtahanlar",
