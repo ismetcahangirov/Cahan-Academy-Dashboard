@@ -323,6 +323,7 @@
     "deleteSuccess": "Dərs silindi",
     "noLessons": "Bu gün dərs yoxdur",
     "lessonCount": "dərs",
+    "join": "Qoşul",
     "days": {
       "monday": "Bazar ertəsi",
       "tuesday": "Çərşənbə axşamı",
@@ -339,6 +340,10 @@
       "sat": "Ş",
       "sun": "B"
     }
+  },
+  "meeting": {
+    "joinFailed": "Görüşə qoşulmaq mümkün olmadı",
+    "connecting": "Qoşulur..."
   },
   "exams": {
     "title": "İmtahanlar",
