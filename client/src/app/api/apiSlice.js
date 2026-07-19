@@ -74,7 +74,8 @@ export const apiSlice = createApi({
     'Notification', 
     'Exam',
     'Dashboard',
-    'Payment'
+    'Payment',
+    'Meeting'
   ],
   endpoints: (builder) => ({}),
 });

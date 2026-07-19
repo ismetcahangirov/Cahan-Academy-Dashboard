@@ -10,6 +10,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
+import JoinClassButton from '../../components/schedule/JoinClassButton';
 
 const getDays = (t) => [
   { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
@@ -134,6 +135,7 @@ const Schedule = () => {
                               </span>
                             )}
                           </div>
+                          <JoinClassButton entry={entry} />
                           {entry.note && (
                             <p className="text-[10px] text-[var(--muted-foreground)]/30 mt-1 italic line-clamp-1">{entry.note}</p>
                           )}
