@@ -99,9 +99,9 @@ export const joinOrCreateMeeting = asyncHandler(async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   } else if (!meeting || !meeting.startedAt) {
-    // Student before the host has started the class.
-    res.status(403);
-    throw new Error('Müəllim hələ dərsi başlatmayıb');
+    // Authorized student, but the host has not started the class yet.
+    // Return a "waiting" state (not an error) so the client can poll.
+    return res.status(200).json({ success: true, data: { waiting: true } });
   }
 
   const alreadyIn = meeting.participants.some(
