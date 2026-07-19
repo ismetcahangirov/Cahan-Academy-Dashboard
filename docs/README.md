@@ -255,7 +255,7 @@ Cahan-Academy-Dashboard/
 ### Client (`client/.env`)
 ```env
 VITE_API_URL=http://localhost:5000/api
-VITE_GOOGLE_CLIENT_ID=950170848378-mm3bbt4nf347i33essg5t6abtmf7kalh.apps.googleusercontent.com
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
 ```
 
 ### Server (`server/.env`)
@@ -264,7 +264,7 @@ PORT=5000
 NODE_ENV=development
 
 # MongoDB
-MONGO_URI=mongodb+srv://ismetcahangirov022_db_user:ik1ovQONyg82yuwS@lms-cluster.14rk6bn.mongodb.net/academy_db?retryWrites=true&w=majority&appName=Lms-cluster
+MONGO_URI=mongodb+srv://<db_user>:<db_password>@<cluster>.mongodb.net/<db_name>?retryWrites=true&w=majority
 
 # JWT
 JWT_SECRET=your_super_secret_jwt_key
@@ -279,8 +279,8 @@ EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_email_password
 
 # Google OAuth
-GOOGLE_CLIENT_ID=950170848378-mm3bbt4nf347i33essg5t6abtmf7kalh.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 # Client URL (CORS)
 CLIENT_URL=http://localhost:5173
