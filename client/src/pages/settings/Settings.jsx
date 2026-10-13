@@ -4,6 +4,7 @@ import { useUpdatePasswordMutation } from '../../features/profile/profileApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
+import PasswordInput from '../../components/common/PasswordInput';
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
@@ -93,8 +94,7 @@ const Settings = () => {
               <form onSubmit={handlePasswordSubmit} className="space-y-5 max-w-md">
                 <div className="space-y-2">
                   <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.currentPassword')}</label>
-                  <input 
-                    type="password" 
+                  <PasswordInput 
                     name="currentPassword"
                     value={passwordForm.currentPassword}
                     onChange={handlePasswordChange}
@@ -103,8 +103,7 @@ const Settings = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.newPassword')}</label>
-                  <input 
-                    type="password" 
+                  <PasswordInput 
                     name="newPassword"
                     value={passwordForm.newPassword}
                     onChange={handlePasswordChange}
@@ -113,8 +112,7 @@ const Settings = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.confirmPassword')}</label>
-                  <input 
-                    type="password" 
+                  <PasswordInput 
                     name="confirmPassword"
                     value={passwordForm.confirmPassword}
                     onChange={handlePasswordChange}

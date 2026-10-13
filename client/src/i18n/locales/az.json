@@ -1,5 +1,7 @@
 {
   "common": {
+    "showPassword": "Şifrəni göstər",
+    "hidePassword": "Şifrəni gizlət",
     "welcome": "Cahan Academy-ya xoş gəlmisiniz",
     "login": "Giriş",
     "register": "Qeydiyyat",
