@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
+import PasswordInput from '../../components/common/PasswordInput';
 
 const userSchema = (t) => z.object({
   name: z.string().min(3, t('users.nameShort')),
@@ -136,10 +137,9 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
                 {isEdit ? t('users.passwordOptional') : t('auth.password')}
               </label>
               <div className="relative">
-                <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
-                <input
+                <UserCheck className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
+                <PasswordInput
                   {...register('password')}
-                  type="password"
                   placeholder="••••••••"
                   className={cn(
                     "w-full bg-[var(--input)] border rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none transition-all",

@@ -14,6 +14,7 @@ import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useTranslation, Trans } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
+import PasswordInput from '../../components/common/PasswordInput';
 
 const AcceptInvitation = () => {
   const { t } = useTranslation();
@@ -141,10 +142,9 @@ const AcceptInvitation = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)]/70 ml-1">{t('acceptInvitation.passwordLabel')}</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
-                <input
+                <Lock className="z-10 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
+                <PasswordInput
                   required
-                  type="password"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -156,10 +156,9 @@ const AcceptInvitation = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-[var(--foreground)]/70 ml-1">{t('acceptInvitation.confirmPasswordLabel')}</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
-                <input
+                <Lock className="z-10 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
+                <PasswordInput
                   required
-                  type="password"
                   placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}

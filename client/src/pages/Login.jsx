@@ -15,6 +15,7 @@ import Spinner from '../components/common/Spinner';
 
 import { GoogleLogin } from '@react-oauth/google';
 import { useGoogleLoginMutation } from '../features/auth/authApi';
+import PasswordInput from '../components/common/PasswordInput';
 
 const loginSchema = (t) => z.object({
   email: z.string().email(t('auth.emailInvalid')),
@@ -128,10 +129,9 @@ const Login = () => {
               </Link>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
+              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
+              <PasswordInput
                 {...register('password')}
-                type="password"
                 className={`w-full bg-[var(--input)] border ${errors.password ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
                 placeholder={t('auth.passwordPlaceholder')}
               />

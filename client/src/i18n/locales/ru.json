@@ -1,5 +1,7 @@
 {
   "common": {
+    "showPassword": "Показать пароль",
+    "hidePassword": "Скрыть пароль",
     "welcome": "Добро пожаловать в Cahan Academy",
     "login": "Вход",
     "register": "Регистрация",

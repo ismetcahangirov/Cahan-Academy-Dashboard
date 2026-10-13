@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';
 import Spinner from '../components/common/Spinner';
+import PasswordInput from '../components/common/PasswordInput';
 
 const registerSchema = (t) => z.object({
   name: z.string().min(2, t('auth.nameShort')),
@@ -164,10 +165,9 @@ const Register = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--foreground)]/80 block">{t('auth.password')}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
+              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
+              <PasswordInput
                 {...register('password')}
-                type="password"
                 className={`w-full bg-[var(--input)] border ${errors.password ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-2.5 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
                 placeholder={t('auth.passwordPlaceholder')}
               />
@@ -178,10 +178,9 @@ const Register = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--foreground)]/80 block">{t('auth.confirmPassword')}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
+              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
+              <PasswordInput
                 {...register('confirmPassword')}
-                type="password"
                 className={`w-full bg-[var(--input)] border ${errors.confirmPassword ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-2.5 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
                 placeholder={t('auth.passwordPlaceholder')}
               />

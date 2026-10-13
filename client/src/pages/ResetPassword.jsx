@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Lock, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../components/common/Spinner';
+import PasswordInput from '../components/common/PasswordInput';
 
 const resetPasswordSchema = (t) => z.object({
   password: z.string().min(6, t('auth.passwordShort')),
@@ -52,10 +53,9 @@ const ResetPassword = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--foreground)] block">{t('auth.newPassword')}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
+              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
+              <PasswordInput
                 {...register('password')}
-                type="password"
                 className={`w-full bg-[var(--input)] border ${errors.password ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
                 placeholder="••••••••"
               />
@@ -66,10 +66,9 @@ const ResetPassword = () => {
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--foreground)] block">{t('auth.confirmPassword')}</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
+              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
+              <PasswordInput
                 {...register('confirmPassword')}
-                type="password"
                 className={`w-full bg-[var(--input)] border ${errors.confirmPassword ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
                 placeholder="••••••••"
               />
