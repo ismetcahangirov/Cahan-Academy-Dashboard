@@ -1,5 +1,31 @@
+import mongoose from 'mongoose';
 import User from '../models/userModel.js';
-import bcrypt from 'bcryptjs';
+
+const USER_STATUSES = ['active', 'inactive', 'pending'];
+const USER_ROLES = ['admin', 'teacher', 'student'];
+const MAX_PAGE_SIZE = 100;
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const toPositiveInt = (value, fallback) => {
+  const number = Number.parseInt(value, 10);
+  return Number.isInteger(number) && number > 0 ? number : fallback;
+};
+
+const handleError = (res, error) => {
+  if (error?.code === 11000) {
+    return res.status(400).json({ message: 'Bu email artıq istifadə olunur' });
+  }
+  if (error?.name === 'ValidationError') {
+    const message = Object.values(error.errors).map((e) => e.message).join(', ');
+    return res.status(400).json({ message });
+  }
+  if (error?.name === 'CastError') {
+    return res.status(400).json({ message: 'Yanlış ID formatı' });
+  }
+  console.error(error);
+  return res.status(500).json({ message: 'Server xətası baş verdi' });
+};
 
 // @desc    Get current user profile
 // @route   GET /api/users/profile
@@ -10,7 +36,7 @@ export const getProfile = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
     res.json({ success: true, data: user });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -22,8 +48,17 @@ export const updateProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
 
-    user.name = req.body.name || user.name;
-    if (req.body.avatar !== undefined) user.avatar = req.body.avatar;
+    if (req.body.name !== undefined) {
+      const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+      if (!name) return res.status(400).json({ message: 'Ad boş ola bilməz' });
+      user.name = name;
+    }
+    if (req.body.avatar !== undefined) {
+      if (typeof req.body.avatar !== 'string') {
+        return res.status(400).json({ message: 'Avatar yanlış formatdadır' });
+      }
+      user.avatar = req.body.avatar;
+    }
 
     const updated = await user.save();
     res.json({
@@ -37,7 +72,7 @@ export const updateProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -47,24 +82,27 @@ export const updateProfile = async (req, res) => {
 export const updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword) {
+    if (typeof currentPassword !== 'string' || typeof newPassword !== 'string' || !currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Bütün sahələr doldurulmalıdır' });
     }
     if (newPassword.length < 6) {
       return res.status(400).json({ message: 'Yeni şifrə ən az 6 simvol olmalıdır' });
     }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({ message: 'Yeni şifrə cari şifrədən fərqli olmalıdır' });
+    }
 
-    const user = await User.findById(req.user._id);
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    if (!user.password || !(await user.matchPassword(currentPassword))) {
       return res.status(401).json({ message: 'Cari şifrə yanlışdır' });
     }
 
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = newPassword;
     await user.save();
     res.json({ success: true, message: 'Şifrə uğurla yeniləndi' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -73,17 +111,18 @@ export const updatePassword = async (req, res) => {
 // @access  Private/Admin
 export const getUsers = async (req, res) => {
   try {
-    const pageSize = Number(req.query.pageSize) || 10;
-    const page = Number(req.query.pageNumber) || 1;
-    const statusFilter = ['active', 'inactive', 'pending'].includes(req.query.status)
+    const pageSize = Math.min(toPositiveInt(req.query.pageSize, 10), MAX_PAGE_SIZE);
+    const page = toPositiveInt(req.query.pageNumber, 1);
+    const statusFilter = USER_STATUSES.includes(req.query.status)
       ? { status: req.query.status }
       : {};
 
-    const keyword = req.query.keyword
+    const keywordText = typeof req.query.keyword === 'string' ? req.query.keyword.trim() : '';
+    const keyword = keywordText
       ? {
           $or: [
-            { name: { $regex: req.query.keyword, $options: 'i' } },
-            { email: { $regex: req.query.keyword, $options: 'i' } },
+            { name: { $regex: escapeRegex(keywordText), $options: 'i' } },
+            { email: { $regex: escapeRegex(keywordText), $options: 'i' } },
           ],
         }
       : {};
@@ -103,7 +142,7 @@ export const getUsers = async (req, res) => {
       total: count
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -112,14 +151,14 @@ export const getUsers = async (req, res) => {
 // @access  Private/Admin
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (user) {
-      res.json(user);
-    } else {
-      res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
     }
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -128,32 +167,42 @@ export const getUserById = async (req, res) => {
 // @access  Private/Admin
 export const updateUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
-    if (user) {
-      if (req.body.status && !['active', 'inactive', 'pending'].includes(req.body.status)) {
-        return res.status(400).json({ message: 'Invalid user status' });
-      }
-
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
-      user.role = req.body.role || user.role;
-      user.status = req.body.status || user.status;
-
-      const updatedUser = await user.save();
-
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        status: updatedUser.status,
-      });
-    } else {
-      res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
     }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+
+    const { name, email, role, status } = req.body;
+
+    if (status !== undefined && !USER_STATUSES.includes(status)) {
+      return res.status(400).json({ message: 'Yanlış istifadəçi statusu' });
+    }
+    if (role !== undefined && !USER_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'Yanlış istifadəçi rolu' });
+    }
+
+    const isSelf = user._id.equals(req.user._id);
+    if (isSelf && ((role && role !== user.role) || (status && status !== user.status))) {
+      return res.status(400).json({ message: 'Öz rolunuzu və ya statusunuzu dəyişə bilməzsiniz' });
+    }
+
+    if (typeof name === 'string' && name.trim()) user.name = name.trim();
+    if (typeof email === 'string' && email.trim()) user.email = email.trim().toLowerCase();
+    if (role) user.role = role;
+    if (status) user.status = status;
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      status: updatedUser.status,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -162,20 +211,19 @@ export const updateUser = async (req, res) => {
 // @access  Private/Admin
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
-    if (user) {
-      // Admin özünü silə bilməz
-      if (user._id.toString() === req.user._id.toString()) {
-        return res.status(400).json({ message: 'Öz hesabınızı silə bilməzsiniz' });
-      }
-      
-      await User.findByIdAndDelete(req.params.id);
-      res.json({ message: 'İstifadəçi silindi' });
-    } else {
-      res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
     }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+
+    if (user._id.equals(req.user._id)) {
+      return res.status(400).json({ message: 'Öz hesabınızı silə bilməzsiniz' });
+    }
+
+    await user.deleteOne();
+    res.json({ message: 'İstifadəçi silindi' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };

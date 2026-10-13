@@ -77,6 +77,40 @@ describe('User API', () => {
     });
   });
 
+  describe('PUT /api/users/profile/password', () => {
+    it('should change password so the new one matches and the old one does not', async () => {
+      const res = await request(app)
+        .put('/api/users/profile/password')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ currentPassword: 'Password1', newPassword: 'NewPassword2' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.success).toBe(true);
+
+      const updated = await User.findById(userId).select('+password');
+      expect(await updated.matchPassword('NewPassword2')).toBe(true);
+      expect(await updated.matchPassword('Password1')).toBe(false);
+    });
+
+    it('should reject a new password equal to the current one', async () => {
+      const res = await request(app)
+        .put('/api/users/profile/password')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ currentPassword: 'Password1', newPassword: 'Password1' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('should reject a wrong current password', async () => {
+      const res = await request(app)
+        .put('/api/users/profile/password')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ currentPassword: 'WrongPassword', newPassword: 'NewPassword2' });
+
+      expect(res.statusCode).toEqual(401);
+    });
+  });
+
   describe('GET /api/users', () => {
     it('should get all users if admin', async () => {
       const res = await request(app)
@@ -104,6 +138,25 @@ describe('User API', () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body.users).toHaveLength(1);
       expect(res.body.users[0].status).toBe('pending');
+    });
+
+    it('should treat regex characters in keyword literally', async () => {
+      const res = await request(app)
+        .get('/api/users?keyword=(a+)%2B$')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.users).toHaveLength(0);
+    });
+
+    it('should clamp invalid paging values', async () => {
+      const res = await request(app)
+        .get('/api/users?pageSize=-5&pageNumber=0')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.page).toBe(1);
+      expect(res.body.users.length).toBeGreaterThanOrEqual(2);
     });
 
     it('should fail if not admin', async () => {
@@ -142,6 +195,44 @@ describe('User API', () => {
 
       expect(res.statusCode).toEqual(200);
       expect(res.body.status).toBe('active');
+    });
+
+    it('should reject an invalid role', async () => {
+      const res = await request(app)
+        .put(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'superuser' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('should not let an admin demote or deactivate themselves', async () => {
+      const res = await request(app)
+        .put(`/api/users/${adminId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'student' });
+
+      expect(res.statusCode).toEqual(400);
+      const admin = await User.findById(adminId);
+      expect(admin.role).toBe('admin');
+    });
+
+    it('should return 400 for a duplicate email', async () => {
+      const res = await request(app)
+        .put(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ email: 'admin@example.com' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('should return 404 for a malformed id', async () => {
+      const res = await request(app)
+        .put('/api/users/not-an-id')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'teacher' });
+
+      expect(res.statusCode).toEqual(404);
     });
 
     it('should fail to update user if not admin', async () => {
