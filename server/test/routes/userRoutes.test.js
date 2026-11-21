@@ -243,5 +243,90 @@ describe('User API', () => {
 
       expect(res.statusCode).toEqual(403);
     });
+
+    it('should set a new password when one is given and ignore an empty one', async () => {
+      const empty = await request(app)
+        .put(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ name: 'Regular User', password: '' });
+      expect(empty.statusCode).toEqual(200);
+      let stored = await User.findById(userId).select('+password');
+      expect(await stored.matchPassword('Password1')).toBe(true);
+
+      const weak = await request(app)
+        .put(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ password: 'abcdef' });
+      expect(weak.statusCode).toEqual(400);
+
+      const res = await request(app)
+        .put(`/api/users/${userId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ password: 'NewPassword2' });
+      expect(res.statusCode).toEqual(200);
+      stored = await User.findById(userId).select('+password');
+      expect(await stored.matchPassword('NewPassword2')).toBe(true);
+    });
+  });
+
+  describe('POST /api/users', () => {
+    const newUser = {
+      name: 'Created Teacher',
+      email: 'Created@Example.com',
+      password: 'Password1',
+      role: 'teacher',
+      status: 'active',
+    };
+
+    it('should create a user with a hashed password if admin', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send(newUser);
+
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toMatchObject({ name: 'Created Teacher', email: 'created@example.com', role: 'teacher', status: 'active' });
+      expect(res.body.password).toBeUndefined();
+
+      const stored = await User.findOne({ email: 'created@example.com' }).select('+password');
+      expect(stored.password).not.toBe('Password1');
+      expect(await stored.matchPassword('Password1')).toBe(true);
+    });
+
+    it('should return 400 for a duplicate email', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ ...newUser, email: 'USER@example.com' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('should validate password, role, status and required fields', async () => {
+      const cases = [
+        { ...newUser, password: 'short' },
+        { ...newUser, role: 'superuser' },
+        { ...newUser, status: 'banned' },
+        { ...newUser, name: '  ' },
+        { ...newUser, email: undefined },
+      ];
+      for (const body of cases) {
+        const res = await request(app)
+          .post('/api/users')
+          .set('Authorization', `Bearer ${adminToken}`)
+          .send(body);
+        expect(res.statusCode).toEqual(400);
+      }
+      expect(await User.countDocuments()).toBe(2);
+    });
+
+    it('should not let a non-admin create users', async () => {
+      const res = await request(app)
+        .post('/api/users')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send(newUser);
+
+      expect(res.statusCode).toEqual(403);
+    });
   });
 });

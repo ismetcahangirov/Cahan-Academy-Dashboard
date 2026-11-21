@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getUsers,
   getUserById,
+  createUser,
   updateUser,
   deleteUser,
   getProfile,
@@ -26,7 +27,8 @@ router.route('/profile/password')
 router.use(authorize('admin'));
 
 router.route('/')
-  .get(getUsers);
+  .get(getUsers)
+  .post(createUser);
 
 router.route('/:id')
   .get(getUserById)
