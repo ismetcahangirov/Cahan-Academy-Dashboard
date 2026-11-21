@@ -27,6 +27,14 @@ const notificationSchema = new mongoose.Schema(
     link: {
       type: String,
     },
+    // Translation key (client: notifications.messages.<key>) and its params;
+    // title/message stay as the Azerbaijani fallback for older clients
+    key: {
+      type: String,
+    },
+    params: {
+      type: mongoose.Schema.Types.Mixed,
+    },
     isRead: {
       type: Boolean,
       default: false,

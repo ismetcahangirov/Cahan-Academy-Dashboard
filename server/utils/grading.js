@@ -41,6 +41,13 @@ export const isAnswerCorrect = (question, answer) => {
 
 export const questionPoints = (question) => (Number(question.points) > 0 ? Number(question.points) : 1);
 
+// Homework / classwork grade: required, 0-100. Returns null when missing or out of range.
+export const parseSubmissionGrade = (value) => {
+  if (value === '' || value === null || value === undefined) return null;
+  const grade = Number(value);
+  return Number.isFinite(grade) && grade >= 0 && grade <= 100 ? grade : null;
+};
+
 // Returns { score, totalPoints, answers: [{ questionId, selectedOption, isCorrect, awardedPoints }] }.
 // isCorrect and awardedPoints are null for open-ended questions; their points stay in
 // totalPoints so the teacher decides on them.

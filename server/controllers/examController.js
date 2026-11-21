@@ -340,6 +340,8 @@ export const addExamResults = asyncHandler(async (req, res) => {
     title: 'İmtahan nəticəsi',
     message: `"${exam.title}" imtahanının nəticəsi açıqlandı.`,
     link: '/exams',
+    key: 'examResultPublished',
+    params: { title: exam.title },
   });
 
   res.status(200).json({
@@ -498,6 +500,8 @@ export const gradeExamResult = asyncHandler(async (req, res) => {
       title: 'İmtahan nəticəsi yeniləndi',
       message: `"${exam.title}" imtahanındakı cavablarınız yoxlanıldı. Nəticə: ${result.score}/100.`,
       link: '/exams',
+      key: 'examAnswersGraded',
+      params: { title: exam.title, score: result.score },
     });
   }
 

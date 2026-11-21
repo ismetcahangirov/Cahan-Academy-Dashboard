@@ -186,7 +186,24 @@ describe.each([
       const notes = await Notification.find({ recipient: student._id });
       expect(notes).toHaveLength(1);
       expect(notes[0].type).toBe(kind);
+      expect(notes[0].key).toBe(`${kind}Graded`);
+      expect(notes[0].params).toEqual({ title: 'Task A', grade: 95 });
       expect(await Notification.countDocuments({ recipient: classmate._id })).toBe(0);
+    });
+
+    it('rejects a missing or out-of-range grade without touching the submission', async () => {
+      for (const grade of [undefined, '', 'abc', -1, 101]) {
+        const res = await request(app)
+          .put(`${base}/${item._id}/grade`)
+          .set(auth(teacher))
+          .send({ studentId: student._id.toString(), grade });
+        expect(res.statusCode, String(grade)).toBe(400);
+      }
+      const fresh = await Model.findById(item._id);
+      const mine = fresh.submissions.find((s) => s.student.equals(student._id));
+      expect(mine.status).toBe('submitted');
+      expect(mine.grade).toBeUndefined();
+      expect(await Notification.countDocuments()).toBe(0);
     });
   });
 
@@ -208,8 +225,19 @@ describe.each([
       const res = await request(app).post(base).set(auth(teacher)).send(body());
 
       expect(res.statusCode).toBe(201);
-      const recipients = (await Notification.find({ type: kind })).map((n) => n.recipient.toString());
+      const notes = await Notification.find({ type: kind });
+      const recipients = notes.map((n) => n.recipient.toString());
       expect(recipients.sort()).toEqual([student._id.toString(), classmate._id.toString()].sort());
+      expect(notes[0].key).toBe(`${kind}Created`);
+      expect(notes[0].params).toEqual({ title: 'Fresh task', group: 'Group A' });
+    });
+
+    it('stores the due date sent by the client', async () => {
+      const dueDate = '2026-12-01T14:00:00.000Z';
+      const res = await request(app).post(base).set(auth(teacher)).send({ ...body(), dueDate });
+
+      expect(res.statusCode).toBe(201);
+      expect(new Date(res.body.data.dueDate).toISOString()).toBe(dueDate);
     });
 
     it('still succeeds when notifications cannot be stored', async () => {
@@ -220,5 +248,46 @@ describe.each([
 
       expect(res.statusCode).toBe(201);
     });
+  });
+});
+
+describe('classwork group size and due date', () => {
+  let teacher, student, classmate, group;
+  const auth = (user) => ({ Authorization: `Bearer ${tokenFor(user)}` });
+
+  beforeEach(async () => {
+    teacher = await makeUser('teacher', 'cw-size-teacher@example.com');
+    student = await makeUser('student', 'cw-size-student@example.com');
+    classmate = await makeUser('student', 'cw-size-classmate@example.com');
+    group = await Group.create({
+      name: 'Group A',
+      course: 'Course',
+      teacher: teacher._id,
+      students: [student._id, classmate._id],
+    });
+    await Classwork.create({ title: 'CW', description: 'D', group: group._id, teacher: teacher._id });
+  });
+
+  it('gives staff the group size and hides the classmates from students', async () => {
+    const asTeacher = await request(app).get('/api/classworks').set(auth(teacher));
+    const asStudent = await request(app).get('/api/classworks').set(auth(student));
+
+    expect(asTeacher.body.data[0].group.students).toHaveLength(2);
+    expect(asStudent.body.data[0].group.name).toBe('Group A');
+    expect(asStudent.body.data[0].group.students).toBeUndefined();
+  });
+
+  it('updates and clears the due date', async () => {
+    const cw = await Classwork.findOne();
+    const set = await request(app)
+      .put(`/api/classworks/${cw._id}`)
+      .set(auth(teacher))
+      .send({ dueDate: '2026-12-01T14:00:00.000Z' });
+    const keep = await request(app).put(`/api/classworks/${cw._id}`).set(auth(teacher)).send({ title: 'CW 2' });
+    const clear = await request(app).put(`/api/classworks/${cw._id}`).set(auth(teacher)).send({ dueDate: '' });
+
+    expect(set.body.data.dueDate).toBe('2026-12-01T14:00:00.000Z');
+    expect(keep.body.data.dueDate).toBe('2026-12-01T14:00:00.000Z');
+    expect(clear.body.data.dueDate).toBeNull();
   });
 });
