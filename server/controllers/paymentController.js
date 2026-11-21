@@ -3,6 +3,33 @@ import Payment from '../models/Payment.js';
 import User from '../models/userModel.js';
 import apiResponse from '../utils/apiResponse.js';
 
+const dayKey = (date) => (date ? new Date(date).toISOString().slice(0, 10) : null);
+const sameDay = (a, b) => dayKey(a) === dayKey(b);
+
+// Yeni cədvəldə eyni ödəniş tarixi qalan qeydlərin statusunu, ödəniş tarixini və təsdiqini saxlayır.
+// Yeni cədvəldə yeri olmayan ödənilmiş qeydlər də silinmir, ödəniş tarixçəsi itməsin deyə.
+const mergeHistory = (oldHistory, newEntries) => {
+  const oldByDay = new Map(oldHistory.map((entry) => [dayKey(entry.dueDate), entry]));
+  const merged = newEntries.map((entry) => {
+    const previous = oldByDay.get(dayKey(entry.dueDate));
+    if (!previous) return entry;
+    oldByDay.delete(dayKey(entry.dueDate));
+    return {
+      _id: previous._id,
+      dueDate: entry.dueDate,
+      amount: previous.status === 'paid' ? previous.amount : entry.amount,
+      status: previous.status,
+      paidDate: previous.paidDate,
+      approvedBy: previous.approvedBy,
+      note: previous.note,
+    };
+  });
+  const orphanedPaid = [...oldByDay.values()]
+    .filter((entry) => entry.status === 'paid')
+    .map((entry) => (entry.toObject ? entry.toObject() : entry));
+  return [...merged, ...orphanedPaid].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+};
+
 // @desc    Get payment plan for a specific student (Admin)
 // @route   GET /api/payments/student/:id
 // @access  Private/Admin
@@ -69,18 +96,32 @@ export const updatePaymentPlan = asyncHandler(async (req, res) => {
     throw new Error('Ödəniş planı tapılmadı');
   }
 
-  // Regenerate history if key fields changed
-  if (amount || type || startDate || endDate !== undefined) {
-    const newAmount = amount ?? payment.amount;
-    const newType = type ?? payment.type;
-    const newStart = startDate ?? payment.startDate;
-    const newEnd = endDate !== undefined ? endDate : payment.endDate;
+  const newAmount = amount !== undefined && amount !== null && amount !== '' ? Number(amount) : payment.amount;
+  const newType = type || payment.type;
+  const newStart = startDate ? new Date(startDate) : payment.startDate;
+  const newEnd = endDate !== undefined ? (endDate ? new Date(endDate) : null) : payment.endDate;
 
+  if ([newStart, newEnd].some((d) => d && Number.isNaN(d.getTime())) || Number.isNaN(newAmount)) {
+    res.status(400);
+    throw new Error('Yanlış tarix və ya məbləğ');
+  }
+
+  // Cədvəli yalnız məbləğ, tip və ya tarixlər həqiqətən dəyişəndə yenidən qur
+  const scheduleChanged =
+    newAmount !== payment.amount ||
+    newType !== payment.type ||
+    !sameDay(newStart, payment.startDate) ||
+    !sameDay(newEnd, payment.endDate);
+
+  if (scheduleChanged) {
     payment.amount = newAmount;
     payment.type = newType;
     payment.startDate = newStart;
-    payment.endDate = newEnd || null;
-    payment.history = Payment.generateHistory(newType, newStart, newAmount, newEnd);
+    payment.endDate = newEnd;
+    payment.history = mergeHistory(
+      payment.history,
+      Payment.generateHistory(newType, newStart, newAmount, newEnd)
+    );
   }
 
   if (description !== undefined) payment.description = description;
