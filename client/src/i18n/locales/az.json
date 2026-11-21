@@ -316,7 +316,8 @@
       "draft": "Qaralama",
       "published": "Dərc olunub",
       "archived": "Arxivdə"
-    }
+    },
+    "minutes": "{{count}} dəq"
   },
   "attendance": {
     "title": "Davamiyyət",

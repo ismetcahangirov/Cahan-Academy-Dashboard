@@ -316,7 +316,8 @@
       "draft": "Draft",
       "published": "Published",
       "archived": "Archived"
-    }
+    },
+    "minutes": "{{count}} min"
   },
   "attendance": {
     "title": "Attendance",

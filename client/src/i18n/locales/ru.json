@@ -316,7 +316,8 @@
       "draft": "Черновик",
       "published": "Опубликован",
       "archived": "В архиве"
-    }
+    },
+    "minutes": "{{count}} мин"
   },
   "attendance": {
     "title": "Посещаемость",
