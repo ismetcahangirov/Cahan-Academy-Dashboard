@@ -1,6 +1,9 @@
 import Course from '../models/Course.js';
 import Lesson from '../models/Lesson.js';
+import Group from '../models/Group.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * @desc    Get all courses
@@ -35,8 +38,28 @@ export const getCourseById = async (req, res) => {
       return sendError(res, 'Course not found', 404);
     }
 
-    return sendSuccess(res, 'Course details fetched successfully', course);
+    // Group.course is the course title as free text; admins see every group, others only their own
+    const groupQuery = { course: { $regex: `^\\s*${escapeRegex(course.title.trim())}\\s*$`, $options: 'i' } };
+    if (req.user.role === 'teacher') groupQuery.teacher = req.user._id;
+    if (req.user.role === 'student') groupQuery.students = req.user._id;
+
+    const groups = await Group.find(groupQuery)
+      .select('name status schedule startDate endDate teacher students')
+      .populate('teacher', 'name avatar')
+      .sort('name')
+      .lean();
+
+    const groupsSummary = groups.map(({ students, ...group }) => ({
+      ...group,
+      studentCount: students?.length || 0,
+    }));
+
+    return sendSuccess(res, 'Course details fetched successfully', {
+      ...course.toObject(),
+      groups: groupsSummary,
+    });
   } catch (error) {
+    if (error.name === 'CastError') return sendError(res, 'Course not found', 404);
     return sendError(res, error.message, 500);
   }
 };
