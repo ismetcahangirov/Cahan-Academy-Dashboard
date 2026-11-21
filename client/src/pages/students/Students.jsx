@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users as UsersIcon, 
-  Search, 
-  Filter, 
-  Plus, 
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
+import {
+  Users as UsersIcon,
+  Search,
+  Plus,
   Eye,
   Edit2, 
   Trash2,
@@ -27,6 +27,12 @@ import UserModal from '../users/UserModal';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import Dropdown from '../../components/common/Dropdown';
+import Select from '../../components/common/Select';
+import { selectCurrentUser } from '../../features/auth/authSlice';
+import { useGetGroupsQuery } from '../../features/groups/groupsApi';
+import { formatDate } from '../../utils/formatDate';
+
+const PAGE_SIZE = 10;
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -47,14 +53,39 @@ const StatusBadge = ({ status }) => {
 };
 
 const Students = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const user = useSelector(selectCurrentUser);
+  const isAdmin = user?.role === 'admin';
+  // The search lives in the URL so the header search box can open /students?search=...
+  const [searchParams, setSearchParams] = useSearchParams();
+  const search = searchParams.get('search') || '';
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [groupId, setGroupId] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
-  const { data, isLoading, isFetching } = useGetStudentsQuery({ page, limit: 10, search });
+  // Back to the first page whenever the search changes (also when it comes from the header)
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setPage(1);
+  }
+
+  const setSearch = (value) => {
+    setSearchParams(value ? { search: value } : {}, { replace: true });
+  };
+
+  const { data, isLoading, isFetching } = useGetStudentsQuery({
+    page,
+    limit: PAGE_SIZE,
+    search,
+    ...(groupId && { groupId }),
+  });
+  const { data: groupsData } = useGetGroupsQuery();
+  const meta = data?.meta;
+  const total = meta?.total || 0;
+  const pages = meta?.pages || 1;
   const [deleteStudent] = useDeleteStudentMutation();
   const [inviteStudent, { isLoading: isAdding }] = useInviteStudentMutation();
   const [updateStudent, { isLoading: isUpdating }] = useUpdateStudentMutation();
@@ -69,7 +100,7 @@ const Students = () => {
       try {
         await deleteStudent(id).unwrap();
         toast.success(t('students.deleteSuccess'));
-      } catch (error) {
+      } catch {
         toast.error(t('students.error'));
       }
     }
@@ -91,13 +122,20 @@ const Students = () => {
   };
 
   const stats = [
-    { title: t('students.totalStudents'), value: data?.pagination?.total || 0, icon: UsersIcon },
-    { title: t('students.activeStudents'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap },
-    { title: t('students.newStudents7Days'), value: data?.data?.filter(t => {
-      const d = new Date(t.createdAt);
-      const now = new Date();
-      return d > new Date(now.setDate(now.getDate() - 7));
-    }).length || 0, icon: TrendingUp },
+    { title: t('students.totalStudents'), value: total, icon: UsersIcon },
+    { title: t('students.activeStudents'), value: meta?.active || 0, icon: GraduationCap },
+    { title: t('students.newStudents7Days'), value: meta?.recent || 0, icon: TrendingUp },
+  ];
+
+  const rowActions = (student) => [
+    { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/students/${student._id}`) },
+    ...(isAdmin
+      ? [
+          { label: t('payments.title'), icon: <Banknote size={14} />, onClick: () => navigate(`/students/${student._id}/payments`) },
+          { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
+          { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-bordo hover:bg-bordo/10' },
+        ]
+      : []),
   ];
 
   return (
@@ -113,13 +151,15 @@ const Students = () => {
           </h1>
           <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('students.subtitle')}</p>
         </div>
-        <button
-          onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }}
-          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-        >
-          <Plus size={18} />
-          {t('students.newStudent')}
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }}
+            className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
+          >
+            <Plus size={18} />
+            {t('students.newStudent')}
+          </button>
+        )}
       </div>
 
       {/* Stats */}
@@ -155,10 +195,16 @@ const Students = () => {
             className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-sm hover:text-[var(--foreground)] hover:bg-[var(--border)] transition-all flex-1 md:flex-none">
-          <Filter size={16} />
-          {t('students.filterGroup')}
-        </button>
+        <Select
+          value={groupId}
+          onChange={(val) => { setGroupId(val); setPage(1); }}
+          placeholder={t('students.filterGroup')}
+          className="w-full md:w-56"
+          options={[
+            { label: t('students.allGroups'), value: '' },
+            ...(groupsData?.data?.map((g) => ({ label: g.name, value: g._id })) || []),
+          ]}
+        />
       </div>
 
       {/* Table */}
@@ -209,7 +255,7 @@ const Students = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4"><StatusBadge status={student.status} /></td>
-                    <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{new Date(student.createdAt).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US')}</td>
+                    <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{formatDate(student.createdAt, 'd MMM yyyy')}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end">
                         <Dropdown
@@ -218,12 +264,7 @@ const Students = () => {
                               <MoreHorizontal size={16} />
                             </button>
                           }
-                          items={[
-                            { label: t('common.view'), icon: <Eye size={14} />, onClick: () => navigate(`/students/${student._id}`) },
-                            { label: t('payments.title'), icon: <Banknote size={14} />, onClick: () => navigate(`/students/${student._id}/payments`) },
-                            { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
-                            { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-bordo hover:bg-bordo/10' }
-                          ]}
+                          items={rowActions(student)}
                         />
                       </div>
                     </td>
@@ -245,10 +286,16 @@ const Students = () => {
 
         {/* Pagination */}
         <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--muted)]/10 flex items-center justify-between">
-          <p className="text-xs text-[var(--muted-foreground)]/40">{t('students.totalCount', { count: data?.pagination?.total || 0 })}</p>
+          <p className="text-xs text-[var(--muted-foreground)]/40">
+            {t('students.totalCount', {
+              total,
+              from: total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
+              to: Math.min(page * PAGE_SIZE, total),
+            })}
+          </p>
           <div className="flex items-center gap-2">
-            <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.prev')}</button>
-            <button disabled={page === data?.pagination?.pages} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.next')}</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.prev')}</button>
+            <button disabled={page >= pages || isFetching} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.next')}</button>
           </div>
         </div>
       </div>

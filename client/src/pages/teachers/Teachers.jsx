@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users as UsersIcon, 
-  Search, 
-  Filter, 
-  Plus, 
+import { motion } from 'framer-motion';
+import {
+  Users as UsersIcon,
+  Search,
+  Plus,
   Eye,
   Edit2, 
   Trash2,
@@ -25,6 +24,8 @@ import UserModal from '../users/UserModal';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import Dropdown from '../../components/common/Dropdown';
+
+const PAGE_SIZE = 10;
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -52,7 +53,14 @@ const Teachers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
 
-  const { data, isLoading, isFetching, refetch } = useGetTeachersQuery({ page, limit: 10, search });
+  const { data, isLoading, isFetching } = useGetTeachersQuery({ page, limit: PAGE_SIZE, search });
+  const meta = data?.meta;
+  const pages = meta?.pages || 1;
+
+  const handleSearch = (value) => {
+    setSearch(value);
+    setPage(1);
+  };
   const [deleteTeacher] = useDeleteTeacherMutation();
   const [inviteTeacher, { isLoading: isAdding }] = useInviteTeacherMutation();
   const [updateTeacher, { isLoading: isUpdating }] = useUpdateTeacherMutation();
@@ -67,7 +75,7 @@ const Teachers = () => {
       try {
         await deleteTeacher(id).unwrap();
         toast.success(t('teachers.deleteSuccess'));
-      } catch (error) {
+      } catch {
         toast.error(t('students.error'));
       }
     }
@@ -89,9 +97,9 @@ const Teachers = () => {
   };
 
   const stats = [
-    { title: t('teachers.totalTeachers'), value: data?.pagination?.total || 0, icon: UsersIcon },
-    { title: t('teachers.activeTeachers'), value: data?.data?.filter(t => t.status === 'active').length || 0, icon: GraduationCap },
-    { title: t('students.tableGroup'), value: 0, icon: BookOpen },
+    { title: t('teachers.totalTeachers'), value: meta?.total || 0, icon: UsersIcon },
+    { title: t('teachers.activeTeachers'), value: meta?.active || 0, icon: GraduationCap },
+    { title: t('teachers.groupsTotal'), value: meta?.groupsTotal || 0, icon: BookOpen },
   ];
 
   return (
@@ -145,14 +153,10 @@ const Teachers = () => {
             type="text"
             placeholder={t('teachers.searchPlaceholder')}
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] text-sm hover:text-[var(--foreground)] hover:bg-[var(--border)] transition-all flex-1 md:flex-none">
-          <Filter size={16} />
-          {t('settings.notifications')}
-        </button>
       </div>
 
       {/* Table */}
@@ -233,6 +237,15 @@ const Teachers = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--muted)]/10 flex items-center justify-between">
+          <p className="text-xs text-[var(--muted-foreground)]/40">{t('teachers.totalCount', { count: meta?.total || 0 })}</p>
+          <div className="flex items-center gap-2">
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.prev')}</button>
+            <button disabled={page >= pages || isFetching} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.next')}</button>
+          </div>
         </div>
       </div>
 
