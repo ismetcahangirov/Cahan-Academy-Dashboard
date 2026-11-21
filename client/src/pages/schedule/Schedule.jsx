@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, MapPin, BookOpen, Trash2 } from 'lucide-react';
 import {
@@ -11,6 +10,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
 import JoinClassButton from '../../components/schedule/JoinClassButton';
+import { formatDate } from '../../utils/formatDate';
 
 const getDays = (t) => [
   { label: t('schedule.days.monday'), short: t('schedule.days.mon') },
@@ -30,7 +30,8 @@ const Schedule = () => {
   const { data: schedule = [], isLoading } = useGetScheduleQuery({});
   const [deleteEntry] = useDeleteScheduleEntryMutation();
 
-  const isAdminOrTeacher = user?.role === 'admin' || user?.role === 'teacher';
+  // DELETE /api/schedule/:id is admin only
+  const canDelete = user?.role === 'admin';
 
   // Group lessons by day
   const byDay = DAYS.map((_, i) =>
@@ -50,6 +51,7 @@ const Schedule = () => {
 
 
   const handleDelete = async (id) => {
+    if (!window.confirm(t('common.deleteConfirm'))) return;
     try {
       await deleteEntry(id).unwrap();
       toast.success(t('schedule.deleteSuccess'));
@@ -114,7 +116,7 @@ const Schedule = () => {
                             {entry.subject}
                             {entry.repetitionType === 'once' && entry.specificDate && (
                               <span className="text-[10px] bg-[var(--muted)] text-[var(--muted-foreground)]/50 px-1.5 py-0.5 rounded font-normal">
-                                {new Date(entry.specificDate).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', { day: 'numeric', month: 'short' })}
+                                {formatDate(entry.specificDate, 'd MMM')}
                               </span>
                             )}
                           </p>
@@ -148,7 +150,7 @@ const Schedule = () => {
                             </span>
                           )}
                         </div>
-                        {isAdminOrTeacher && (
+                        {canDelete && (
                           <button
                             onClick={() => handleDelete(entry._id)}
                             className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
