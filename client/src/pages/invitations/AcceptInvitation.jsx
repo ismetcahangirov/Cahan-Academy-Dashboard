@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Lock, 
-  CheckCircle2, 
-  AlertCircle, 
+import {
+  User,
+  Lock,
+  AlertCircle,
   ChevronRight,
   ShieldCheck
 } from 'lucide-react';
 import { useLazyVerifyInvitationQuery } from '../../features/invitations/invitationsApi';
-import axios from 'axios';
+import { PASSWORD_REGEX, useRegisterViaInvitationMutation } from '../../features/auth/authApi';
 import { toast } from 'react-hot-toast';
 import { useTranslation, Trans } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
@@ -20,15 +19,15 @@ const AcceptInvitation = () => {
   const { t } = useTranslation();
   const { token } = useParams();
   const navigate = useNavigate();
-  
-  const [verifyInvitation, { data: verifyData, isLoading: isVerifying, isError }] = useLazyVerifyInvitationQuery();
-  
+
+  const [verifyInvitation, { data: verifyData, isUninitialized, isFetching: isVerifying, isError }] = useLazyVerifyInvitationQuery();
+  const [registerViaInvitation, { isLoading: isSubmitting }] = useRegisterViaInvitationMutation();
+
   const [formData, setFormData] = useState({
     name: '',
     password: '',
     confirmPassword: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -38,27 +37,28 @@ const AcceptInvitation = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!PASSWORD_REGEX.test(formData.password)) {
+      return toast.error(t('auth.passwordRule'));
+    }
     if (formData.password !== formData.confirmPassword) {
       return toast.error(t('acceptInvitation.passwordMismatch'));
     }
 
-    setIsSubmitting(true);
     try {
-      const response = await axios.post(`/api/auth/register-invitation/${token}`, {
-        name: formData.name,
+      await registerViaInvitation({
+        token,
+        name: formData.name.trim(),
         password: formData.password,
-      });
-      
+      }).unwrap();
+
       toast.success(t('acceptInvitation.successMessage'));
       navigate('/login');
     } catch (error) {
-      toast.error(error.response?.data?.message || t('students.error'));
-    } finally {
-      setIsSubmitting(false);
+      toast.error(error?.data?.message || t('students.error'));
     }
   };
 
-  if (isVerifying) {
+  if ((isUninitialized && token) || isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="flex flex-col items-center gap-4">
