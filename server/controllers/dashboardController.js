@@ -52,6 +52,21 @@ const countByMonth = async (Model, dateField, months, extraMatch = {}) => {
   return map;
 };
 
+// Yeni yaradılan sənədlərin sayı: bu ay vs keçən ay (%). Keçən ay heç nə yoxdursa null (trend göstərilmir).
+const monthOverMonth = async (Model, extraMatch = {}) => {
+  const now = new Date();
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+  const [current, previous] = await Promise.all([
+    Model.countDocuments({ ...extraMatch, createdAt: { $gte: thisMonthStart } }),
+    Model.countDocuments({ ...extraMatch, createdAt: { $gte: lastMonthStart, $lt: thisMonthStart } }),
+  ]);
+
+  if (previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+};
+
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
 // @access  Private
@@ -73,10 +88,13 @@ export const getStats = async (req, res) => {
       const totalGroups   = await Group.countDocuments();
       const learningHours = totalGroups * 48;
 
-      const [userMap, groupMap, attendanceMap] = await Promise.all([
+      const [userMap, groupMap, attendanceMap, usersTrend, coursesTrend, groupsTrend] = await Promise.all([
         countByMonth(User,       'createdAt',  months),
         countByMonth(Group,      'createdAt',  months),
         countByMonth(Attendance, 'createdAt',  months),
+        monthOverMonth(User),
+        monthOverMonth(Course),
+        monthOverMonth(Group),
       ]);
 
       const monthlyActivity = months.map(({ year, month, label }) => {
@@ -89,10 +107,10 @@ export const getStats = async (req, res) => {
       });
 
       dashboardData = {
-        users: { total: totalUsers, active: activeUsers, admins, teachers, students },
-        courses:      { total: totalCourses,  trend: 8  },
-        groups:       { total: totalGroups,   trend: 15 },
-        learningHours:{ total: learningHours, trend: 5  },
+        users: { total: totalUsers, active: activeUsers, admins, teachers, students, trend: usersTrend },
+        courses:      { total: totalCourses,  trend: coursesTrend },
+        groups:       { total: totalGroups,   trend: groupsTrend },
+        learningHours:{ total: learningHours, trend: null },
         monthlyActivity,
       };
 
@@ -133,9 +151,9 @@ export const getStats = async (req, res) => {
       });
 
       dashboardData = {
-        groups: { total: totalGroups, trend: 0 },
-        students: { total: totalStudents, trend: 0 },
-        avgAttendance: { total: avgAttendance, trend: 0 },
+        groups: { total: totalGroups, trend: null },
+        students: { total: totalStudents, trend: null },
+        avgAttendance: { total: avgAttendance, trend: null },
         monthlyActivity,
       };
 
@@ -176,8 +194,8 @@ export const getStats = async (req, res) => {
       });
 
       dashboardData = {
-        enrolledGroups: { total: enrolledGroups, trend: 0 },
-        myAttendance: { total: attendanceRate, trend: 0 },
+        enrolledGroups: { total: enrolledGroups, trend: null },
+        myAttendance: { total: attendanceRate, trend: null },
         monthlyActivity,
       };
     }
@@ -196,7 +214,7 @@ export const getStats = async (req, res) => {
 // @access  Private
 export const getRecentActivities = async (req, res) => {
   try {
-    const notifications = await Notification.find()
+    const notifications = await Notification.find({ recipient: req.user._id })
       .sort({ createdAt: -1 })
       .limit(5);
 
