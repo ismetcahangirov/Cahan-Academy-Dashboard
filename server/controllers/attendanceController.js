@@ -25,7 +25,8 @@ export const getAttendance = async (req, res) => {
     if (Number.isNaN(queryDate.getTime())) {
       return sendError(res, 'Invalid date', 400);
     }
-    queryDate.setHours(0, 0, 0, 0);
+    // Lesson days are stored as UTC midnight, whatever the server's timezone
+    queryDate.setUTCHours(0, 0, 0, 0);
 
     const targetGroup = await findGroup(group);
     if (!targetGroup) return sendError(res, 'Qrup tapılmadı', 404);
@@ -82,7 +83,7 @@ export const markAttendance = async (req, res) => {
     if (Number.isNaN(queryDate.getTime())) {
       return sendError(res, 'Invalid date', 400);
     }
-    queryDate.setHours(0, 0, 0, 0);
+    queryDate.setUTCHours(0, 0, 0, 0);
 
     let attendance = await Attendance.findOne({ group: targetGroup._id, date: queryDate });
 
