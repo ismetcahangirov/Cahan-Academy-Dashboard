@@ -69,7 +69,7 @@
     "savePassword": "Save password",
     "passwordResetSuccess": "Password reset successfully",
     "passwordsDoNotMatch": "Passwords do not match",
-    "passwordRule": "Password must be at least 6 characters and contain at least one letter and one digit. Allowed symbols: @$!%*#?&",
+    "passwordRule": "Password must be at least 6 characters and contain at least one letter and one digit. Spaces are not allowed.",
     "tooManyRequests": "Too many attempts. Please try again in 15 minutes."
   },
   "dashboard": {

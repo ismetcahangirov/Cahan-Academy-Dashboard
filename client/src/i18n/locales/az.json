@@ -69,7 +69,7 @@
     "savePassword": "Şifrəni yadda saxla",
     "passwordResetSuccess": "Şifrə uğurla yeniləndi",
     "passwordsDoNotMatch": "Şifrələr uyğun gəlmir",
-    "passwordRule": "Şifrə ən azı 6 simvol olmalı, ən azı 1 hərf və 1 rəqəm içərməlidir. İcazə verilən simvollar: @$!%*#?&",
+    "passwordRule": "Şifrə ən azı 6 simvol olmalı, ən azı 1 hərf və 1 rəqəm içərməlidir. Boşluq istifadə etmək olmaz.",
     "tooManyRequests": "Çox sayda cəhd edildi. Zəhmət olmasa 15 dəqiqə sonra yenidən yoxlayın."
   },
   "dashboard": {

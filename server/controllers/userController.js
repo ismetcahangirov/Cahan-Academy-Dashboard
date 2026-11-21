@@ -86,8 +86,8 @@ export const updatePassword = async (req, res) => {
     if (typeof currentPassword !== 'string' || typeof newPassword !== 'string' || !currentPassword || !newPassword) {
       return res.status(400).json({ message: 'Bütün sahələr doldurulmalıdır' });
     }
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Yeni şifrə ən az 6 simvol olmalıdır' });
+    if (!isValidPassword(newPassword)) {
+      return res.status(400).json({ message: PASSWORD_RULE_MESSAGE });
     }
     if (newPassword === currentPassword) {
       return res.status(400).json({ message: 'Yeni şifrə cari şifrədən fərqli olmalıdır' });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Shield, Key, Bell, Globe } from 'lucide-react';
 import { useUpdatePasswordMutation } from '../../features/profile/profileApi';
+import { PASSWORD_REGEX } from '../../features/auth/authApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
@@ -33,8 +34,8 @@ const Settings = () => {
       toast.error(t('settings.passMismatch'));
       return;
     }
-    if (newPassword.length < 6) {
-      toast.error(t('settings.passShort'));
+    if (!PASSWORD_REGEX.test(newPassword)) {
+      toast.error(t('auth.passwordRule'));
       return;
     }
 

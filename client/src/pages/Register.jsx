@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useRegisterMutation } from '../features/auth/authApi';
+import { PASSWORD_REGEX, useRegisterMutation } from '../features/auth/authApi';
 import { selectIsAuthenticated } from '../features/auth/authSlice';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +17,7 @@ import PasswordInput from '../components/common/PasswordInput';
 const registerSchema = (t) => z.object({
   name: z.string().min(2, t('auth.nameShort')),
   email: z.string().email(t('auth.emailInvalid')),
-  password: z.string().min(6, t('auth.passwordShort')),
+  password: z.string().regex(PASSWORD_REGEX, t('auth.passwordRule')),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: t('auth.passMismatch'),
