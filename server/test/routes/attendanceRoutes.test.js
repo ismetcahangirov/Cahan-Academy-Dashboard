@@ -113,6 +113,27 @@ describe('Attendance API access control', () => {
 
       expect(res.statusCode).toBe(404);
     });
+
+    it('stores the lesson day as UTC midnight even when the server is not on UTC', async () => {
+      const originalTz = process.env.TZ;
+      process.env.TZ = 'Asia/Baku';
+      try {
+        const res = await request(app)
+          .post('/api/attendance')
+          .set('Authorization', `Bearer ${tokenFor(teacher)}`)
+          .send(payload());
+        const read = await request(app)
+          .get(`/api/attendance?group=${group._id}&date=${DATE}`)
+          .set('Authorization', `Bearer ${tokenFor(teacher)}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(new Date(res.body.data.date).toISOString()).toBe(`${DATE}T00:00:00.000Z`);
+        expect(read.body.data.records).toHaveLength(2);
+      } finally {
+        if (originalTz === undefined) delete process.env.TZ;
+        else process.env.TZ = originalTz;
+      }
+    });
   });
 
   describe('GET /api/attendance', () => {

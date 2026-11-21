@@ -3,6 +3,7 @@ import Homework from '../models/Homework.js';
 import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
 import { createNotification } from '../utils/notificationService.js';
+import { parseSubmissionGrade } from '../utils/grading.js';
 import {
   buildGroupFilter,
   canManageGroup,
@@ -115,6 +116,8 @@ export const createHomework = asyncHandler(async (req, res) => {
     title: 'Yeni ev tapşırığı',
     message: `${groupExists.name} qrupu üçün yeni ev tapşırığı: "${homework.title}"`,
     link: '/homeworks',
+    key: 'homeworkCreated',
+    params: { title: homework.title, group: groupExists.name },
   });
 
   return apiResponse.success(res, 'Ev tapşırığı uğurla yaradıldı', createdHomework, 201);
@@ -227,7 +230,7 @@ export const submitHomework = asyncHandler(async (req, res) => {
 // @route   PUT /api/homeworks/:id/grade
 // @access  Private/Teacher,Admin
 export const gradeHomework = asyncHandler(async (req, res) => {
-  const { studentId, grade, feedback } = req.body;
+  const { studentId, feedback } = req.body;
   const homework = await Homework.findById(req.params.id);
 
   if (!homework) {
@@ -238,6 +241,12 @@ export const gradeHomework = asyncHandler(async (req, res) => {
   if (!canManageGroup(req.user, await loadGroupOf(homework))) {
     res.status(403);
     throw new Error('Bu tapşırığı qiymətləndirmək hüququnuz yoxdur');
+  }
+
+  const grade = parseSubmissionGrade(req.body.grade);
+  if (grade === null) {
+    res.status(400);
+    throw new Error('Qiymət 0 ilə 100 arasında olmalıdır');
   }
 
   const subIndex = homework.submissions.findIndex(
@@ -261,6 +270,8 @@ export const gradeHomework = asyncHandler(async (req, res) => {
     title: 'Tapşırığınız qiymətləndirildi',
     message: `"${homework.title}" tapşırığınız qiymətləndirildi: ${grade}`,
     link: '/homeworks',
+    key: 'homeworkGraded',
+    params: { title: homework.title, grade },
   });
 
   return apiResponse.success(res, 'Tapşırıq uğurla qiymətləndirildi', homework);

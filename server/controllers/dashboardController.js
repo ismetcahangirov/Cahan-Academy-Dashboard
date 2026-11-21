@@ -221,6 +221,8 @@ export const getRecentActivities = async (req, res) => {
       id: notif._id,
       type: notif.type,
       message: notif.title + (notif.message ? ` - ${notif.message}` : ''),
+      key: notif.key,
+      params: notif.params,
       time: notif.createdAt,
     }));
 

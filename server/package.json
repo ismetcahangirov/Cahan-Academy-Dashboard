@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "e2e:local": "node scripts/e2e-local.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },

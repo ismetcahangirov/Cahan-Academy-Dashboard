@@ -32,4 +32,15 @@ describe('User Model', () => {
     const isNotMatch = await user.matchPassword('wrongpassword');
     expect(isNotMatch).toBe(false);
   });
+
+  it('accepts long TLDs and plus aliases but rejects malformed emails', () => {
+    for (const email of ['teacher@cahan.academy', 'a.b@mail.info', 'ali+test@gmail.com', 'x@sub.domain.az']) {
+      const err = new User({ name: 'E', email, password: 'password123' }).validateSync();
+      expect(err?.errors?.email, email).toBeUndefined();
+    }
+    for (const email of ['no-at-sign.com', 'a@b', 'a@b.c', 'a@@b.com', 'a b@c.com']) {
+      const err = new User({ name: 'E', email, password: 'password123' }).validateSync();
+      expect(err?.errors?.email, email).toBeDefined();
+    }
+  });
 });

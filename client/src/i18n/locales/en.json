@@ -359,7 +359,8 @@
     "addSuccess": "Lesson added",
     "deleteSuccess": "Lesson deleted",
     "noLessons": "No lessons today",
-    "lessonCount": "lessons",
+    "lessonCount_one": "{{count}} lesson",
+    "lessonCount_other": "{{count}} lessons",
     "join": "Join",
     "days": {
       "monday": "Monday",
@@ -486,7 +487,8 @@
     "dueDate": "Due date",
     "attachmentCount": "{{count}} additional files",
     "viewAndSubmit": "View / Submit Task",
-    "submissionsCount": "{{count}} submissions",
+    "submissionsCount_one": "{{count}} submission",
+    "submissionsCount_other": "{{count}} submissions",
     "checkBtn": "Check",
     "noHomeworks": "No tasks yet",
     "newHomework": "New Homework",
@@ -512,6 +514,7 @@
     "createSuccess": "Homework created",
     "submitSuccess": "Homework submitted successfully",
     "gradeSuccess": "Homework graded",
+    "gradeInvalid": "Enter a grade from 0 to 100",
     "noteLabel": "Note / Comment",
     "notePlaceholder": "Leave a note for the teacher...",
     "addLink": "Add link",
@@ -555,6 +558,7 @@
     "gradingBtn": "Grading...",
     "submitSuccess": "Classwork submitted successfully",
     "gradeSuccess": "Classwork graded",
+    "gradeInvalid": "Enter a grade from 0 to 100",
     "noteLabel": "Note / Comment",
     "notePlaceholder": "Leave a note for the teacher...",
     "addLink": "Add link",
@@ -574,7 +578,8 @@
     "minutes": "{{count}} minutes",
     "questions": "Questions",
     "startNow": "Start Now",
-    "attemptsCount": "{{count}} attempts",
+    "attemptsCount_one": "{{count}} attempt",
+    "attemptsCount_other": "{{count}} attempts",
     "resultsBtn": "Results",
     "noQuizzes": "No quizzes yet",
     "modalTitleAdd": "New Quiz",
@@ -652,7 +657,37 @@
     "deleteError": "Error deleting notification",
     "noNotifications": "You have no notifications yet.",
     "markAsReadBtn": "Mark as read",
-    "deleteBtn": "Delete"
+    "deleteBtn": "Delete",
+    "messages": {
+      "homeworkCreated": {
+        "title": "New homework",
+        "message": "New homework for {{group}}: \"{{title}}\""
+      },
+      "homeworkGraded": {
+        "title": "Your homework was graded",
+        "message": "\"{{title}}\" was graded: {{grade}}"
+      },
+      "classworkCreated": {
+        "title": "New classwork",
+        "message": "New classwork for {{group}}: \"{{title}}\""
+      },
+      "classworkGraded": {
+        "title": "Your classwork was graded",
+        "message": "\"{{title}}\" was graded: {{grade}}"
+      },
+      "examResultPublished": {
+        "title": "Exam result",
+        "message": "Your result for \"{{title}}\" is available."
+      },
+      "examAnswersGraded": {
+        "title": "Exam result updated",
+        "message": "Your answers in \"{{title}}\" were reviewed. Result: {{score}}/100."
+      },
+      "quizAnswersGraded": {
+        "title": "Quiz graded",
+        "message": "Your answers in \"{{title}}\" were reviewed. Result: {{score}}/{{total}}."
+      }
+    }
   },
   "invitations": {
     "title": "Invitations System",

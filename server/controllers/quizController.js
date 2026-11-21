@@ -376,6 +376,8 @@ export const gradeQuizAttempt = asyncHandler(async (req, res) => {
       title: 'Quiz qiymətləndirildi',
       message: `"${quiz.title}" quizindəki cavablarınız yoxlanıldı. Nəticə: ${attempt.score}/${attempt.totalPoints}.`,
       link: '/quizzes',
+      key: 'quizAnswersGraded',
+      params: { title: quiz.title, score: attempt.score, total: attempt.totalPoints },
     });
   }
 

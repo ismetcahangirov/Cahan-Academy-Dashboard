@@ -1,15 +1,28 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
 import { apiSlice } from './api/apiSlice';
-import authReducer from '../features/auth/authSlice';
+import authReducer, { logout } from '../features/auth/authSlice';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
-export const store = configureStore({
-  reducer: {
-    [apiSlice.reducerPath]: apiSlice.reducer,
-    auth: authReducer,
+// Cached API data belongs to the user who fetched it: drop it on logout so the next
+// login in the same tab never sees the previous user's exams, counts or lists.
+const sessionListener = createListenerMiddleware();
+sessionListener.startListening({
+  actionCreator: logout,
+  effect: (_action, api) => {
+    api.dispatch(apiSlice.util.resetApiState());
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
 });
+
+export const makeStore = () =>
+  configureStore({
+    reducer: {
+      [apiSlice.reducerPath]: apiSlice.reducer,
+      auth: authReducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().prepend(sessionListener.middleware).concat(apiSlice.middleware),
+  });
+
+export const store = makeStore();
 
 setupListeners(store.dispatch);

@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { formatDate } from './formatDate.js';
+import {
+  formatDate,
+  toDateInputValue,
+  toDateTimeInputValue,
+  fromDateTimeInputValue,
+} from './formatDate.js';
 
 describe('formatDate', () => {
   const date = new Date(2026, 10, 13);
@@ -19,5 +24,25 @@ describe('formatDate', () => {
   it('returns an empty string for missing or invalid dates', () => {
     expect(formatDate(null)).toBe('');
     expect(formatDate('not a date')).toBe('');
+  });
+});
+
+describe('date input helpers', () => {
+  it('fills inputs with the local day and time, not the UTC one', () => {
+    const justAfterMidnight = new Date(2026, 10, 22, 0, 30);
+    expect(toDateInputValue(justAfterMidnight)).toBe('2026-11-22');
+    expect(toDateTimeInputValue(justAfterMidnight)).toBe('2026-11-22T00:30');
+  });
+
+  it('round-trips a datetime-local value through the ISO instant', () => {
+    const iso = fromDateTimeInputValue('2026-12-01T18:00');
+    expect(iso).toBe(new Date(2026, 11, 1, 18, 0).toISOString());
+    expect(toDateTimeInputValue(iso)).toBe('2026-12-01T18:00');
+  });
+
+  it('leaves empty and unparsable values alone', () => {
+    expect(fromDateTimeInputValue('')).toBe('');
+    expect(fromDateTimeInputValue('nope')).toBe('nope');
+    expect(toDateTimeInputValue('')).toBe('');
   });
 });

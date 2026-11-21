@@ -115,7 +115,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div key="results" className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -279,6 +279,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
       </div>
       {reviewStudentId && (
         <AnswerReviewModal
+          key="review"
           kind="exam"
           id={exam._id}
           studentId={reviewStudentId}

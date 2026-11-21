@@ -7,6 +7,7 @@ import { useGetMyPaymentsQuery } from '../features/payments/paymentsApi';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { formatDate } from '../utils/formatDate';
+import { notificationText } from '../features/notifications/notificationText';
 
 const useDarkMode = () => {
   const [isDark, setIsDark] = useState(() =>
@@ -247,7 +248,9 @@ const StatCard = ({ title, value, icon: Icon, trend, trendLabel, delay, isLoadin
 };
 
 const ActivityItem = ({ activity }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const translated = activity.key ? notificationText(activity, t, i18n) : null;
+  const text = translated?.title ? `${translated.title} - ${translated.message}` : activity.message;
   const getTimeAgo = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -262,7 +265,7 @@ const ActivityItem = ({ activity }) => {
     <div className="flex gap-4 p-4 rounded-xl hover:bg-[var(--muted)]/50 transition-colors border-l-2 border-transparent hover:border-bordo">
       <div className="w-2 h-2 rounded-full bg-bordo mt-2 shrink-0"></div>
       <div>
-        <p className="text-[var(--foreground)] text-sm">{activity.message}</p>
+        <p className="text-[var(--foreground)] text-sm">{text}</p>
         <p className="text-[var(--muted-foreground)]/60 text-xs mt-1">{getTimeAgo(activity.time)}</p>
       </div>
     </div>

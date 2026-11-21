@@ -359,7 +359,10 @@
     "addSuccess": "Урок добавлен",
     "deleteSuccess": "Урок удален",
     "noLessons": "На сегодня уроков нет",
-    "lessonCount": "уроков",
+    "lessonCount_one": "{{count}} урок",
+    "lessonCount_few": "{{count}} урока",
+    "lessonCount_many": "{{count}} уроков",
+    "lessonCount_other": "{{count}} урока",
     "join": "Присоединиться",
     "days": {
       "monday": "Понедельник",
@@ -515,6 +518,7 @@
     "createSuccess": "Домашнее задание создано",
     "submitSuccess": "Задание успешно сдано",
     "gradeSuccess": "Задание оценено",
+    "gradeInvalid": "Введите оценку от 0 до 100",
     "noteLabel": "Замечание / Комментарий",
     "notePlaceholder": "Оставьте замечание для учителя...",
     "addLink": "Добавить ссылку",
@@ -558,6 +562,7 @@
     "gradingBtn": "Оценивается...",
     "submitSuccess": "Классная работа успешно сдана",
     "gradeSuccess": "Классная работа оценена",
+    "gradeInvalid": "Введите оценку от 0 до 100",
     "noteLabel": "Замечание / Комментарий",
     "notePlaceholder": "Оставьте замечание для учителя...",
     "addLink": "Добавить ссылку",
@@ -577,7 +582,10 @@
     "minutes": "{{count}} минут",
     "questions": "Вопросы",
     "startNow": "Начать сейчас",
-    "attemptsCount": "{{count}} попыток",
+    "attemptsCount_one": "{{count}} попытка",
+    "attemptsCount_few": "{{count}} попытки",
+    "attemptsCount_many": "{{count}} попыток",
+    "attemptsCount_other": "{{count}} попытки",
     "resultsBtn": "Результаты",
     "noQuizzes": "Квизов пока нет",
     "modalTitleAdd": "Новый квиз",
@@ -655,7 +663,37 @@
     "deleteError": "Ошибка при удалении уведомления",
     "noNotifications": "У вас пока нет уведомлений.",
     "markAsReadBtn": "Отметить как прочитанное",
-    "deleteBtn": "Удалить"
+    "deleteBtn": "Удалить",
+    "messages": {
+      "homeworkCreated": {
+        "title": "Новое домашнее задание",
+        "message": "Новое домашнее задание для группы {{group}}: «{{title}}»"
+      },
+      "homeworkGraded": {
+        "title": "Ваше задание оценено",
+        "message": "Задание «{{title}}» оценено: {{grade}}"
+      },
+      "classworkCreated": {
+        "title": "Новая классная работа",
+        "message": "Новая классная работа для группы {{group}}: «{{title}}»"
+      },
+      "classworkGraded": {
+        "title": "Ваша классная работа оценена",
+        "message": "Классная работа «{{title}}» оценена: {{grade}}"
+      },
+      "examResultPublished": {
+        "title": "Результат экзамена",
+        "message": "Опубликован результат экзамена «{{title}}»."
+      },
+      "examAnswersGraded": {
+        "title": "Результат экзамена обновлён",
+        "message": "Ваши ответы в экзамене «{{title}}» проверены. Результат: {{score}}/100."
+      },
+      "quizAnswersGraded": {
+        "title": "Квиз оценён",
+        "message": "Ваши ответы в квизе «{{title}}» проверены. Результат: {{score}}/{{total}}."
+      }
+    }
   },
   "invitations": {
     "title": "Система приглашений",

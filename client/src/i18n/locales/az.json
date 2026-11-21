@@ -359,7 +359,7 @@
     "addSuccess": "Dərs əlavə edildi",
     "deleteSuccess": "Dərs silindi",
     "noLessons": "Bu gün dərs yoxdur",
-    "lessonCount": "dərs",
+    "lessonCount": "{{count}} dərs",
     "join": "Qoşul",
     "days": {
       "monday": "Bazar ertəsi",
@@ -512,6 +512,7 @@
     "createSuccess": "Ev tapşırığı yaradıldı",
     "submitSuccess": "Tapşırıq uğurla təhvil verildi",
     "gradeSuccess": "Tapşırıq qiymətləndirildi",
+    "gradeInvalid": "0 ilə 100 arasında qiymət daxil edin",
     "noteLabel": "Qeyd / Şərh",
     "notePlaceholder": "Müəllimə qeyd buraxın...",
     "addLink": "Link əlavə et",
@@ -555,6 +556,7 @@
     "gradingBtn": "Qiymətləndirilir...",
     "submitSuccess": "Sinif işi uğurla təhvil verildi",
     "gradeSuccess": "Sinif işi qiymətləndirildi",
+    "gradeInvalid": "0 ilə 100 arasında qiymət daxil edin",
     "noteLabel": "Qeyd / Şərh",
     "notePlaceholder": "Müəllimə qeyd buraxın...",
     "addLink": "Link əlavə et",
@@ -652,7 +654,37 @@
     "deleteError": "Bildiriş silinərkən xəta baş verdi",
     "noNotifications": "Hələ ki, heç bir bildirişiniz yoxdur.",
     "markAsReadBtn": "Oxunmuş işarələ",
-    "deleteBtn": "Sil"
+    "deleteBtn": "Sil",
+    "messages": {
+      "homeworkCreated": {
+        "title": "Yeni ev tapşırığı",
+        "message": "{{group}} qrupu üçün yeni ev tapşırığı: \"{{title}}\""
+      },
+      "homeworkGraded": {
+        "title": "Tapşırığınız qiymətləndirildi",
+        "message": "\"{{title}}\" tapşırığınız qiymətləndirildi: {{grade}}"
+      },
+      "classworkCreated": {
+        "title": "Yeni sinif işi",
+        "message": "{{group}} qrupu üçün yeni sinif işi: \"{{title}}\""
+      },
+      "classworkGraded": {
+        "title": "Sinif işiniz qiymətləndirildi",
+        "message": "\"{{title}}\" sinif işiniz qiymətləndirildi: {{grade}}"
+      },
+      "examResultPublished": {
+        "title": "İmtahan nəticəsi",
+        "message": "\"{{title}}\" imtahanının nəticəsi açıqlandı."
+      },
+      "examAnswersGraded": {
+        "title": "İmtahan nəticəsi yeniləndi",
+        "message": "\"{{title}}\" imtahanındakı cavablarınız yoxlanıldı. Nəticə: {{score}}/100."
+      },
+      "quizAnswersGraded": {
+        "title": "Quiz qiymətləndirildi",
+        "message": "\"{{title}}\" quizindəki cavablarınız yoxlanıldı. Nəticə: {{score}}/{{total}}."
+      }
+    }
   },
   "invitations": {
     "title": "Dəvətlər Sistemi",

@@ -3,6 +3,7 @@ import Classwork from '../models/Classwork.js';
 import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
 import { createNotification } from '../utils/notificationService.js';
+import { parseSubmissionGrade } from '../utils/grading.js';
 import {
   buildGroupFilter,
   canManageGroup,
@@ -20,8 +21,19 @@ const withVisibleSubmissions = (classwork, user) => {
   const data = typeof classwork.toObject === 'function' ? classwork.toObject() : classwork;
   if (user.role === 'student') {
     data.submissions = (data.submissions || []).filter((sub) => isOwnSubmission(sub, user));
+    if (data.group?.students) delete data.group.students;
   }
   return data;
+};
+
+// Staff see "submitted / group size", so the list carries the group's student ids
+const GROUP_FIELDS = 'name students';
+
+const parseDueDate = (value) => {
+  if (value === undefined) return undefined;
+  if (value === null || value === '') return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date;
 };
 
 const notifyStudents = async (studentIds, notification) => {
@@ -43,7 +55,7 @@ export const getClassworks = asyncHandler(async (req, res) => {
   if (groupFilter) query.group = groupFilter;
 
   const classworks = await Classwork.find(query)
-    .populate('group', 'name')
+    .populate('group', GROUP_FIELDS)
     .populate('teacher', 'name')
     .populate('submissions.student', 'name surname avatar')
     .sort('-createdAt')
@@ -84,6 +96,7 @@ export const getClassworkById = asyncHandler(async (req, res) => {
 // @access  Private/Teacher,Admin
 export const createClasswork = asyncHandler(async (req, res) => {
   const { title, description, group, files } = req.body;
+  const dueDate = parseDueDate(req.body.dueDate);
 
   const groupExists = await Group.findById(group);
   if (!groupExists) {
@@ -100,12 +113,13 @@ export const createClasswork = asyncHandler(async (req, res) => {
     title,
     description,
     group,
+    ...(dueDate ? { dueDate } : {}),
     files: files || [],
     teacher: req.user._id,
   });
 
   const createdClasswork = await Classwork.findById(classwork._id)
-    .populate('group', 'name')
+    .populate('group', GROUP_FIELDS)
     .populate('teacher', 'name');
 
   await notifyStudents(groupExists.students, {
@@ -114,6 +128,8 @@ export const createClasswork = asyncHandler(async (req, res) => {
     title: 'Yeni sinif işi',
     message: `${groupExists.name} qrupu üçün yeni sinif işi: "${classwork.title}"`,
     link: '/classworks',
+    key: 'classworkCreated',
+    params: { title: classwork.title, group: groupExists.name },
   });
 
   return apiResponse.success(res, 'Sinif işi uğurla yaradıldı', createdClasswork, 201);
@@ -140,10 +156,12 @@ export const updateClasswork = asyncHandler(async (req, res) => {
   classwork.title = title || classwork.title;
   classwork.description = description || classwork.description;
   if (files) classwork.files = files;
+  const dueDate = parseDueDate(req.body.dueDate);
+  if (dueDate !== undefined) classwork.dueDate = dueDate;
 
   const updatedClasswork = await classwork.save();
   const populated = await Classwork.findById(updatedClasswork._id)
-    .populate('group', 'name')
+    .populate('group', GROUP_FIELDS)
     .populate('teacher', 'name');
 
   return apiResponse.success(res, 'Sinif işi uğurla yeniləndi', populated);
@@ -223,7 +241,7 @@ export const submitClasswork = asyncHandler(async (req, res) => {
 // @route   PUT /api/classworks/:id/grade
 // @access  Private/Teacher,Admin
 export const gradeClasswork = asyncHandler(async (req, res) => {
-  const { studentId, grade, feedback } = req.body;
+  const { studentId, feedback } = req.body;
   const classwork = await Classwork.findById(req.params.id);
 
   if (!classwork) {
@@ -234,6 +252,12 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
   if (!canManageGroup(req.user, await loadGroupOf(classwork))) {
     res.status(403);
     throw new Error('Bu sinif işini qiymətləndirmək hüququnuz yoxdur');
+  }
+
+  const grade = parseSubmissionGrade(req.body.grade);
+  if (grade === null) {
+    res.status(400);
+    throw new Error('Qiymət 0 ilə 100 arasında olmalıdır');
   }
 
   const subIndex = classwork.submissions.findIndex(
@@ -257,6 +281,8 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
     title: 'Sinif işiniz qiymətləndirildi',
     message: `"${classwork.title}" sinif işiniz qiymətləndirildi: ${grade}`,
     link: '/classworks',
+    key: 'classworkGraded',
+    params: { title: classwork.title, grade },
   });
 
   return apiResponse.success(res, 'Sinif işi uğurla qiymətləndirildi', classwork);
