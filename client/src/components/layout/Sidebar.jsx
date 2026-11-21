@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logout } from '../../features/auth/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,8 +12,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Menu,
   GraduationCap,
+  Layers,
+  UserCog,
   Mail,
   CheckCircle,
   FileText,
@@ -25,14 +26,13 @@ import {
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/useTheme';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
-  const location = useLocation();
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
 
@@ -47,10 +47,12 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       { name: t('sidebar.dashboard'), path: '/', icon: LayoutDashboard },
     ];
 
+    // Keep in sync with the RoleRoute guards in App.jsx and the server's authorize(...) rules
     if (role === 'admin') {
       baseLinks.push(
         { name: t('sidebar.teachers'), path: '/teachers', icon: GraduationCap },
         { name: t('sidebar.students'), path: '/students', icon: Users },
+        { name: t('sidebar.groups'), path: '/groups', icon: Layers },
         { name: t('sidebar.courses'), path: '/courses', icon: BookOpen },
         { name: t('sidebar.attendance'), path: '/attendance', icon: CheckCircle },
         { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
@@ -60,14 +62,15 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: t('sidebar.schedule'), path: '/schedule', icon: Calendar },
         { name: t('sidebar.notifications'), path: '/notifications', icon: Mail },
         { name: t('sidebar.invitations'), path: '/invitations', icon: Mail },
-        { name: t('sidebar.users'), path: '/users', icon: Users },
-        { name: t('sidebar.groups'), path: '/groups', icon: BookOpen },
+        { name: t('sidebar.users'), path: '/users', icon: UserCog },
         { name: t('sidebar.settings'), path: '/settings', icon: Settings }
       );
     } else if (role === 'teacher') {
       baseLinks.push(
         { name: t('sidebar.myStudents'), path: '/students', icon: Users },
-        { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.groups'), path: '/groups', icon: Layers },
+        { name: t('sidebar.attendance'), path: '/attendance', icon: CheckCircle },
+        { name: t('sidebar.courses'), path: '/courses', icon: BookOpen },
         { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
         { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },
         { name: t('sidebar.exams'), path: '/exams', icon: PenTool },
@@ -78,6 +81,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
       );
     } else {
       baseLinks.push(
+        { name: t('sidebar.groups'), path: '/groups', icon: Layers },
         { name: t('sidebar.myCourses'), path: '/courses', icon: BookOpen },
         { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
         { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },

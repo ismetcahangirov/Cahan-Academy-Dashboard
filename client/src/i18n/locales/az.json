@@ -22,7 +22,15 @@
     "view": "Bax",
     "error": "Xəta baş verdi",
     "group": "Qrup",
-    "unknown": "Naməlum"
+    "unknown": "Naməlum",
+    "deleteConfirm": "Silmək istədiyinizə əminsiniz?",
+    "updating": "Yenilənir...",
+    "update": "Yenilə",
+    "select": "Seçin...",
+    "create": "Yarat",
+    "close": "Bağla",
+    "saveBtn": "Yadda saxla",
+    "goBack": "Geri qayıt"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -104,7 +112,8 @@
     },
     "minutesAgo": "{{count}} dəqiqə əvvəl",
     "hoursAgo": "{{count}} saat əvvəl",
-    "daysAgo": "{{count}} gün əvvəl"
+    "daysAgo": "{{count}} gün əvvəl",
+    "vsLastMonth": "yeni əlavələr, keçən aya nisbətən"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -173,7 +182,8 @@
     "deleteSuccess": "Tələbə uğurla silindi",
     "updateSuccess": "Tələbə məlumatları yeniləndi",
     "createSuccess": "Yeni tələbə yaradıldı",
-    "error": "Xəta baş verdi"
+    "error": "Xəta baş verdi",
+    "allGroups": "Bütün qruplar"
   },
   "teachers": {
     "title": "Müəllimlər",
@@ -190,7 +200,9 @@
     "deleteConfirm": "Bu müəllimi silmək istədiyinizə əminsiniz?",
     "deleteSuccess": "Müəllim uğurla silindi",
     "updateSuccess": "Müəllim məlumatları yeniləndi",
-    "createSuccess": "Yeni müəllim yaradıldı"
+    "createSuccess": "Yeni müəllim yaradıldı",
+    "pageTitle": "Müəllim",
+    "groupsTotal": "Ümumi Qruplar"
   },
   "users": {
     "title": "İstifadəçilər",
@@ -210,7 +222,8 @@
     "allStatuses": "Hamısı",
     "pending": "Gözləyir",
     "approve": "Təsdiqlə",
-    "approveSuccess": "İstifadəçi təsdiqləndi"
+    "approveSuccess": "İstifadəçi təsdiqləndi",
+    "role": "Rol"
   },
   "groups": {
     "title": "Qruplar",
@@ -256,7 +269,10 @@
     "addStudentsDesc": "Tələbə əlavə edin...",
     "groupNamePlaceholder": "Məs: FE-202",
     "coursePlaceholder": "Məs: Frontend Development",
-    "notePlaceholder": "Məs: Həftəsonu əlavə dərslər ola bilər"
+    "notePlaceholder": "Məs: Həftəsonu əlavə dərslər ola bilər",
+    "online": "Online",
+    "offline": "Offline",
+    "selectGroup": "Qrup seçin"
   },
   "courses": {
     "title": "Kurslar",
@@ -287,7 +303,21 @@
       "Backend": "Backend",
       "Design": "Design",
       "Mobile": "Mobile"
-    }
+    },
+    "editCourse": "Kursu redaktə et",
+    "backToCourses": "Kurslara qayıt",
+    "instructor": "Təlimçi",
+    "lessonsTitle": "Dərslər",
+    "noLessons": "Hələ dərs əlavə edilməyib",
+    "groupsTitle": "Bu kursun qrupları",
+    "noGroups": "Bu kurs üzrə qrup yoxdur",
+    "studentCount": "{{count}} tələbə",
+    "statuses": {
+      "draft": "Qaralama",
+      "published": "Dərc olunub",
+      "archived": "Arxivdə"
+    },
+    "minutes": "{{count}} dəq"
   },
   "attendance": {
     "title": "Davamiyyət",
@@ -467,7 +497,10 @@
     "linkOrFile": "link və ya fayl URL",
     "viewFile": "Fayla bax",
     "late": "Gecikmiş",
-    "graded": "Qiymətləndirilib"
+    "graded": "Qiymətləndirilib",
+    "updateSuccess": "Ev tapşırığı uğurla yeniləndi",
+    "deleteSuccess": "Ev tapşırığı uğurla silindi",
+    "submitEmptyError": "Zəhmət olmasa link və ya qeyd daxil edin"
   },
   "classworks": {
     "title": "Sinif İşləri",
@@ -505,7 +538,11 @@
     "notePlaceholder": "Müəllimə qeyd buraxın...",
     "addLink": "Link əlavə et",
     "viewFile": "Fayla bax",
-    "graded": "Qiymətləndirilib"
+    "graded": "Qiymətləndirilib",
+    "updateSuccess": "Sinif işi uğurla yeniləndi",
+    "submitEmptyError": "Zəhmət olmasa link və ya qeyd daxil edin",
+    "deadlinePassed": "Son tarix bitib",
+    "linkOrFile": "link"
   },
   "quizzes": {
     "title": "Quizlər",

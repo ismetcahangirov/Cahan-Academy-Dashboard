@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLoginMutation } from '../features/auth/authApi';
@@ -7,9 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, Lock, LogIn, Globe, ChevronDown } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
 import Dropdown from '../components/common/Dropdown';
 import Spinner from '../components/common/Spinner';
 

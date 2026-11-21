@@ -3,6 +3,7 @@ import request from 'supertest';
 import express from 'express';
 import groupRoutes from '../../routes/groupRoutes.js';
 import Group from '../../models/Group.js';
+import Schedule from '../../models/Schedule.js';
 import User from '../../models/userModel.js';
 import { errorHandler } from '../../middleware/errorMiddleware.js';
 import jwt from 'jsonwebtoken';
@@ -135,6 +136,52 @@ describe('Group API', () => {
       expect(res.statusCode).toEqual(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.students).toContain(newStudent._id.toString());
+    });
+  });
+
+  describe('GET /api/groups/:id', () => {
+    it('lets a member student open the group', async () => {
+      const res = await request(app)
+        .get(`/api/groups/${groupId}`)
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(res.statusCode).toEqual(200);
+    });
+
+    it('rejects a student who is not in the group', async () => {
+      const outsider = await User.create({
+        name: 'Outsider',
+        email: 'outsider@example.com',
+        password: 'Password1',
+        role: 'student',
+        status: 'active'
+      });
+
+      const res = await request(app)
+        .get(`/api/groups/${groupId}`)
+        .set('Authorization', `Bearer ${generateToken(outsider._id)}`);
+
+      expect(res.statusCode).toEqual(403);
+    });
+  });
+
+  describe('schedule sync', () => {
+    it('creates one Monday=0 based entry per day for every stored day spelling', async () => {
+      const res = await request(app)
+        .put(`/api/groups/${groupId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          schedule: {
+            repetitionType: 'weekly',
+            days: ['Monday', 'Bazar ertəsi', 'Sunday', '2', 'Пятница'],
+            startTime: '10:00',
+            endTime: '12:00'
+          }
+        });
+
+      expect(res.statusCode).toEqual(200);
+      const entries = await Schedule.find({ group: groupId }).sort('dayOfWeek');
+      expect(entries.map((e) => e.dayOfWeek)).toEqual([0, 2, 4, 6]);
     });
   });
 });

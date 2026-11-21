@@ -21,6 +21,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
+import { formatDate } from '../../utils/formatDate';
 import {
   useGetStudentPaymentsQuery,
   useCreatePaymentPlanMutation,
@@ -45,26 +46,23 @@ const STATUS_ICON = {
 
 const TYPE_PERIODS = ['once', 'weekly', 'monthly', 'semi-annually', 'annually'];
 
-const formatDate = (date, lang) =>
-  new Date(date).toLocaleDateString(
-    lang === 'az' ? 'az-AZ' : lang === 'ru' ? 'ru-RU' : 'en-US'
-  );
+const fmtDate = (date, lang) => formatDate(date, 'd MMMM yyyy', lang);
+
+const initialForm = (existing) => ({
+  amount: existing?.amount ?? '',
+  type: existing?.type ?? 'monthly',
+  startDate: existing?.startDate ? existing.startDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
+  endDate: existing?.endDate ? existing.endDate.slice(0, 10) : '',
+  description: existing?.description ?? '',
+});
 
 // ─── Plan Form ───────────────────────────────────────────────────────────────
-const PlanForm = ({ studentId, existing, onClose }) => {
-  const { t, i18n } = useTranslation();
+const PlanForm =({ studentId, existing, onClose }) => {
+  const { t } = useTranslation();
   const [createPlan, { isLoading: creating }] = useCreatePaymentPlanMutation();
   const [updatePlan, { isLoading: updating }] = useUpdatePaymentPlanMutation();
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  const [form, setForm] = useState({
-    amount: existing?.amount ?? '',
-    type: existing?.type ?? 'monthly',
-    startDate: existing?.startDate ? existing.startDate.slice(0, 10) : today,
-    endDate: existing?.endDate ? existing.endDate.slice(0, 10) : '',
-    description: existing?.description ?? '',
-  });
+  const [form, setForm] = useState(() => initialForm(existing));
 
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
 
@@ -84,7 +82,17 @@ const PlanForm = ({ studentId, existing, onClose }) => {
         description: form.description,
       };
       if (existing) {
-        await updatePlan({ id: existing._id, ...payload }).unwrap();
+        // Send only what changed: a schedule change rebuilds the history on the server
+        const original = initialForm(existing);
+        const changes = {};
+        if (Number(form.amount) !== Number(original.amount)) changes.amount = Number(form.amount);
+        if (form.type !== original.type) changes.type = form.type;
+        if (form.startDate !== original.startDate) changes.startDate = form.startDate;
+        if (form.endDate !== original.endDate) changes.endDate = form.endDate || null;
+        if (form.description !== original.description) changes.description = form.description;
+        if (Object.keys(changes).length > 0) {
+          await updatePlan({ id: existing._id, studentId, ...changes }).unwrap();
+        }
         toast.success(t('payments.planUpdated'));
       } else {
         await createPlan(payload).unwrap();
@@ -219,7 +227,7 @@ const HistoryRow = ({ entry, planId, lang }) => {
   return (
     <tr className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--muted)]/20 transition-colors">
       <td className="px-4 py-3 text-sm text-[var(--foreground)]">
-        {formatDate(entry.dueDate, lang)}
+        {fmtDate(entry.dueDate, lang)}
       </td>
       <td className="px-4 py-3 text-sm font-semibold text-[var(--foreground)]">
         {entry.amount} AZN
@@ -237,7 +245,7 @@ const HistoryRow = ({ entry, planId, lang }) => {
       </td>
       <td className="px-4 py-3 text-xs text-[var(--muted-foreground)]/60">
         {entry.status === 'paid' && entry.paidDate
-          ? formatDate(entry.paidDate, lang)
+          ? fmtDate(entry.paidDate, lang)
           : '—'}
       </td>
       <td className="px-4 py-3 text-right">
@@ -299,8 +307,8 @@ const PlanCard = ({ plan, studentId }) => {
               {plan.amount} AZN — {t(`payments.types.${plan.type}`)}
             </p>
             <p className="text-xs text-[var(--muted-foreground)]/60 mt-0.5">
-              {formatDate(plan.startDate, i18n.language)}
-              {plan.endDate && ` → ${formatDate(plan.endDate, i18n.language)}`}
+              {fmtDate(plan.startDate, i18n.language)}
+              {plan.endDate && ` → ${fmtDate(plan.endDate, i18n.language)}`}
             </p>
           </div>
         </div>

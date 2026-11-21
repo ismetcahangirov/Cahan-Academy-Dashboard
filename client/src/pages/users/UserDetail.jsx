@@ -9,6 +9,7 @@ import { useGetUserByIdQuery } from '../../features/users/userApi';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
+import { formatDate } from '../../utils/formatDate';
 
 const RoleBadge = ({ role }) => {
   const { t } = useTranslation();
@@ -50,19 +51,11 @@ const InfoRow = ({ icon: Icon, label, value }) => (
 const UserDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetUserByIdQuery(id);
   const user = data?.user || data?.data || data;
 
-  const fmt = (date) => {
-    if (!date) return '—';
-    const lang = i18n.resolvedLanguage || i18n.language;
-    const locale = lang.startsWith('ru') ? 'ru-RU' : lang.startsWith('az') ? 'az-AZ' : 'en-US';
-    return new Date(date).toLocaleDateString(locale, {
-      day: '2-digit', month: 'long', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-  };
+  const fmt = (date) => formatDate(date, 'dd MMMM yyyy, HH:mm') || '—';
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">

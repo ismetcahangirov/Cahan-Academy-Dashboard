@@ -22,6 +22,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../utils/formatDate';
 
 const getStatusConfig = (status, t) => {
   switch (status) {
@@ -34,7 +35,7 @@ const getStatusConfig = (status, t) => {
 };
 
 const Invitations = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({ email: '', role: 'student' });
 
@@ -141,7 +142,7 @@ const Invitations = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2 text-[var(--muted-foreground)] text-sm">
                           <Calendar size={13} />
-                          {new Date(inv.expiresAt).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US')}
+                          {formatDate(inv.expiresAt, 'd MMMM yyyy')}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">

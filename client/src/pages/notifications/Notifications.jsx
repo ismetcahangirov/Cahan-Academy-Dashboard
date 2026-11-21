@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Check, Trash2, Clock } from 'lucide-react';
 import { format } from 'date-fns';
@@ -31,7 +30,7 @@ const Notifications = () => {
   const handleMarkAsRead = async (id) => {
     try {
       await markAsRead(id).unwrap();
-    } catch (error) {
+    } catch {
       toast.error(t('notifications.markAsReadError'));
     }
   };
@@ -40,7 +39,7 @@ const Notifications = () => {
     try {
       await markAllAsRead().unwrap();
       toast.success(t('notifications.markAllAsReadSuccess'));
-    } catch (error) {
+    } catch {
       toast.error(t('students.error'));
     }
   };
@@ -49,7 +48,7 @@ const Notifications = () => {
     try {
       await deleteNotification(id).unwrap();
       toast.success(t('notifications.deleteSuccess'));
-    } catch (error) {
+    } catch {
       toast.error(t('notifications.deleteError'));
     }
   };

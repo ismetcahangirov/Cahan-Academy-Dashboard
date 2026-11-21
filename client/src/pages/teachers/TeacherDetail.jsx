@@ -9,6 +9,8 @@ import { useGetTeacherByIdQuery } from '../../features/teachers/teachersApi';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
+import { formatDays } from '../../utils/days';
+import { formatDate } from '../../utils/formatDate';
 
 const StatusBadge = ({ status }) => {
   const { t } = useTranslation();
@@ -39,7 +41,7 @@ const InfoRow = ({ icon: Icon, label, value }) => (
 
 const GroupCard = ({ group }) => {
   const { t } = useTranslation();
-  const days = group?.schedule?.days?.join(', ') || '';
+  const days = formatDays(group?.schedule?.days, t);
   const time = group?.schedule?.startTime
     ? `${group.schedule.startTime}${group.schedule.endTime ? ' – ' + group.schedule.endTime : ''}`
     : null;
@@ -92,16 +94,11 @@ const MiniStat = ({ label, value, accent }) => (
 const TeacherDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetTeacherByIdQuery(id);
   const teacher = data?.data || data?.teacher || data;
 
-  const fmt = (date) => {
-    if (!date) return '—';
-    const lang = i18n.resolvedLanguage || i18n.language;
-    const locale = lang.startsWith('ru') ? 'ru-RU' : lang.startsWith('az') ? 'az-AZ' : 'en-US';
-    return new Date(date).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
-  };
+  const fmt = (date) => formatDate(date, 'dd MMMM yyyy') || '—';
 
   const groups = teacher?.groups || [];
   const active    = groups.filter(g => g.status === 'active').length;

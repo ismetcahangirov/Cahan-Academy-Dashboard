@@ -22,7 +22,15 @@
     "view": "Просмотр",
     "error": "Произошла ошибка",
     "group": "Группа",
-    "unknown": "Неизвестно"
+    "unknown": "Неизвестно",
+    "deleteConfirm": "Вы уверены, что хотите удалить?",
+    "updating": "Обновление...",
+    "update": "Обновить",
+    "select": "Выберите...",
+    "create": "Создать",
+    "close": "Закрыть",
+    "saveBtn": "Сохранить",
+    "goBack": "Вернуться назад"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -104,7 +112,8 @@
     },
     "minutesAgo": "{{count}} минут назад",
     "hoursAgo": "{{count}} часов назад",
-    "daysAgo": "{{count}} дней назад"
+    "daysAgo": "{{count}} дней назад",
+    "vsLastMonth": "новых в этом месяце к прошлому"
   },
   "sidebar": {
     "dashboard": "Дашборд",
@@ -173,7 +182,8 @@
     "deleteSuccess": "Студент успешно удален",
     "updateSuccess": "Данные студента обновлены",
     "createSuccess": "Новый студент создан",
-    "error": "Произошла ошибка"
+    "error": "Произошла ошибка",
+    "allGroups": "Все группы"
   },
   "teachers": {
     "title": "Учителя",
@@ -190,7 +200,9 @@
     "deleteConfirm": "Вы уверены, что хотите удалить этого учителя?",
     "deleteSuccess": "Учитель успешно удален",
     "updateSuccess": "Данные учителя обновлены",
-    "createSuccess": "Новый учитель создан"
+    "createSuccess": "Новый учитель создан",
+    "pageTitle": "Преподаватель",
+    "groupsTotal": "Всего групп"
   },
   "users": {
     "title": "Пользователи",
@@ -210,7 +222,8 @@
     "allStatuses": "Все",
     "pending": "Ожидает",
     "approve": "Подтвердить",
-    "approveSuccess": "Пользователь подтвержден"
+    "approveSuccess": "Пользователь подтвержден",
+    "role": "Роль"
   },
   "groups": {
     "title": "Группы",
@@ -256,7 +269,10 @@
     "addStudentsDesc": "Добавить студентов...",
     "groupNamePlaceholder": "напр. FE-202",
     "coursePlaceholder": "напр. Frontend Development",
-    "notePlaceholder": "напр. Возможны дополнительные занятия по выходным"
+    "notePlaceholder": "напр. Возможны дополнительные занятия по выходным",
+    "online": "Онлайн",
+    "offline": "Офлайн",
+    "selectGroup": "Выберите группу"
   },
   "courses": {
     "title": "Курсы",
@@ -287,7 +303,21 @@
       "Backend": "Бэкенд",
       "Design": "Дизайн",
       "Mobile": "Мобильная разработка"
-    }
+    },
+    "editCourse": "Редактировать курс",
+    "backToCourses": "Назад к курсам",
+    "instructor": "Преподаватель",
+    "lessonsTitle": "Уроки",
+    "noLessons": "Уроки ещё не добавлены",
+    "groupsTitle": "Группы этого курса",
+    "noGroups": "По этому курсу нет групп",
+    "studentCount": "Студентов: {{count}}",
+    "statuses": {
+      "draft": "Черновик",
+      "published": "Опубликован",
+      "archived": "В архиве"
+    },
+    "minutes": "{{count}} мин"
   },
   "attendance": {
     "title": "Посещаемость",
@@ -470,7 +500,10 @@
     "linkOrFile": "ссылка или URL файла",
     "viewFile": "Просмотреть файл",
     "late": "С опозданием",
-    "graded": "Оценено"
+    "graded": "Оценено",
+    "updateSuccess": "Домашнее задание успешно обновлено",
+    "deleteSuccess": "Домашнее задание успешно удалено",
+    "submitEmptyError": "Пожалуйста, введите ссылку или заметку"
   },
   "classworks": {
     "title": "Классные работы",
@@ -508,7 +541,11 @@
     "notePlaceholder": "Оставьте замечание для учителя...",
     "addLink": "Добавить ссылку",
     "viewFile": "Просмотреть файл",
-    "graded": "Оценено"
+    "graded": "Оценено",
+    "updateSuccess": "Классная работа успешно обновлена",
+    "submitEmptyError": "Пожалуйста, введите ссылку или заметку",
+    "deadlinePassed": "Срок истёк",
+    "linkOrFile": "ссыл."
   },
   "quizzes": {
     "title": "Квизы",

@@ -22,7 +22,15 @@
     "view": "View",
     "error": "An error occurred",
     "group": "Group",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "deleteConfirm": "Are you sure you want to delete this?",
+    "updating": "Updating...",
+    "update": "Update",
+    "select": "Select...",
+    "create": "Create",
+    "close": "Close",
+    "saveBtn": "Save",
+    "goBack": "Go back"
   },
   "auth": {
     "loginTitle": "Cahan Academy",
@@ -104,7 +112,8 @@
     },
     "minutesAgo": "{{count}} minutes ago",
     "hoursAgo": "{{count}} hours ago",
-    "daysAgo": "{{count}} days ago"
+    "daysAgo": "{{count}} days ago",
+    "vsLastMonth": "new this month vs last month"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -173,7 +182,8 @@
     "deleteSuccess": "Student deleted successfully",
     "updateSuccess": "Student information updated",
     "createSuccess": "New student created",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "allGroups": "All groups"
   },
   "teachers": {
     "title": "Teachers",
@@ -190,7 +200,9 @@
     "deleteConfirm": "Are you sure you want to delete this teacher?",
     "deleteSuccess": "Teacher deleted successfully",
     "updateSuccess": "Teacher information updated",
-    "createSuccess": "New teacher created"
+    "createSuccess": "New teacher created",
+    "pageTitle": "Teacher",
+    "groupsTotal": "Total Groups"
   },
   "users": {
     "title": "Users",
@@ -210,7 +222,8 @@
     "allStatuses": "All",
     "pending": "Pending",
     "approve": "Approve",
-    "approveSuccess": "User approved successfully"
+    "approveSuccess": "User approved successfully",
+    "role": "Role"
   },
   "groups": {
     "title": "Groups",
@@ -256,7 +269,10 @@
     "addStudentsDesc": "Add students...",
     "groupNamePlaceholder": "e.g. FE-202",
     "coursePlaceholder": "e.g. Frontend Development",
-    "notePlaceholder": "e.g. Additional weekend lessons possible"
+    "notePlaceholder": "e.g. Additional weekend lessons possible",
+    "online": "Online",
+    "offline": "Offline",
+    "selectGroup": "Select a group"
   },
   "courses": {
     "title": "Courses",
@@ -287,7 +303,21 @@
       "Backend": "Backend",
       "Design": "Design",
       "Mobile": "Mobile"
-    }
+    },
+    "editCourse": "Edit Course",
+    "backToCourses": "Back to courses",
+    "instructor": "Instructor",
+    "lessonsTitle": "Lessons",
+    "noLessons": "No lessons added yet",
+    "groupsTitle": "Groups taking this course",
+    "noGroups": "No groups for this course",
+    "studentCount": "{{count}} students",
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "minutes": "{{count}} min"
   },
   "attendance": {
     "title": "Attendance",
@@ -467,7 +497,10 @@
     "linkOrFile": "link or file URL",
     "viewFile": "View file",
     "late": "Late",
-    "graded": "Graded"
+    "graded": "Graded",
+    "updateSuccess": "Homework updated successfully",
+    "deleteSuccess": "Homework deleted successfully",
+    "submitEmptyError": "Please enter a link or a note"
   },
   "classworks": {
     "title": "Classworks",
@@ -505,7 +538,11 @@
     "notePlaceholder": "Leave a note for the teacher...",
     "addLink": "Add link",
     "viewFile": "View file",
-    "graded": "Graded"
+    "graded": "Graded",
+    "updateSuccess": "Classwork updated successfully",
+    "submitEmptyError": "Please enter a link or a note",
+    "deadlinePassed": "Deadline passed",
+    "linkOrFile": "link(s)"
   },
   "quizzes": {
     "title": "Quizzes",

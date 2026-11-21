@@ -17,20 +17,24 @@ const syncGroupSchedule = async (group) => {
       const DAYS_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
       const DAYS_RU = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
+      const created = new Set();
       for (const dayStr of days) {
         let dayOfWeek = -1;
-        
+
         if (typeof dayStr === 'number') {
           dayOfWeek = dayStr;
         } else if (typeof dayStr === 'string') {
           const lowerDay = dayStr.toLowerCase().trim();
-          dayOfWeek = DAYS_AZ_SHORT.findIndex(d => d.toLowerCase() === lowerDay);
+          // days is [String] in the schema, so numeric indexes arrive as "0".."6" (0 = Monday)
+          if (/^[0-6]$/.test(lowerDay)) dayOfWeek = Number(lowerDay);
+          if (dayOfWeek === -1) dayOfWeek = DAYS_AZ_SHORT.findIndex(d => d.toLowerCase() === lowerDay);
           if (dayOfWeek === -1) dayOfWeek = DAYS_AZ.findIndex(d => d.toLowerCase() === lowerDay);
           if (dayOfWeek === -1) dayOfWeek = DAYS_EN.findIndex(d => d.toLowerCase() === lowerDay);
           if (dayOfWeek === -1) dayOfWeek = DAYS_RU.findIndex(d => d.toLowerCase() === lowerDay);
         }
 
-        if (dayOfWeek >= 0 && dayOfWeek <= 6) {
+        if (dayOfWeek >= 0 && dayOfWeek <= 6 && !created.has(dayOfWeek)) {
+          created.add(dayOfWeek);
           await Schedule.create({
             group: group._id,
             subject: group.name,
@@ -107,6 +111,11 @@ export const getGroupById = async (req, res) => {
     // Check authorization
     if (
       req.user.role === 'teacher' && group.teacher._id.toString() !== req.user._id.toString()
+    ) {
+      return sendError(res, 'Not authorized to view this group', 403);
+    }
+    if (
+      req.user.role === 'student' && !group.students.some((s) => s._id.equals(req.user._id))
     ) {
       return sendError(res, 'Not authorized to view this group', 403);
     }

@@ -44,7 +44,12 @@ export const getStudents = async (req, res) => {
       query._id = { $in: studentIds };
     }
 
-    const total = await User.countDocuments(query);
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const [total, active, recent] = await Promise.all([
+      User.countDocuments(query),
+      User.countDocuments({ ...query, status: 'active' }),
+      User.countDocuments({ ...query, createdAt: { $gte: weekAgo } }),
+    ]);
     const students = await User.find(query)
       .sort({ [sortField]: sortOrder, _id: 1 })
       .skip(skip)
@@ -73,6 +78,8 @@ export const getStudents = async (req, res) => {
       limit,
       total,
       pages: Math.ceil(total / limit),
+      active,
+      recent,
     });
   } catch (error) {
     return sendError(res, error.message, 500);

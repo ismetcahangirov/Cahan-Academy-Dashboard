@@ -3,23 +3,24 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, 
   Search, 
-  Plus, 
-  Layers, 
+  Plus,
   ChevronRight,
   Edit2,
   Trash2,
   X,
   PlayCircle,
   BarChart,
-  MoreHorizontal
 } from 'lucide-react';
-import { 
-  useGetCoursesQuery, 
-  useCreateCourseMutation, 
-  useDeleteCourseMutation 
+import {
+  useGetCoursesQuery,
+  useCreateCourseMutation,
+  useUpdateCourseMutation,
+  useDeleteCourseMutation
 } from '../../features/courses/coursesApi';
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
@@ -40,24 +41,59 @@ const DarkInput = ({ label, ...props }) => (
   </div>
 );
 
+const EMPTY_FORM = { title: '', description: '', category: '', level: 'Beginner' };
+const CATEGORIES = ['All', 'Frontend', 'Backend', 'Design', 'Mobile'];
+
 const Courses = () => {
   const { t } = useTranslation();
   const levelConfig = getLevelConfig(t);
+  const user = useSelector(selectCurrentUser);
+  const isAdmin = user?.role === 'admin';
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState('');
-  const [formData, setFormData] = useState({ title: '', description: '', category: '', level: 'Beginner' });
+  const [category, setCategory] = useState('All');
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const { data: coursesData, isLoading } = useGetCoursesQuery();
   const [createCourse, { isLoading: isCreating }] = useCreateCourseMutation();
+  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
   const [deleteCourse] = useDeleteCourseMutation();
+
+  const openCreate = () => {
+    setEditingId(null);
+    setFormData(EMPTY_FORM);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (course) => {
+    setEditingId(course._id);
+    setFormData({
+      title: course.title || '',
+      description: course.description || '',
+      category: course.category || '',
+      level: course.level || 'Beginner',
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingId(null);
+    setFormData(EMPTY_FORM);
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await createCourse(formData).unwrap();
-      toast.success(t('courses.addSuccess'));
-      setIsModalOpen(false);
-      setFormData({ title: '', description: '', category: '', level: 'Beginner' });
+      if (editingId) {
+        await updateCourse({ id: editingId, ...formData }).unwrap();
+        toast.success(t('courses.updateSuccess'));
+      } else {
+        await createCourse(formData).unwrap();
+        toast.success(t('courses.addSuccess'));
+      }
+      closeModal();
     } catch (error) {
       toast.error(error.data?.message || t('students.error'));
     }
@@ -74,9 +110,10 @@ const Courses = () => {
     }
   };
 
-  const filteredCourses = coursesData?.data?.filter(course => 
-    course.title.toLowerCase().includes(search.toLowerCase()) ||
-    course.category.toLowerCase().includes(search.toLowerCase())
+  const filteredCourses = coursesData?.data?.filter(course =>
+    (category === 'All' || course.category === category) &&
+    (course.title.toLowerCase().includes(search.toLowerCase()) ||
+      course.category.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -87,13 +124,15 @@ const Courses = () => {
           <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('courses.title')}</h1>
           <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('courses.subtitle')}</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-        >
-          <Plus size={18} />
-          {t('courses.newCourse')}
-        </button>
+        {isAdmin && (
+          <button
+            onClick={openCreate}
+            className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
+          >
+            <Plus size={18} />
+            {t('courses.newCourse')}
+          </button>
+        )}
       </div>
 
       {/* Search & Filter */}
@@ -109,10 +148,18 @@ const Courses = () => {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto">
-          {['All', 'Frontend', 'Backend', 'Design', 'Mobile'].map(cat => (
+          {CATEGORIES.map(cat => (
             <button
               key={cat}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all bg-[var(--muted)] border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/80"
+              type="button"
+              onClick={() => setCategory(cat)}
+              aria-pressed={category === cat}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all border',
+                category === cat
+                  ? 'bg-bordo border-bordo text-white'
+                  : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)]/80'
+              )}
             >
               {t(`courses.categories.${cat}`)}
             </button>
@@ -146,10 +193,12 @@ const Courses = () => {
                     {levelConfig[course.level]?.label || course.level}
                   </span>
                 </div>
-                <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><Edit2 size={14} /></button>
-                  <button onClick={() => handleDelete(course._id)} className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-red-400"><Trash2 size={14} /></button>
-                </div>
+                {isAdmin && (
+                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <button onClick={() => openEdit(course)} aria-label={t('courses.editCourse')} className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><Edit2 size={14} /></button>
+                    <button onClick={() => handleDelete(course._id)} aria-label={t('common.delete')} className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-red-400"><Trash2 size={14} /></button>
+                  </div>
+                )}
               </div>
 
               <div className="p-5 space-y-3">
@@ -166,7 +215,7 @@ const Courses = () => {
                     </div>
                     <div className="flex items-center gap-1 text-[var(--muted-foreground)]/40 text-xs">
                       <BarChart size={14} />
-                      <span>{course.status === 'published' ? t('groups.statusActive') : t('groups.statusCompleted')}</span>
+                      <span>{t(`courses.statuses.${course.status || 'draft'}`)}</span>
                     </div>
                   </div>
                   <Link to={`/courses/${course._id}`} className="flex items-center gap-1 text-bordo text-sm font-medium hover:gap-2 transition-all">
@@ -188,7 +237,7 @@ const Courses = () => {
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="fixed inset-0 bg-background/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeModal} className="fixed inset-0 bg-background/60 backdrop-blur-sm" />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -196,8 +245,8 @@ const Courses = () => {
               className="relative w-full max-w-lg bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-10"
             >
               <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--muted)]/20">
-                <h2 className="text-xl font-semibold text-[var(--foreground)]">{t('courses.createCourse')}</h2>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><X size={20} /></button>
+                <h2 className="text-xl font-semibold text-[var(--foreground)]">{editingId ? t('courses.editCourse') : t('courses.createCourse')}</h2>
+                <button onClick={closeModal} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><X size={20} /></button>
               </div>
               <form onSubmit={handleCreate} className="p-6 space-y-5">
                 <DarkInput label={t('courses.courseName')} required type="text" placeholder="Məs: React Native Mastery" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
@@ -223,7 +272,7 @@ const Courses = () => {
                         { label: 'Design', value: 'Design' },
                         { label: 'Mobile', value: 'Mobile' },
                       ]}
-                      placeholder={t('common.select') || 'Seçin...'}
+                      placeholder={t('common.select')}
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -240,9 +289,9 @@ const Courses = () => {
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('users.cancelBtn')}</button>
-                  <button type="submit" disabled={isCreating} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating ? t('groups.creating') : t('courses.newCourse')}
+                  <button type="button" onClick={closeModal} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('users.cancelBtn')}</button>
+                  <button type="submit" disabled={isCreating || isUpdating} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
+                    {isCreating || isUpdating ? (editingId ? t('groups.updating') : t('groups.creating')) : (editingId ? t('users.saveBtn') : t('courses.newCourse'))}
                   </button>
                 </div>
               </form>

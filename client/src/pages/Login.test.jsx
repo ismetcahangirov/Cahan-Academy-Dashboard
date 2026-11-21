@@ -15,12 +15,24 @@ vi.mock('react-redux', () => ({
   useSelector: vi.fn(() => false),
 }));
 
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key) => key }),
+// Render the real Azerbaijani strings the assertions below look for
+vi.mock('react-i18next', async () => {
+  const az = (await import('../i18n/locales/az.json')).default;
+  return {
+    useTranslation: () => ({
+      t: (key) => key.split('.').reduce((o, k) => o?.[k], az) ?? key,
+      i18n: { language: 'az', changeLanguage: vi.fn() },
+    }),
+  };
+});
+
+vi.mock('@react-oauth/google', () => ({
+  GoogleLogin: () => <div data-testid="google-login" />,
 }));
 
 vi.mock('../features/auth/authApi', () => ({
   useLoginMutation: () => [vi.fn(), { isLoading: false }],
+  useGoogleLoginMutation: () => [vi.fn(), { isLoading: false }],
 }));
 
 describe('Login Component', () => {
