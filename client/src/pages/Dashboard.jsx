@@ -1,11 +1,12 @@
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../features/auth/authSlice';
 import { motion } from 'framer-motion';
-import { Users, GraduationCap, BookOpen, Clock, TrendingUp, Banknote, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Clock, TrendingUp, TrendingDown, Banknote, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useGetStatsQuery, useGetActivitiesQuery } from '../features/dashboard/dashboardApi';
 import { useGetMyPaymentsQuery } from '../features/payments/paymentsApi';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
+import { formatDate } from '../utils/formatDate';
 
 const useDarkMode = () => {
   const [isDark, setIsDark] = useState(() =>
@@ -230,13 +231,13 @@ const StatCard = ({ title, value, icon: Icon, trend, delay, isLoading }) => {
               <Icon size={24} />
             </div>
           </div>
-          {trend !== undefined && (
+          {typeof trend === 'number' && (
             <div className="mt-4 flex items-center gap-2">
               <div className="flex items-center text-white text-xs font-medium">
-                <TrendingUp size={14} className="mr-1" />
-                {trend}%
+                {trend < 0 ? <TrendingDown size={14} className="mr-1" /> : <TrendingUp size={14} className="mr-1" />}
+                {trend > 0 ? `+${trend}` : trend}%
               </div>
-              <span className="text-white/65 text-xs">{t('dashboard.sinceLastMonth')}</span>
+              <span className="text-white/65 text-xs">{t('dashboard.vsLastMonth')}</span>
             </div>
           )}
         </>
@@ -270,14 +271,11 @@ const ActivityItem = ({ activity }) => {
 
 // ─── Student Payment Widget ─────────────────────────────────────────────────
 const PaymentWidget = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { data, isLoading } = useGetMyPaymentsQuery();
   const payments = data?.data ?? [];
 
-  const fmtDate = (d) =>
-    new Date(d).toLocaleDateString(
-      i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US'
-    );
+  const fmtDate = (d) => formatDate(d, 'd MMMM yyyy');
 
   if (isLoading) {
     return (
@@ -385,7 +383,7 @@ const Dashboard = () => {
               title={t('dashboard.totalUsers')}
               value={stats?.users?.total || 0}
               icon={Users}
-              trend={12}
+              trend={stats?.users?.trend}
               delay={0.1}
               isLoading={statsLoading}
             />
@@ -393,7 +391,7 @@ const Dashboard = () => {
               title={t('dashboard.activeCourses')}
               value={stats?.courses?.total || 0}
               icon={BookOpen}
-              trend={stats?.courses?.trend || 0}
+              trend={stats?.courses?.trend}
               delay={0.2}
               isLoading={statsLoading}
             />
@@ -401,7 +399,7 @@ const Dashboard = () => {
               title={t('dashboard.groups')}
               value={stats?.groups?.total || 0}
               icon={GraduationCap}
-              trend={stats?.groups?.trend || 0}
+              trend={stats?.groups?.trend}
               delay={0.3}
               isLoading={statsLoading}
             />
@@ -409,7 +407,7 @@ const Dashboard = () => {
               title={t('dashboard.learningHours')}
               value={`${stats?.learningHours?.total || 0}s`}
               icon={Clock}
-              trend={stats?.learningHours?.trend || 0}
+              trend={stats?.learningHours?.trend}
               delay={0.4}
               isLoading={statsLoading}
             />

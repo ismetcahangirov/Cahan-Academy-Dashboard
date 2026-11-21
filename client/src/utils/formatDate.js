@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { az, enUS, ru } from 'date-fns/locale';
-import i18n from '../i18n';
+import i18n from 'i18next';
 
 const LOCALES = { az, en: enUS, ru };
 
