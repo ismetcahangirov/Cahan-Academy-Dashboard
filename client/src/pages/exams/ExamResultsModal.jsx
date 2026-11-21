@@ -1,16 +1,18 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Save } from 'lucide-react';
+import { X, Search, Save, Eye } from 'lucide-react';
 import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
+import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
 
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [edits, setEdits] = useState({});
+  const [reviewStudentId, setReviewStudentId] = useState(null);
 
   // transformResponse already unwraps `data`
   const { data: examDetails, isLoading: isLoadingExam } = useGetExamByIdQuery(exam?._id, {
@@ -32,6 +34,20 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
       };
     });
     return initialData;
+  }, [examDetails]);
+
+  // Online answers per student, with the number of open answers still to grade
+  const answerInfo = useMemo(() => {
+    const openIds = new Set((examDetails?.questions || []).filter((q) => q.type === 'open-ended').map((q) => q._id));
+    const info = {};
+    (examDetails?.results || []).forEach((result) => {
+      if (!result.student || !result.answers?.length) return;
+      info[result.student._id || result.student] = {
+        pending: result.answers.filter((a) => openIds.has(a.questionId)
+          && (a.awardedPoints === null || a.awardedPoints === undefined)).length,
+      };
+    });
+    return info;
   }, [examDetails]);
   const resultsData = { ...savedData, ...edits };
 
@@ -157,13 +173,14 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                 {t('exams.noStudentsFound')}
               </div>
             ) : (
-              <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-hidden">
-                <table className="w-full text-left border-collapse">
+              <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[640px]">
                   <thead>
                     <tr className="bg-[var(--muted)]/10 text-[var(--muted-foreground)] text-sm border-b border-[var(--border)]">
                       <th className="p-4 font-medium w-1/3">{t('exams.tableStudent')}</th>
                       <th className="p-4 font-medium w-1/4">{t('exams.tableScore')}</th>
                       <th className="p-4 font-medium">{t('exams.tableFeedback')}</th>
+                      <th className="p-4 font-medium">{t('exams.reviewTitle')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
@@ -205,6 +222,27 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
                               className="w-full bg-[var(--input)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors text-sm"
                             />
                           </td>
+                          <td className="p-4">
+                            {answerInfo[student._id] ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => setReviewStudentId(student._id)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium whitespace-nowrap"
+                                >
+                                  <Eye size={14} />
+                                  {t('exams.viewAnswers')}
+                                </button>
+                                {answerInfo[student._id].pending > 0 && (
+                                  <div className="mt-1 text-xs text-amber-500">
+                                    {t('exams.pendingReview', { count: answerInfo[student._id].pending })}
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-xs text-[var(--muted-foreground)]">—</span>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
@@ -239,6 +277,15 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           </div>
         </motion.div>
       </div>
+      {reviewStudentId && (
+        <AnswerReviewModal
+          kind="exam"
+          id={exam._id}
+          studentId={reviewStudentId}
+          canGrade
+          onClose={() => setReviewStudentId(null)}
+        />
+      )}
     </AnimatePresence>
   );
 };

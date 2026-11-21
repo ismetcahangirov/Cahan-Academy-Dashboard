@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Plus, Search, Clock,
-  Users, HelpCircle, PenTool, Calendar
+  Users, HelpCircle, PenTool, Calendar, Eye
 } from 'lucide-react';
 import { 
   useGetExamsQuery, 
@@ -14,6 +14,7 @@ import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import ExamModal from './ExamModal';
 import ExamResultsModal from './ExamResultsModal';
+import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '../../components/common/Select';
@@ -32,6 +33,11 @@ const Exams = () => {
   
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
   const [examForResults, setExamForResults] = useState(null);
+  const [reviewExamId, setReviewExamId] = useState(null);
+
+  // Students see their answers once the exam (and the server's 2-minute grace) is over
+  const answersVisible = (exam) => exam.results?.[0]?.answers?.length > 0
+    && now > new Date(exam.date).getTime() + (exam.duration + 2) * 60000;
 
   const { data: examsResponse, isLoading } = useGetExamsQuery({
     groupId: selectedGroup || undefined
@@ -187,9 +193,21 @@ const Exams = () => {
                 {user.role === 'student' ? (
                   <div className="w-full flex items-center justify-between">
                     {exam.results && exam.results.length > 0 ? (
-                      <div className="text-sm font-medium text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg flex items-center gap-2 w-full justify-center border border-green-500/20">
-                        <PenTool size={16} />
-                        {t('exams.result')}: {exam.results[0].score}/100
+                      <div className="w-full flex flex-col gap-2">
+                        <div className="text-sm font-medium text-green-500 bg-green-500/10 px-3 py-1.5 rounded-lg flex items-center gap-2 w-full justify-center border border-green-500/20">
+                          <PenTool size={16} />
+                          {t('exams.result')}: {exam.results[0].score}/100
+                        </div>
+                        {answersVisible(exam) && (
+                          <button
+                            type="button"
+                            onClick={() => setReviewExamId(exam._id)}
+                            className="w-full flex items-center justify-center gap-2 py-1.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
+                          >
+                            <Eye size={16} />
+                            {t('exams.myAnswers')}
+                          </button>
+                        )}
                       </div>
                     ) : exam.questionCount > 0 && now <= new Date(exam.date).getTime() + exam.duration * 60000 ? (
                       <Link
@@ -238,7 +256,16 @@ const Exams = () => {
         <ExamResultsModal 
           isOpen={isResultsModalOpen} 
           onClose={() => setIsResultsModalOpen(false)} 
-          exam={examForResults} 
+          exam={examForResults}
+        />
+      )}
+
+      {reviewExamId && (
+        <AnswerReviewModal
+          kind="exam"
+          id={reviewExamId}
+          studentId={user._id}
+          onClose={() => setReviewExamId(null)}
         />
       )}
     </div>

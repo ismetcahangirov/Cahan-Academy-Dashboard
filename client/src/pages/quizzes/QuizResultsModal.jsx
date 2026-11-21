@@ -1,15 +1,24 @@
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGetQuizByIdQuery } from '../../features/quizzes/quizzesApi';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
+import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
 
 const QuizResultsModal = ({ quizId, onClose }) => {
   const { t, i18n } = useTranslation();
   const { data: quiz, isLoading } = useGetQuizByIdQuery(quizId, { refetchOnMountOrArgChange: true });
+  const [reviewStudentId, setReviewStudentId] = useState(null);
 
   const attempts = [...(quiz?.attempts || [])].sort((a, b) => (b.score || 0) - (a.score || 0));
+  const openQuestionIds = new Set(
+    (quiz?.questions || []).filter((q) => q.type === 'open-ended').map((q) => q._id),
+  );
+  const pendingCount = (attempt) => (attempt.answers || [])
+    .filter((a) => openQuestionIds.has(a.questionId) && (a.awardedPoints === null || a.awardedPoints === undefined))
+    .length;
 
   return (
     <AnimatePresence>
@@ -52,17 +61,20 @@ const QuizResultsModal = ({ quizId, onClose }) => {
               <p className="text-center py-12 text-[var(--muted-foreground)]">{t('quizzes.noAttempts')}</p>
             ) : (
               <div className="rounded-xl border border-[var(--border)] overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[480px]">
+                <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
                     <tr className="bg-[var(--muted)]/10 text-[var(--muted-foreground)] text-sm border-b border-[var(--border)]">
                       <th className="p-3 font-medium">{t('quizzes.tableStudent')}</th>
                       <th className="p-3 font-medium">{t('quizzes.tableScore')}</th>
                       <th className="p-3 font-medium">{t('quizzes.tableDate')}</th>
+                      <th className="p-3 font-medium">{t('quizzes.reviewTitle')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
                     {attempts.map((attempt) => {
                       const student = typeof attempt.student === 'object' ? attempt.student : null;
+                      const studentId = student?._id || attempt.student;
+                      const pending = pendingCount(attempt);
                       const percent = attempt.totalPoints > 0
                         ? Math.round((attempt.score / attempt.totalPoints) * 100)
                         : 0;
@@ -95,6 +107,21 @@ const QuizResultsModal = ({ quizId, onClose }) => {
                               })
                               : '—'}
                           </td>
+                          <td className="p-3">
+                            <button
+                              type="button"
+                              onClick={() => setReviewStudentId(studentId)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium whitespace-nowrap"
+                            >
+                              <Eye size={14} />
+                              {t('quizzes.viewAnswers')}
+                            </button>
+                            {pending > 0 && (
+                              <div className="mt-1 text-xs text-amber-500">
+                                {t('quizzes.pendingReview', { count: pending })}
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
@@ -105,6 +132,15 @@ const QuizResultsModal = ({ quizId, onClose }) => {
           </div>
         </motion.div>
       </div>
+      {reviewStudentId && (
+        <AnswerReviewModal
+          kind="quiz"
+          id={quizId}
+          studentId={reviewStudentId}
+          canGrade
+          onClose={() => setReviewStudentId(null)}
+        />
+      )}
     </AnimatePresence>
   );
 };

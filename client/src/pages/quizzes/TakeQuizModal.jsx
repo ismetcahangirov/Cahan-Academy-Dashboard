@@ -1,10 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Trophy } from 'lucide-react';
+import { X, Clock, Trophy, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { useGetQuizByIdQuery, useSubmitQuizMutation } from '../../features/quizzes/quizzesApi';
+import {
+  useGetQuizByIdQuery,
+  useStartQuizMutation,
+  useSubmitQuizMutation,
+} from '../../features/quizzes/quizzesApi';
+import { selectCurrentUser } from '../../features/auth/authSlice';
 import Spinner from '../../components/common/Spinner';
+import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
 
 const formatRemaining = (ms) => {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -15,20 +22,44 @@ const formatRemaining = (ms) => {
 
 const TakeQuizModal = ({ quizId, onClose }) => {
   const { t } = useTranslation();
+  const user = useSelector(selectCurrentUser);
   const { data: quiz, isLoading, isError } = useGetQuizByIdQuery(quizId, { refetchOnMountOrArgChange: true });
+  const [startQuiz, { isError: startFailed }] = useStartQuizMutation();
   const [submitQuiz, { isLoading: isSubmitting }] = useSubmitQuizMutation();
 
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
-  const [openedAt] = useState(() => Date.now());
+  // { questions, deadline } from the server; deadline is local ms, null without a time limit
+  const [session, setSession] = useState(null);
   const [now, setNow] = useState(() => Date.now());
+  const [showAnswers, setShowAnswers] = useState(false);
+  const startedRef = useRef(false);
   const submittedRef = useRef(false);
   const autoSubmittedRef = useRef(false);
 
-  const questions = quiz?.questions || [];
   const attempt = result || quiz?.attempts?.[0] || null;
-  const deadline = openedAt + (Number(quiz?.timeLimit) || 30) * 60 * 1000;
-  const inProgress = Boolean(quiz) && !attempt && questions.length > 0;
+  const questions = session?.questions || quiz?.questions || [];
+  const canStart = Boolean(quiz) && !attempt && quiz.questionCount > 0;
+  const deadline = session?.deadline ?? null;
+  const inProgress = Boolean(session) && !attempt && questions.length > 0;
+  const timeUp = inProgress && deadline !== null && now >= deadline;
+
+  // The server keeps the first start time, so reopening the quiz resumes the same timer.
+  useEffect(() => {
+    if (!canStart || startedRef.current) return;
+    startedRef.current = true;
+    startQuiz(quizId).unwrap()
+      .then((data) => {
+        const remaining = data.endsAt
+          ? new Date(data.endsAt).getTime() - new Date(data.serverNow).getTime()
+          : null;
+        setSession({
+          questions: data.questions || [],
+          deadline: remaining === null ? null : Date.now() + remaining,
+        });
+      })
+      .catch((error) => toast.error(error.data?.message || t('common.error')));
+  }, [canStart, quizId, startQuiz, t]);
 
   useEffect(() => {
     if (!inProgress) return undefined;
@@ -50,11 +81,11 @@ const TakeQuizModal = ({ quizId, onClose }) => {
   }, [answers, quizId, submitQuiz, t]);
 
   useEffect(() => {
-    if (inProgress && now >= deadline && !autoSubmittedRef.current) {
+    if (timeUp && !autoSubmittedRef.current) {
       autoSubmittedRef.current = true;
       submit();
     }
-  }, [inProgress, now, deadline, submit]);
+  }, [timeUp, submit]);
 
   const handleSubmit = () => {
     const answered = Object.values(answers).filter((v) => String(v).trim() !== '').length;
@@ -84,6 +115,9 @@ const TakeQuizModal = ({ quizId, onClose }) => {
     }
     if (attempt) {
       const correct = (attempt.answers || []).filter((a) => a.isCorrect).length;
+      const pending = (attempt.answers || [])
+        .filter((a) => a.isCorrect === null && (a.awardedPoints === null || a.awardedPoints === undefined))
+        .length;
       return (
         <div className="flex flex-col items-center justify-center py-10 text-center">
           <Trophy size={48} className="mb-4 text-bordo" />
@@ -94,11 +128,36 @@ const TakeQuizModal = ({ quizId, onClose }) => {
           <p className="text-sm text-[var(--muted-foreground)] mt-2">
             {t('quizzes.correctCount', { correct, count: questions.length })}
           </p>
+          {pending > 0 && (
+            <p className="text-sm text-amber-500 mt-2">{t('quizzes.pendingReview', { count: pending })}</p>
+          )}
+          <button
+            type="button"
+            onClick={() => setShowAnswers(true)}
+            className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
+          >
+            <Eye size={16} />
+            {t('quizzes.myAnswers')}
+          </button>
         </div>
       );
     }
-    if (questions.length === 0) {
+    if (!quiz.questionCount) {
       return <p className="text-center py-12 text-[var(--muted-foreground)]">{t('quizzes.noQuestions')}</p>;
+    }
+    if (!session) {
+      return startFailed
+        ? <p className="text-center py-12 text-[var(--muted-foreground)]">{t('common.error')}</p>
+        : <div className="flex justify-center py-12"><Spinner /></div>;
+    }
+    if (timeUp) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 text-center text-[var(--muted-foreground)]">
+          <Clock size={40} className="mb-3 text-bordo" />
+          <p>{t('quizzes.timeUp')}</p>
+          {isSubmitting && <Spinner size="sm" className="mt-4" />}
+        </div>
+      );
     }
     return (
       <div className="space-y-5">
@@ -168,7 +227,7 @@ const TakeQuizModal = ({ quizId, onClose }) => {
           <div className="flex items-center justify-between gap-4 p-5 border-b border-[var(--border)]">
             <div className="min-w-0">
               <h2 className="text-lg font-bold text-[var(--foreground)] truncate">{quiz?.title}</h2>
-              {inProgress && (
+              {inProgress && deadline !== null && (
                 <p className="flex items-center gap-2 text-sm text-[var(--muted-foreground)] mt-1">
                   <Clock size={14} className="text-bordo" />
                   {t('quizzes.timeLeft')}:{' '}
@@ -210,6 +269,9 @@ const TakeQuizModal = ({ quizId, onClose }) => {
           </div>
         </motion.div>
       </div>
+      {showAnswers && user?._id && (
+        <AnswerReviewModal kind="quiz" id={quizId} studentId={user._id} onClose={() => setShowAnswers(false)} />
+      )}
     </AnimatePresence>
   );
 };

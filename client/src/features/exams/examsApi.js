@@ -57,6 +57,19 @@ export const examsApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Exam', id }, 'Exam'],
     }),
+    getExamResultAnswers: builder.query({
+      query: ({ id, studentId }) => `/exams/${id}/results/${studentId}`,
+      providesTags: (result, error, { id, studentId }) => [{ type: 'Exam', id: `${id}:${studentId}` }],
+      transformResponse: (response) => response.data,
+    }),
+    gradeExamResult: builder.mutation({
+      query: ({ id, studentId, grades }) => ({
+        url: `/exams/${id}/results/${studentId}/grades`,
+        method: 'PUT',
+        body: { grades },
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Exam', id }, 'Exam'],
+    }),
   }),
 });
 
@@ -68,4 +81,6 @@ export const {
   useDeleteExamMutation,
   useAddExamResultsMutation,
   useSubmitStudentExamMutation,
+  useGetExamResultAnswersQuery,
+  useGradeExamResultMutation,
 } = examsApi;
