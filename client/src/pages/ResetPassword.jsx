@@ -1,4 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -7,9 +8,10 @@ import { Lock, Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../components/common/Spinner';
 import PasswordInput from '../components/common/PasswordInput';
+import { PASSWORD_REGEX, useResetPasswordMutation } from '../features/auth/authApi';
 
 const resetPasswordSchema = (t) => z.object({
-  password: z.string().min(6, t('auth.passwordShort')),
+  password: z.string().regex(PASSWORD_REGEX, t('auth.passwordRule')),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: t('auth.passwordsDoNotMatch'),
@@ -20,7 +22,8 @@ const ResetPassword = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { token } = useParams();
-  const isLoading = false;
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const [linkInvalid, setLinkInvalid] = useState(false);
 
   const {
     register,
@@ -31,10 +34,21 @@ const ResetPassword = () => {
   });
 
   const onSubmit = async (data) => {
-    // This will be connected to the backend later
-    console.log(data, token);
-    toast.success(t('auth.passwordResetSuccess'));
-    navigate('/login');
+    try {
+      await resetPassword({ token, password: data.password }).unwrap();
+      toast.success(t('auth.passwordResetSuccess'));
+      navigate('/login');
+    } catch (err) {
+      // The password rule is checked above, so a 400 here means the link is invalid or expired.
+      if (err?.status === 400) {
+        setLinkInvalid(true);
+        toast.error(t('resetPassword.invalidLink'));
+      } else if (err?.status === 429) {
+        toast.error(t('auth.tooManyRequests'));
+      } else {
+        toast.error(t('resetPassword.error'));
+      }
+    }
   };
 
   return (
@@ -48,6 +62,15 @@ const ResetPassword = () => {
           <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('auth.newPassword')}</h1>
           <p className="text-[var(--muted-foreground)] text-sm">{t('auth.enterNewPassword')}</p>
         </div>
+
+        {linkInvalid && (
+          <div role="alert" className="mb-6 rounded-lg border border-bordo/40 bg-bordo/10 p-4 text-sm text-[var(--foreground)]">
+            <p>{t('resetPassword.invalidLink')}</p>
+            <Link to="/forgot-password" className="mt-2 inline-block font-semibold text-bordo hover:underline">
+              {t('resetPassword.requestNewLink')}
+            </Link>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
