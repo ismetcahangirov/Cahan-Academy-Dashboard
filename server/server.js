@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import rateLimit from 'express-rate-limit';
+import { applyRateLimits } from './middleware/rateLimiters.js';
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
@@ -111,13 +111,9 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // ------------------------------------------------------------
-// Rate limiting
+// Rate limiting (also sets `trust proxy` for Vercel)
 // ------------------------------------------------------------
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP
-});
-app.use('/api', limiter);
+applyRateLimits(app);
 
 // ------------------------------------------------------------
 // API routes (all prefixed with /api)
