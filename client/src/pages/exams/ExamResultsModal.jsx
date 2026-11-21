@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, Save } from 'lucide-react';
 import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
@@ -10,37 +10,39 @@ import Spinner from '../../components/common/Spinner';
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [resultsData, setResultsData] = useState({});
+  const [edits, setEdits] = useState({});
 
-  const { data: examResponse, isLoading: isLoadingExam } = useGetExamByIdQuery(exam?._id, {
+  // transformResponse already unwraps `data`
+  const { data: examDetails, isLoading: isLoadingExam } = useGetExamByIdQuery(exam?._id, {
     skip: !exam?._id || !isOpen,
   });
-  
+
   const [addExamResults, { isLoading: isSubmitting }] = useAddExamResultsMutation();
 
-  const examDetails = examResponse?.data;
   const students = examDetails?.group?.students || [];
 
-  // Initialize local state with existing results
-  useEffect(() => {
-    if (examDetails?.results) {
-      const initialData = {};
-      examDetails.results.forEach(result => {
-        initialData[result.student._id || result.student] = {
-          score: result.score.toString(),
-          feedback: result.feedback || ''
-        };
-      });
-      setResultsData(initialData);
-    }
+  // Saved results, overlaid with the teacher's unsaved edits
+  const savedData = useMemo(() => {
+    const initialData = {};
+    (examDetails?.results || []).forEach(result => {
+      if (!result.student) return;
+      initialData[result.student._id || result.student] = {
+        score: result.score.toString(),
+        feedback: result.feedback || ''
+      };
+    });
+    return initialData;
   }, [examDetails]);
+  const resultsData = { ...savedData, ...edits };
 
   const handleScoreChange = (studentId, value) => {
     // Only allow numbers 0-100
     if (value === '' || (Number(value) >= 0 && Number(value) <= 100)) {
-      setResultsData(prev => ({
+      setEdits(prev => ({
         ...prev,
         [studentId]: {
+          feedback: '',
+          ...savedData[studentId],
           ...prev[studentId],
           score: value
         }
@@ -49,9 +51,11 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   };
 
   const handleFeedbackChange = (studentId, value) => {
-    setResultsData(prev => ({
+    setEdits(prev => ({
       ...prev,
       [studentId]: {
+        score: '',
+        ...savedData[studentId],
         ...prev[studentId],
         feedback: value
       }
@@ -60,8 +64,9 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
 
   const handleSubmit = async () => {
     try {
-      const formattedResults = Object.entries(resultsData)
-        .filter(([_, data]) => data.score !== '' && data.score !== undefined)
+      // Only send rows the teacher changed, so untouched results do not re-notify students
+      const formattedResults = Object.entries(edits)
+        .filter(([, data]) => data.score !== '' && data.score !== undefined)
         .map(([studentId, data]) => ({
           student: studentId,
           score: Number(data.score),
@@ -215,7 +220,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               onClick={onClose}
               className="px-6 py-2.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-xl transition-colors font-medium"
             >
-              {t('common.close')}
+              {t('exams.close')}
             </button>
             <button
               onClick={handleSubmit}
@@ -227,7 +232,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
               ) : (
                 <>
                   <Save size={18} />
-                  <span>{t('common.saveBtn')}</span>
+                  <span>{t('common.save')}</span>
                 </>
               )}
             </button>

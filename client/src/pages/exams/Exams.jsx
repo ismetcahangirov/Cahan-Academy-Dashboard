@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Plus, Search, MoreVertical, Clock, 
+  Plus, Search, Clock,
   Users, HelpCircle, PenTool, Calendar
 } from 'lucide-react';
 import { 
@@ -20,8 +20,9 @@ import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 
 const Exams = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = useSelector(selectCurrentUser);
+  const [now] = useState(() => Date.now());
   const [selectedGroup, setSelectedGroup] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -146,13 +147,13 @@ const Exams = () => {
                     onClick={() => handleEdit(exam)}
                     className="p-1.5 bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--foreground)]/10 rounded-lg transition-colors text-sm"
                   >
-                    {t('common.edit') || 'Redaktə et'}
+                    {t('common.edit')}
                   </button>
                   <button 
                     onClick={() => handleDelete(exam._id)}
                     className="p-1.5 bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors text-sm"
                   >
-                    {t('common.delete') || 'Sil'}
+                    {t('common.delete')}
                   </button>
                 </div>
               )}
@@ -170,7 +171,7 @@ const Exams = () => {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]/80">
                   <Calendar size={16} className="text-bordo" />
-                  <span>{t('schedule.date')}: {new Date(exam.date).toLocaleDateString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US')} {new Date(exam.date).toLocaleTimeString(t('common.locale') === 'az' ? 'az-AZ' : t('common.locale') === 'ru' ? 'ru-RU' : 'en-US', {hour: '2-digit', minute:'2-digit'})}</span>
+                  <span>{t('schedule.date')}: {new Date(exam.date).toLocaleDateString(i18n.language)} {new Date(exam.date).toLocaleTimeString(i18n.language, {hour: '2-digit', minute:'2-digit'})}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]/80">
                   <Clock size={16} className="text-bordo" />
@@ -190,13 +191,17 @@ const Exams = () => {
                         <PenTool size={16} />
                         {t('exams.result')}: {exam.results[0].score}/100
                       </div>
-                    ) : (
-                      <Link 
+                    ) : exam.questionCount > 0 && now <= new Date(exam.date).getTime() + exam.duration * 60000 ? (
+                      <Link
                         to={`/exams/${exam._id}/take`}
                         className="w-full text-center py-2 bg-bordo text-white rounded-lg transition-colors text-sm font-medium hover:bg-bordo/90"
                       >
-                        {t('exams.takeExam') || 'İmtahana başla'}
+                        {t('exams.takeExam')}
                       </Link>
+                    ) : (
+                      <div className="w-full text-center py-2 text-sm text-[var(--muted-foreground)]">
+                        {t('exams.noResult')}
+                      </div>
                     )}
                   </div>
                 ) : (

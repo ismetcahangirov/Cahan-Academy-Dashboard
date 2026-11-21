@@ -15,6 +15,8 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 import QuizModal from './QuizModal';
+import TakeQuizModal from './TakeQuizModal';
+import QuizResultsModal from './QuizResultsModal';
 import toast from 'react-hot-toast';
 
 // ─── Dropdown menu per quiz card ────────────────────────────────────────────
@@ -75,6 +77,8 @@ const Quizzes = () => {
   const [searchTerm, setSearchTerm]       = useState('');
   const [modalOpen, setModalOpen]         = useState(false);
   const [editingQuiz, setEditingQuiz]     = useState(null);
+  const [takingQuizId, setTakingQuizId]   = useState(null);
+  const [resultsQuizId, setResultsQuizId] = useState(null);
 
   const { data: quizzesResponse, isLoading } = useGetQuizzesQuery(selectedGroup || undefined);
   const { data: groupsResponse }             = useGetGroupsQuery();
@@ -212,10 +216,26 @@ const Quizzes = () => {
               {/* Card Footer */}
               <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between">
                 {user.role === 'student' ? (
-                  <button className="w-full flex items-center justify-center gap-2 py-2 bg-bordo/20 hover:bg-bordo/40 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium">
-                    <Trophy size={16} />
-                    <span>{t('quizzes.startNow')}</span>
-                  </button>
+                  quiz.attempts?.length > 0 ? (
+                    <button
+                      onClick={() => setTakingQuizId(quiz._id)}
+                      className="w-full flex items-center justify-center gap-2 py-2 bg-green-500/10 border border-green-500/20 text-green-500 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <Trophy size={16} />
+                      <span>
+                        {t('quizzes.yourResult')}:{' '}
+                        {t('quizzes.scoreOf', { score: quiz.attempts[0].score, total: quiz.attempts[0].totalPoints })}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setTakingQuizId(quiz._id)}
+                      className="w-full flex items-center justify-center gap-2 py-2 bg-bordo/20 hover:bg-bordo/40 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <Trophy size={16} />
+                      <span>{t('quizzes.startNow')}</span>
+                    </button>
+                  )
                 ) : (
                   <div className="flex items-center justify-between w-full">
                     <div className="text-sm text-[var(--muted-foreground)]">
@@ -223,7 +243,10 @@ const Quizzes = () => {
                         {t('quizzes.attemptsCount', { count: quiz.attempts?.length || 0 })}
                       </span>
                     </div>
-                    <button className="px-4 py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium">
+                    <button
+                      onClick={() => setResultsQuizId(quiz._id)}
+                      className="px-4 py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
+                    >
                       {t('quizzes.resultsBtn')}
                     </button>
                   </div>
@@ -247,6 +270,14 @@ const Quizzes = () => {
         onClose={() => { setModalOpen(false); setEditingQuiz(null); }}
         quiz={editingQuiz}
       />
+
+      {takingQuizId && (
+        <TakeQuizModal quizId={takingQuizId} onClose={() => setTakingQuizId(null)} />
+      )}
+
+      {resultsQuizId && (
+        <QuizResultsModal quizId={resultsQuizId} onClose={() => setResultsQuizId(null)} />
+      )}
     </div>
   );
 };

@@ -1,30 +1,59 @@
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import Exam from '../models/Exam.js';
 import Group from '../models/Group.js';
+import { gradeAnswers, mergeQuestions, stripCorrectAnswers } from '../utils/grading.js';
+import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
+import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
+
+// Late network requests are still accepted this long after the exam ends.
+const SUBMIT_GRACE_MS = 2 * 60 * 1000;
+
+const idOf = (value) => (value && value._id ? value._id : value)?.toString();
+
+const getExamWindow = (exam) => {
+  const start = new Date(exam.date).getTime();
+  return { start, end: start + (Number(exam.duration) || 0) * 60 * 1000 };
+};
+
+// Student view: only own result, no correct answers, no questions before the start time.
+const toStudentExam = (exam, userId, now = Date.now()) => {
+  const obj = typeof exam.toObject === 'function' ? exam.toObject() : exam;
+  const uid = userId.toString();
+  obj.results = (obj.results || []).filter((r) => idOf(r.student) === uid);
+  const questions = obj.questions || [];
+  obj.questionCount = questions.length;
+  obj.questions = getExamWindow(obj).start <= now ? stripCorrectAnswers(questions) : [];
+  if (obj.group && typeof obj.group === 'object') delete obj.group.students;
+  return obj;
+};
+
+// Admin, or the teacher of the exam's group
+const canManageExam = async (user, exam) => {
+  if (user.role === 'admin') return true;
+  const group = exam.group?.teacher ? exam.group : await Group.findById(idOf(exam.group)).select('teacher');
+  return canManageGroup(user, group);
+};
+
+const rethrowAsBadRequest = (res, error) => {
+  if (error instanceof mongoose.Error.ValidationError) {
+    res.status(400);
+    throw new Error(Object.values(error.errors).map((e) => e.message).join(', '));
+  }
+  throw error;
+};
 
 // @desc    Get exams (filtered by group or teacher)
 // @route   GET /api/exams
 // @access  Private
 export const getExams = asyncHandler(async (req, res) => {
   const { groupId, teacherId } = req.query;
+  const query = {};
 
-  let query = {};
-
-  if (req.user.role === 'student') {
-    // Tələbə yalnız öz daxil olduğu qrupların imtahanlarını görə bilər
-    const groups = await Group.find({ students: req.user._id }).select('_id');
-    const groupIds = groups.map((g) => g._id);
-    query.group = { $in: groupIds };
-  } else if (req.user.role === 'teacher') {
-    // Müəllim yalnız özünün təyin edildiyi imtahanları görə bilər (və ya öz qrupunun)
-    query.teacher = req.user._id;
-  }
-
-  // İstəyə görə filterlər (əgər admin və ya müəllim axtarırsa)
-  if (groupId && req.user.role !== 'student') {
-    query.group = groupId;
-  }
-  if (teacherId && req.user.role === 'admin') {
+  // Own groups only; groupId can narrow but never widen that
+  const groupFilter = await buildGroupFilter(req.user, groupId);
+  if (groupFilter !== undefined) query.group = groupFilter;
+  if (teacherId && req.user.role === 'admin' && mongoose.isValidObjectId(teacherId)) {
     query.teacher = teacherId;
   }
 
@@ -33,18 +62,11 @@ export const getExams = asyncHandler(async (req, res) => {
     .populate('teacher', 'name avatar')
     .sort({ date: 1 });
 
-  // Tələbədirsə, yalnız öz nəticəsini qaytar
   if (req.user.role === 'student') {
-    const examsForStudent = exams.map(exam => {
-      const examObj = exam.toObject();
-      examObj.results = examObj.results.filter(
-        r => r.student.toString() === req.user._id.toString()
-      );
-      return examObj;
-    });
+    const now = Date.now();
     return res.status(200).json({
       success: true,
-      data: examsForStudent,
+      data: exams.map((exam) => toStudentExam(exam, req.user._id, now)),
     });
   }
 
@@ -59,8 +81,11 @@ export const getExams = asyncHandler(async (req, res) => {
 // @route   GET /api/exams/:id
 // @access  Private
 export const getExamById = asyncHandler(async (req, res) => {
+  const isStudent = req.user.role === 'student';
   const exam = await Exam.findById(req.params.id)
-    .populate('group', 'name students')
+    .populate(isStudent
+      ? { path: 'group', select: 'name' }
+      : { path: 'group', select: 'name teacher students', populate: { path: 'students', select: 'name email avatar' } })
     .populate('teacher', 'name avatar')
     .populate('results.student', 'name email avatar');
 
@@ -69,10 +94,9 @@ export const getExamById = asyncHandler(async (req, res) => {
     throw new Error('İmtahan tapılmadı');
   }
 
-  // Tələbədirsə, o qrupda olub-olmadığını yoxla və yalnız öz nəticəsini göstər
-  if (req.user.role === 'student') {
+  if (isStudent) {
     const isStudentInGroup = await Group.exists({
-      _id: exam.group._id,
+      _id: idOf(exam.group),
       students: req.user._id
     });
 
@@ -81,24 +105,13 @@ export const getExamById = asyncHandler(async (req, res) => {
       throw new Error('Bu imtahanı görmək icazəniz yoxdur');
     }
 
-    const examObj = exam.toObject();
-    examObj.results = examObj.results.filter(
-      r => r.student._id.toString() === req.user._id.toString()
-    );
-    if (examObj.questions && examObj.questions.length > 0) {
-      examObj.questions = examObj.questions.map(q => {
-        const { correctAnswer, ...rest } = q;
-        return rest;
-      });
-    }
     return res.status(200).json({
       success: true,
-      data: examObj,
+      data: toStudentExam(exam, req.user._id),
     });
   }
 
-  // Müəllimdirsə, yalnız özünün təyin etdiyi imtahanları görə bilər (və ya admin)
-  if (req.user.role === 'teacher' && exam.teacher._id.toString() !== req.user._id.toString()) {
+  if (!(await canManageExam(req.user, exam))) {
     res.status(403);
     throw new Error('Bu imtahanı görmək icazəniz yoxdur');
   }
@@ -115,29 +128,40 @@ export const getExamById = asyncHandler(async (req, res) => {
 export const createExam = asyncHandler(async (req, res) => {
   const { title, description, group, date, duration, type, questions } = req.body;
 
-  // Qrupu tap
-  const targetGroup = await Group.findById(group);
+  const targetGroup = mongoose.isValidObjectId(group) ? await Group.findById(group) : null;
   if (!targetGroup) {
     res.status(404);
     throw new Error('Qrup tapılmadı');
   }
 
-  // Teacher validation
-  if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+  if (!canManageGroup(req.user, targetGroup)) {
     res.status(403);
     throw new Error('Siz yalnız öz qruplarınıza imtahan əlavə edə bilərsiniz');
   }
 
-  const exam = await Exam.create({
-    title,
-    description,
-    group,
-    teacher: req.user._id,
-    date,
-    duration,
-    type,
-    questions: questions || [],
-    results: [],
+  let exam;
+  try {
+    exam = await Exam.create({
+      title,
+      description,
+      group,
+      teacher: req.user._id,
+      date,
+      duration,
+      type,
+      questions: mergeQuestions([], questions) || [],
+      results: [],
+    });
+  } catch (error) {
+    rethrowAsBadRequest(res, error);
+  }
+
+  await notifyGroupStudents(targetGroup._id, {
+    sender: req.user._id,
+    type: 'other',
+    title: 'Yeni imtahan',
+    message: `"${exam.title}" imtahanı ${new Date(exam.date).toLocaleString('az-AZ', { timeZone: 'Asia/Baku' })} tarixinə təyin edildi.`,
+    link: '/exams',
   });
 
   res.status(201).json({
@@ -150,23 +174,45 @@ export const createExam = asyncHandler(async (req, res) => {
 // @route   PUT /api/exams/:id
 // @access  Private/Teacher, Admin
 export const updateExam = asyncHandler(async (req, res) => {
-  let exam = await Exam.findById(req.params.id);
+  const exam = await Exam.findById(req.params.id);
 
   if (!exam) {
     res.status(404);
     throw new Error('İmtahan tapılmadı');
   }
 
-  // Teacher validation
-  if (req.user.role === 'teacher' && exam.teacher.toString() !== req.user._id.toString()) {
+  if (!(await canManageExam(req.user, exam))) {
     res.status(403);
     throw new Error('Bu imtahanı yeniləmək icazəniz yoxdur');
   }
 
-  exam = await Exam.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const { title, description, group, date, duration, type, questions } = req.body;
+
+  if (group !== undefined && String(group) !== exam.group.toString()) {
+    const targetGroup = mongoose.isValidObjectId(group) ? await Group.findById(group) : null;
+    if (!targetGroup) {
+      res.status(404);
+      throw new Error('Qrup tapılmadı');
+    }
+    if (!canManageGroup(req.user, targetGroup)) {
+      res.status(403);
+      throw new Error('Siz yalnız öz qruplarınıza imtahan əlavə edə bilərsiniz');
+    }
+    exam.group = targetGroup._id;
+  }
+
+  if (title !== undefined) exam.title = title;
+  if (description !== undefined) exam.description = description;
+  if (date !== undefined) exam.date = date;
+  if (duration !== undefined) exam.duration = duration;
+  if (type !== undefined) exam.type = type;
+  if (questions !== undefined) exam.questions = mergeQuestions(exam.questions, questions) || [];
+
+  try {
+    await exam.save();
+  } catch (error) {
+    rethrowAsBadRequest(res, error);
+  }
 
   res.status(200).json({
     success: true,
@@ -185,8 +231,7 @@ export const deleteExam = asyncHandler(async (req, res) => {
     throw new Error('İmtahan tapılmadı');
   }
 
-  // Teacher validation
-  if (req.user.role === 'teacher' && exam.teacher.toString() !== req.user._id.toString()) {
+  if (!(await canManageExam(req.user, exam))) {
     res.status(403);
     throw new Error('Bu imtahanı silmək icazəniz yoxdur');
   }
@@ -203,7 +248,7 @@ export const deleteExam = asyncHandler(async (req, res) => {
 // @route   POST /api/exams/:id/results
 // @access  Private/Teacher, Admin
 export const addExamResults = asyncHandler(async (req, res) => {
-  const { results } = req.body; // results should be an array of { student, score, feedback }
+  const { results } = req.body; // [{ student, score, feedback }]
 
   const exam = await Exam.findById(req.params.id);
 
@@ -212,7 +257,7 @@ export const addExamResults = asyncHandler(async (req, res) => {
     throw new Error('İmtahan tapılmadı');
   }
 
-  if (req.user.role === 'teacher' && exam.teacher.toString() !== req.user._id.toString()) {
+  if (!(await canManageExam(req.user, exam))) {
     res.status(403);
     throw new Error('Bu imtahana nəticə əlavə etmək icazəniz yoxdur');
   }
@@ -222,27 +267,51 @@ export const addExamResults = asyncHandler(async (req, res) => {
     throw new Error('Nəticələr siyahı (array) formatında olmalıdır');
   }
 
-  // Mövcud nəticələri tapıb yeniləmək, yoxdursa əlavə etmək
-  results.forEach((newResult) => {
-    const existingIndex = exam.results.findIndex(
-      (r) => r.student.toString() === newResult.student
-    );
+  const group = await Group.findById(exam.group).select('students');
+  const groupStudents = new Set((group?.students || []).map((id) => id.toString()));
 
-    if (existingIndex !== -1) {
-      exam.results[existingIndex].score = newResult.score;
-      if (newResult.feedback) {
-        exam.results[existingIndex].feedback = newResult.feedback;
-      }
+  for (const entry of results) {
+    if (!entry || !groupStudents.has(String(entry.student))) {
+      res.status(400);
+      throw new Error('Tələbə bu imtahanın qrupunda deyil');
+    }
+    const score = Number(entry.score);
+    if (entry.score === '' || entry.score === null || !Number.isFinite(score) || score < 0 || score > 100) {
+      res.status(400);
+      throw new Error('Bal 0 ilə 100 arasında olmalıdır');
+    }
+  }
+
+  const changedStudents = [];
+  results.forEach((newResult) => {
+    const studentId = String(newResult.student);
+    const score = Number(newResult.score);
+    const existing = exam.results.find((r) => r.student.toString() === studentId);
+
+    if (existing) {
+      const feedbackChanged = newResult.feedback !== undefined && existing.feedback !== newResult.feedback;
+      if (existing.score !== score || feedbackChanged) changedStudents.push(studentId);
+      existing.score = score;
+      if (newResult.feedback !== undefined) existing.feedback = newResult.feedback;
     } else {
+      changedStudents.push(studentId);
       exam.results.push({
-        student: newResult.student,
-        score: newResult.score,
+        student: studentId,
+        score,
         feedback: newResult.feedback
       });
     }
   });
 
   await exam.save();
+
+  await notifyStudents(changedStudents, {
+    sender: req.user._id,
+    type: 'other',
+    title: 'İmtahan nəticəsi',
+    message: `"${exam.title}" imtahanının nəticəsi açıqlandı.`,
+    link: '/exams',
+  });
 
   res.status(200).json({
     success: true,
@@ -272,41 +341,53 @@ export const submitStudentExam = asyncHandler(async (req, res) => {
     throw new Error('Bu imtahana daxil olmaq icazəniz yoxdur');
   }
 
-  const existingResult = exam.results.find(r => r.student.toString() === req.user._id.toString());
-  if (existingResult) {
+  if (!exam.questions || exam.questions.length === 0) {
+    res.status(400);
+    throw new Error('Bu imtahan onlayn keçirilmir');
+  }
+
+  const now = Date.now();
+  const { start, end } = getExamWindow(exam);
+  if (now < start) {
+    res.status(400);
+    throw new Error('İmtahan hələ başlamayıb');
+  }
+  if (now > end + SUBMIT_GRACE_MS) {
+    res.status(400);
+    throw new Error('İmtahan vaxtı bitib');
+  }
+
+  const graded = gradeAnswers(exam.questions, answers);
+  const normalizedScore = graded.totalPoints > 0
+    ? Math.round((graded.score / graded.totalPoints) * 100)
+    : 0;
+
+  // Atomic guard against double submission (two tabs, double click).
+  const update = await Exam.updateOne(
+    { _id: exam._id, 'results.student': { $ne: req.user._id } },
+    {
+      $push: {
+        results: {
+          student: req.user._id,
+          score: normalizedScore,
+          feedback: '',
+          answers: graded.answers,
+        },
+      },
+    }
+  );
+
+  if (update.modifiedCount === 0) {
     res.status(400);
     throw new Error('Siz artıq bu imtahanı vermisiniz');
   }
 
-  let totalScore = 0;
-  let maxPossibleScore = 0;
-
-  exam.questions.forEach((question) => {
-    const pts = question.points || 1;
-    maxPossibleScore += pts;
-    
-    if (question.type === 'multiple-choice' || question.type === 'true-false') {
-      const studentAnswer = answers && answers[question._id.toString()];
-      if (studentAnswer && studentAnswer === question.correctAnswer) {
-        totalScore += pts;
-      }
-    }
-  });
-
-  const normalizedScore = maxPossibleScore > 0 
-    ? Math.round((totalScore / maxPossibleScore) * 100) 
-    : 0;
-
-  exam.results.push({
-    student: req.user._id,
-    score: normalizedScore,
-    feedback: ''
-  });
-
-  await exam.save();
-
   res.status(200).json({
     success: true,
-    data: { score: normalizedScore }
+    data: {
+      score: normalizedScore,
+      correctPoints: graded.score,
+      totalPoints: graded.totalPoints,
+    }
   });
 });

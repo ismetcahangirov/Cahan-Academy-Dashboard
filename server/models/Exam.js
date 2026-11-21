@@ -16,6 +16,14 @@ const examResultSchema = new mongoose.Schema(
     feedback: {
       type: String,
     },
+    // Filled when the student takes the exam online
+    answers: [
+      {
+        questionId: mongoose.Schema.Types.ObjectId,
+        selectedOption: String,
+        isCorrect: Boolean,
+      },
+    ],
   },
   {
     timestamps: true,
@@ -64,7 +72,7 @@ const examSchema = new mongoose.Schema(
           required: true
         },
         options: [String], // for multiple-choice
-        correctAnswer: String, // for auto-grading if implemented later
+        correctAnswer: String, // option index ('0', '1', ...) or 'true' / 'false'
         points: { type: Number, default: 1 }
       }
     ],

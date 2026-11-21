@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Clock, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -7,17 +7,84 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Spinner from '../../components/common/Spinner';
 
+const formatRemaining = (ms) => {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+};
+
 const TakeExam = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  
-  const { data: examResponse, isLoading, isError } = useGetExamByIdQuery(id);
+  const { t, i18n } = useTranslation();
+
+  const { data: exam, isLoading, isError, refetch } = useGetExamByIdQuery(id);
   const [submitExam, { isLoading: isSubmitting }] = useSubmitStudentExamMutation();
-  
+
   const [answers, setAnswers] = useState({});
-  
-  const exam = examResponse?.data || examResponse;
+  const [now, setNow] = useState(() => Date.now());
+  const submittedRef = useRef(false);
+
+  const start = exam ? new Date(exam.date).getTime() : 0;
+  const end = exam ? start + (Number(exam.duration) || 0) * 60 * 1000 : 0;
+  const hasResult = Boolean(exam?.results?.length);
+  const questions = exam?.questions || [];
+  const isActive = Boolean(exam) && !hasResult && now >= start && now <= end;
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Questions are only sent once the exam has started.
+  const startedWithoutQuestions = Boolean(exam) && now >= start && now <= end
+    && !hasResult && questions.length === 0 && exam.questionCount > 0;
+  useEffect(() => {
+    if (startedWithoutQuestions) refetch();
+  }, [startedWithoutQuestions, refetch]);
+
+  const submit = useCallback(async () => {
+    if (submittedRef.current) return;
+    submittedRef.current = true;
+    try {
+      await submitExam({ id, data: { answers } }).unwrap();
+      toast.success(t('exams.submitSuccess'));
+      navigate('/exams');
+    } catch (error) {
+      submittedRef.current = false;
+      toast.error(error.data?.message || t('common.error'));
+    }
+  }, [answers, id, navigate, submitExam, t]);
+
+  // Auto-submit once when the time is up (the server accepts a short grace period).
+  const autoSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (exam && questions.length > 0 && !hasResult && now > end && now - end < 60 * 1000
+      && !autoSubmittedRef.current) {
+      autoSubmittedRef.current = true;
+      submit();
+    }
+  }, [exam, questions.length, hasResult, now, end, submit]);
+
+  const handleSubmit = () => {
+    const answered = Object.values(answers).filter((v) => String(v).trim() !== '').length;
+    if (answered < questions.length && !window.confirm(t('exams.incompleteWarning'))) {
+      return;
+    }
+    submit();
+  };
+
+  const setAnswer = (questionId, value) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const formatDateTime = (value) =>
+    new Date(value).toLocaleString(i18n.language, {
+      day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit',
+    });
 
   if (isLoading) {
     return (
@@ -27,73 +94,59 @@ const TakeExam = () => {
     );
   }
 
+  const backButton = (
+    <button
+      onClick={() => navigate('/exams')}
+      className="mt-6 px-4 py-2 bg-[var(--muted)] text-[var(--foreground)] rounded-lg hover:bg-[var(--muted)]/80"
+    >
+      {t('exams.goBack')}
+    </button>
+  );
+
+  const renderState = (icon, message, extra = null) => (
+    <div className="flex flex-col items-center justify-center h-64 text-[var(--muted-foreground)] text-center">
+      {icon}
+      <p className="text-lg">{message}</p>
+      {extra}
+      {backButton}
+    </div>
+  );
+
   if (isError || !exam) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-[var(--muted-foreground)]">
-        <AlertCircle size={48} className="mb-4 text-bordo opacity-50" />
-        <p className="text-lg">{t('exams.notFound') || 'İmtahan tapılmadı'}</p>
-        <button 
-          onClick={() => navigate('/exams')}
-          className="mt-4 px-4 py-2 bg-[var(--muted)] text-[var(--foreground)] rounded-lg"
-        >
-          {t('common.goBack') || 'Geri qayıt'}
-        </button>
-      </div>
+    return renderState(<AlertCircle size={48} className="mb-4 text-bordo opacity-50" />, t('exams.notFound'));
+  }
+
+  if (hasResult) {
+    return renderState(
+      <CheckCircle size={48} className="mb-4 text-green-500 opacity-50" />,
+      t('exams.alreadySubmitted'),
+      <p className="mt-2 text-xl font-bold text-[var(--foreground)]">
+        {t('exams.yourScore', { score: exam.results[0].score })}
+      </p>,
     );
   }
 
-  // If already submitted, prevent taking again (though Exam.jsx also hides the button, it's good to check)
-  if (exam.results && exam.results.length > 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-[var(--muted-foreground)]">
-        <CheckCircle size={48} className="mb-4 text-green-500 opacity-50" />
-        <p className="text-lg">{t('exams.alreadySubmitted') || 'Siz artıq bu imtahanı vermisiniz.'}</p>
-        <p className="mt-2 text-xl font-bold text-[var(--foreground)]">Nəticə: {exam.results[0].score}/100</p>
-        <button 
-          onClick={() => navigate('/exams')}
-          className="mt-6 px-4 py-2 bg-[var(--muted)] text-[var(--foreground)] rounded-lg hover:bg-[var(--muted)]/80"
-        >
-          {t('common.goBack') || 'Geri qayıt'}
-        </button>
-      </div>
+  if (!exam.questionCount) {
+    return renderState(<AlertCircle size={48} className="mb-4 text-bordo opacity-50" />, t('exams.notOnline'));
+  }
+
+  if (now < start) {
+    return renderState(
+      <Clock size={48} className="mb-4 text-bordo opacity-50" />,
+      t('exams.notStarted', { date: formatDateTime(exam.date) }),
     );
   }
 
-  const handleOptionSelect = (questionId, optionIndex) => {
-    setAnswers(prev => ({
-      ...prev,
-      [questionId]: optionIndex
-    }));
-  };
-
-  const handleSubmit = async () => {
-    // Check if all questions are answered
-    if (Object.keys(answers).length < exam.questions.length) {
-      if (!window.confirm(t('exams.incompleteWarning') || 'Bütün suallara cavab verməmisiniz. Yenə də bitirmək istəyirsiniz?')) {
-        return;
-      }
-    }
-
-    try {
-      const formattedAnswers = Object.entries(answers).map(([questionId, selectedOption]) => ({
-        questionId,
-        selectedOption
-      }));
-
-      await submitExam({ id, data: { answers: formattedAnswers } }).unwrap();
-      toast.success(t('exams.submitSuccess') || 'İmtahan uğurla bitirildi');
-      navigate('/exams');
-    } catch (error) {
-      toast.error(error.data?.message || t('common.error'));
-    }
-  };
+  if (!isActive && now > end && !isSubmitting) {
+    return renderState(<Clock size={48} className="mb-4 text-bordo opacity-50" />, t('exams.ended'));
+  }
 
   return (
     <div className="max-w-4xl mx-auto pb-20">
       {/* Header */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 mb-6 shadow-sm">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 mb-6 shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-4 mb-4">
-          <button 
+          <button
             onClick={() => navigate('/exams')}
             className="p-2 hover:bg-[var(--muted)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] rounded-lg transition-colors"
           >
@@ -101,54 +154,73 @@ const TakeExam = () => {
           </button>
           <h1 className="text-2xl font-bold text-[var(--foreground)]">{exam.title}</h1>
         </div>
-        <div className="flex items-center gap-6 text-sm text-[var(--muted-foreground)]">
+        <div className="flex flex-wrap items-center gap-6 text-sm text-[var(--muted-foreground)]">
           <div className="flex items-center gap-2">
             <Clock size={16} className="text-bordo" />
-            <span>{exam.duration} {t('exams.minute') || 'dəqiqə'}</span>
+            <span>
+              {t('exams.timeLeft')}:{' '}
+              <span className="font-semibold text-[var(--foreground)] tabular-nums">{formatRemaining(end - now)}</span>
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle size={16} className="text-bordo" />
-            <span>{exam.questions?.length || 0} {t('exams.questionsCount') || 'sual'}</span>
+            <span>{t('exams.questionsCount', { count: questions.length })}</span>
           </div>
         </div>
       </div>
 
       {/* Questions */}
       <div className="space-y-6">
-        {exam.questions?.map((q, i) => (
-          <motion.div 
-            key={q._id || i}
+        {questions.map((q, i) => (
+          <motion.div
+            key={q._id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-sm"
           >
-            <h3 className="text-lg font-medium text-[var(--foreground)] mb-4">
-              <span className="text-bordo font-bold mr-2">{i + 1}.</span> 
-              {q.question}
+            <h3 className="text-lg font-medium text-[var(--foreground)] mb-4 whitespace-pre-wrap">
+              <span className="text-bordo font-bold mr-2">{i + 1}.</span>
+              {q.text}
             </h3>
-            <div className="space-y-3">
-              {q.options?.map((opt, optIndex) => (
-                <label 
-                  key={optIndex}
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    answers[q._id] === optIndex 
-                      ? 'border-bordo bg-bordo/5 text-[var(--foreground)]' 
-                      : 'border-[var(--border)] bg-[var(--input)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
-                  }`}
-                >
-                  <input 
-                    type="radio"
-                    name={`question-${q._id}`}
-                    value={optIndex}
-                    checked={answers[q._id] === optIndex}
-                    onChange={() => handleOptionSelect(q._id, optIndex)}
-                    className="mt-1 w-4 h-4 text-bordo focus:ring-bordo border-[var(--border)]"
-                  />
-                  <span className="text-sm font-medium leading-relaxed">{opt}</span>
-                </label>
-              ))}
-            </div>
+
+            {q.type === 'open-ended' ? (
+              <textarea
+                value={answers[q._id] || ''}
+                onChange={(e) => setAnswer(q._id, e.target.value)}
+                rows={4}
+                placeholder={t('exams.answerPlaceholder')}
+                className="w-full px-4 py-3 bg-[var(--input)] border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors resize-y"
+              />
+            ) : (
+              <div className="space-y-3">
+                {(q.type === 'true-false'
+                  ? [{ value: 'true', label: t('exams.true') }, { value: 'false', label: t('exams.false') }]
+                  : (q.options || [])
+                    .map((opt, optIndex) => ({ value: String(optIndex), label: opt }))
+                    .filter((opt) => opt.label && opt.label.trim() !== '')
+                ).map((opt) => (
+                  <label
+                    key={opt.value}
+                    className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
+                      answers[q._id] === opt.value
+                        ? 'border-bordo bg-bordo/5 text-[var(--foreground)]'
+                        : 'border-[var(--border)] bg-[var(--input)] text-[var(--muted-foreground)] hover:bg-[var(--muted)]'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${q._id}`}
+                      value={opt.value}
+                      checked={answers[q._id] === opt.value}
+                      onChange={() => setAnswer(q._id, opt.value)}
+                      className="mt-1 w-4 h-4 text-bordo focus:ring-bordo border-[var(--border)]"
+                    />
+                    <span className="text-sm font-medium leading-relaxed">{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </motion.div>
         ))}
       </div>
@@ -160,8 +232,8 @@ const TakeExam = () => {
           disabled={isSubmitting}
           className="px-8 py-3 bg-bordo text-white rounded-xl font-medium hover:bg-bordo/90 transition-all shadow-md disabled:opacity-50 flex items-center gap-2"
         >
-          {isSubmitting && <Spinner className="w-4 h-4 border-2" />}
-          {t('exams.finishExam') || 'İmtahanı bitir'}
+          {isSubmitting && <Spinner size="sm" color="white" />}
+          {t('exams.finishExam')}
         </button>
       </div>
     </div>
