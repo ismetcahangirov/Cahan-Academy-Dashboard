@@ -108,7 +108,7 @@ function App() {
               <Route path="/homeworks" element={<Homeworks />} />
               <Route path="/classworks" element={<Classworks />} />
               <Route path="/exams" element={<Exams />} />
-              <Route path="/exams/:id/take" element={<RoleRoute roles={['student']}><TakeExam /></RoleRoute>} />
+              <Route element={<RoleRoute roles={['student']} redirectTo="/exams" />}><Route path="/exams/:id/take" element={<TakeExam />} /></Route>
               <Route path="/quizzes" element={<Quizzes />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/schedule" element={<Schedule />} />

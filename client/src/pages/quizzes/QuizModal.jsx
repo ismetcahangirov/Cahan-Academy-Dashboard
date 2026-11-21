@@ -79,6 +79,7 @@ const QuizModal = ({ isOpen, onClose, quiz }) => {
         questions:
           quiz.questions?.map((q) => ({
             ...q,
+            correctAnswer: q.correctAnswer ?? '',
             points: q.points?.toString() || '1',
           })) || [],
       });
@@ -101,12 +102,13 @@ const QuizModal = ({ isOpen, onClose, quiz }) => {
         description: data.description,
         group: data.group,
         timeLimit: Number(data.timeLimit),
-        questions: (data.questions || []).map(q => ({
+        questions: (data.questions || []).map((q, i) => ({
+          _id: fields[i]?._id,
           text: q.text,
           type: q.type,
-          options: q.options,
-          correctAnswer: String(q.correctAnswer),
-          points: Number(q.points)
+          options: q.options || [],
+          correctAnswer: q.correctAnswer ?? '',
+          points: Number(q.points) || 1,
         })),
       };
 

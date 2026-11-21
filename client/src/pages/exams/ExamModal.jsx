@@ -10,6 +10,7 @@ import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
+import { format } from 'date-fns';
 
 const questionSchema = z.object({
   text: z.string().min(1, 'Sual mətni boş ola bilməz'),
@@ -33,7 +34,7 @@ const examSchema = z.object({
 const ExamModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
   const isEditing = !!exam;
-  const { data: groupsResponse, isLoading: isLoadingGroups } = useGetGroupsQuery();
+  const { data: groupsResponse } = useGetGroupsQuery();
   const groups = groupsResponse?.data || [];
 
   const [createExam, { isLoading: isCreating }] = useCreateExamMutation();
@@ -75,13 +76,14 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
         title: exam.title,
         description: exam.description || '',
         group: typeof exam.group === 'object' ? exam.group._id : exam.group,
-        date: examDate.toISOString().split('T')[0],
-        time: examDate.toTimeString().slice(0, 5),
+        date: format(examDate, 'yyyy-MM-dd'),
+        time: format(examDate, 'HH:mm'),
         duration: exam.duration.toString(),
         type: exam.type,
         questions: exam.questions?.map(q => ({
           ...q,
-          points: q.points.toString()
+          correctAnswer: q.correctAnswer ?? '',
+          points: q.points?.toString() || '1'
         })) || [],
       });
     } else if (isOpen) {
@@ -111,7 +113,14 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
         date: dateTime.toISOString(),
         duration: Number(data.duration),
         type: data.type,
-        questions: data.questions || [],
+        questions: (data.questions || []).map((q, i) => ({
+          _id: fields[i]?._id,
+          text: q.text,
+          type: q.type,
+          options: q.options || [],
+          correctAnswer: q.correctAnswer ?? '',
+          points: Number(q.points) || 1,
+        })),
       };
 
       if (isEditing) {
@@ -192,7 +201,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                   <Select
                     {...field}
                     options={[
-                      { label: t('groups.selectGroup'), value: '' },
+                      { label: t('attendance.selectGroup'), value: '' },
                       ...groups.map(g => ({ label: g.name, value: g._id }))
                     ]}
                     icon={<Users size={18} />}
@@ -501,7 +510,7 @@ const ExamModal = ({ isOpen, onClose, exam }) => {
                 {isSubmitting ? (
                   <Spinner size="sm" color="white" />
                 ) : (
-                  isEditing ? t('common.update') : t('common.create')
+                  isEditing ? t('exams.update') : t('exams.create')
                 )}
               </button>
             </div>
