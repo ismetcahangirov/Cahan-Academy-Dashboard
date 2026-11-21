@@ -194,7 +194,7 @@ const Courses = () => {
                   </span>
                 </div>
                 {isAdmin && (
-                  <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                  <div className="absolute top-3 right-3 flex gap-1 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(course)} aria-label={t('courses.editCourse')} className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-[var(--foreground)]"><Edit2 size={14} /></button>
                     <button onClick={() => handleDelete(course._id)} aria-label={t('common.delete')} className="p-1.5 bg-background/50 backdrop-blur-sm rounded-lg text-[var(--muted-foreground)] hover:text-red-400"><Trash2 size={14} /></button>
                   </div>

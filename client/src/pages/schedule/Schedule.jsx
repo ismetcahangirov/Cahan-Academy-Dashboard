@@ -94,7 +94,7 @@ const Schedule = () => {
                 <span className="text-sm font-semibold text-bordo">{day.short}</span>
                 <h2 className="text-sm font-medium text-[var(--foreground)]">{day.label}</h2>
                 {byDay[dayIndex].length > 0 && (
-                  <span className="ml-auto text-xs text-[var(--muted-foreground)]/40">{byDay[dayIndex].length} {t('schedule.lessonCount')}</span>
+                  <span className="ml-auto text-xs text-[var(--muted-foreground)]/40">{t('schedule.lessonCount', { count: byDay[dayIndex].length })}</span>
                 )}
               </div>
 
@@ -153,7 +153,9 @@ const Schedule = () => {
                         {canDelete && (
                           <button
                             onClick={() => handleDelete(entry._id)}
-                            className="absolute top-2 right-2 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                            aria-label={t('common.delete')}
+                            title={t('common.delete')}
+                            className="absolute top-2 right-2 p-1.5 rounded-lg pointer-fine:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 size={13} />
                           </button>

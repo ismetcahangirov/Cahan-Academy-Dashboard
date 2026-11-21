@@ -20,7 +20,7 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 import toast from 'react-hot-toast';
-import { format } from 'date-fns';
+import { formatDate, toDateTimeInputValue, fromDateTimeInputValue } from '../../utils/formatDate';
 
 const Homeworks = () => {
   const { t } = useTranslation();
@@ -47,6 +47,8 @@ const Homeworks = () => {
 
   const homeworks = homeworksResponse || [];
   const groups = groupsResponse?.data || [];
+  // The grade modal follows the list, so a saved grade shows up without reopening it
+  const gradingHomework = homeworks.find((hw) => hw._id === activeHomework?._id) || activeHomework;
 
   // Create Modal Form State
   const [createData, setCreateData] = useState({ title: '', description: '', group: '', dueDate: '' });
@@ -64,12 +66,13 @@ const Homeworks = () => {
   const handleCreateHomework = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...createData, dueDate: fromDateTimeInputValue(createData.dueDate) };
       if (activeHomework && isCreateModalOpen && createData._id) {
         // Edit mode
-        await updateHomework({ id: createData._id, data: createData }).unwrap();
+        await updateHomework({ id: createData._id, data: payload }).unwrap();
         toast.success(t('homeworks.updateSuccess') || 'Ev tapşırığı uğurla yeniləndi');
       } else {
-        await createHomework(createData).unwrap();
+        await createHomework(payload).unwrap();
         toast.success(t('homeworks.createSuccess'));
       }
       setIsCreateModalOpen(false);
@@ -98,7 +101,7 @@ const Homeworks = () => {
       title: hw.title,
       description: hw.description || '',
       group: typeof hw.group === 'object' ? hw.group._id : hw.group,
-      dueDate: hw.dueDate ? new Date(hw.dueDate).toISOString().slice(0, 16) : ''
+      dueDate: toDateTimeInputValue(hw.dueDate)
     });
     setIsCreateModalOpen(true);
   };
@@ -141,11 +144,16 @@ const Homeworks = () => {
   const handleGradeSubmission = async (e, studentId) => {
     e.preventDefault();
     if (!activeHomework) return;
+    const gData = gradeData[studentId] || {};
+    const grade = Number(gData.grade);
+    if (gData.grade == null || gData.grade === '' || !Number.isFinite(grade) || grade < 0 || grade > 100) {
+      toast.error(t('homeworks.gradeInvalid'));
+      return;
+    }
     try {
-      const gData = gradeData[studentId] || {};
       const payload = {
         studentId,
-        grade: Number(gData.grade),
+        grade,
         feedback: gData.feedback || ''
       };
       await gradeHomework({ id: activeHomework._id, data: payload }).unwrap();
@@ -174,7 +182,7 @@ const Homeworks = () => {
     if (hw.submissions) {
       hw.submissions.forEach(sub => {
         initialGrades[sub.student._id] = {
-          grade: sub.grade || '',
+          grade: sub.grade ?? '',
           feedback: sub.feedback || ''
         };
       });
@@ -267,15 +275,19 @@ const Homeworks = () => {
                   <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">{hw.title}</h3>
                 </div>
                 {['admin', 'teacher'].includes(user.role) && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
+                  <div className="flex items-center gap-1 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <button
                       onClick={() => openEditModal(hw)}
+                      aria-label={t('common.edit')}
+                      title={t('common.edit')}
                       className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
                     >
                       <Pen size={16} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDeleteHomework(hw._id)}
+                      aria-label={t('common.delete')}
+                      title={t('common.delete')}
                       className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
                     >
                       <Trash2 size={16} />
@@ -293,7 +305,7 @@ const Homeworks = () => {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
                   <Calendar size={16} className="text-bordo" />
-                  <span>{t('homeworks.dueDateLabel')}: {hw.dueDate ? format(new Date(hw.dueDate), 'dd MMM yyyy, HH:mm') : '-'}</span>
+                  <span>{t('homeworks.dueDateLabel')}: {formatDate(hw.dueDate, 'dd MMM yyyy, HH:mm') || '-'}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
                   <FileText size={16} className="text-bordo" />
@@ -360,7 +372,7 @@ const Homeworks = () => {
                         onClick={() => openSubmitModal(hw)}
                         className="w-full py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
                       >
-                        {t('classworks.submitClasswork') || 'Göndər'}
+                        {t('homeworks.submitHomework')}
                       </button>
                     );
                   })()
@@ -521,7 +533,7 @@ const Homeworks = () => {
                 <p className="text-sm text-[var(--muted-foreground)]">{activeHomework.description}</p>
                 <div className="mt-2 text-xs text-[var(--muted-foreground)]/70 flex items-center gap-1">
                   <Calendar size={12} />
-                  {t('homeworks.dueDateLabel')}: {activeHomework.dueDate ? format(new Date(activeHomework.dueDate), 'dd MMM yyyy, HH:mm') : '-'}
+                  {t('homeworks.dueDateLabel')}: {formatDate(activeHomework.dueDate, 'dd MMM yyyy, HH:mm') || '-'}
                 </div>
               </div>
 
@@ -604,7 +616,7 @@ const Homeworks = () => {
 
       {/* GRADE MODAL (TEACHER) */}
       <AnimatePresence>
-        {isGradeModalOpen && activeHomework && (
+        {isGradeModalOpen && gradingHomework && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -619,27 +631,27 @@ const Homeworks = () => {
             >
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-[var(--foreground)]">{activeHomework.title} - {t('homeworks.submissions')}</h3>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-1">{t('common.group')}: {activeHomework.group?.name}</p>
+                  <h3 className="text-xl font-bold text-[var(--foreground)]">{gradingHomework.title} - {t('homeworks.submissions')}</h3>
+                  <p className="text-sm text-[var(--muted-foreground)] mt-1">{t('common.group')}: {gradingHomework.group?.name}</p>
                 </div>
-                <button onClick={() => setIsGradeModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
+                <button onClick={() => setIsGradeModalOpen(false)} aria-label={t('common.close')} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
                   <X size={20} />
                 </button>
               </div>
 
-              {activeHomework.submissions?.length === 0 ? (
+              {!gradingHomework.submissions?.length ? (
                 <div className="py-8 text-center text-[var(--muted-foreground)]">
                   <p>{t('homeworks.noSubmissions')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {activeHomework.submissions?.map((sub) => (
+                  {gradingHomework.submissions.map((sub) => (
                     <div key={sub._id} className="p-4 border border-[var(--border)] rounded-lg bg-[var(--muted)]/20">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
                         <div>
                           <div className="font-medium text-[var(--foreground)]">{sub.student?.name} {sub.student?.surname}</div>
                           <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                            {format(new Date(sub.submittedAt || sub.createdAt || new Date()), 'dd MMM yyyy, HH:mm')}
+                            {formatDate(sub.submittedAt || sub.createdAt || new Date(), 'dd MMM yyyy, HH:mm')}
                             {sub.status === 'late' && (
                               <span className="ml-2 text-red-400">• {t('homeworks.late') || 'Gecikmiş'}</span>
                             )}
@@ -678,7 +690,7 @@ const Homeworks = () => {
                             min="0"
                             max="100"
                             placeholder={t('homeworks.grade') || 'Xal (0-100)'}
-                            value={gradeData[sub.student?._id]?.grade || ''}
+                            value={gradeData[sub.student?._id]?.grade ?? ''}
                             onChange={(e) => setGradeData(prev => ({
                               ...prev,
                               [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }

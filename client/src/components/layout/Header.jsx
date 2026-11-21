@@ -70,6 +70,8 @@ const Header = ({ setIsMobileOpen }) => {
         {/* Notifications */}
         <button 
           onClick={() => navigate('/notifications')}
+          aria-label={unreadCount > 0 ? `${t('notifications.title')} (${unreadCount})` : t('notifications.title')}
+          title={t('notifications.title')}
           className="p-2 rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-colors relative"
         >
           <Bell size={20} />

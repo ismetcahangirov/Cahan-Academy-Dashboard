@@ -19,6 +19,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
+import { formatDate } from '../../utils/formatDate';
 
 const Exams = () => {
   const { t, i18n } = useTranslation();
@@ -148,7 +149,7 @@ const Exams = () => {
               className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 hover:bg-[var(--muted)]/20 transition-all group flex flex-col h-full relative shadow-sm"
             >
               {['admin', 'teacher'].includes(user.role) && (
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                <div className="absolute top-4 right-4 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-2">
                   <button 
                     onClick={() => handleEdit(exam)}
                     className="p-1.5 bg-[var(--muted)] text-[var(--foreground)] hover:bg-[var(--foreground)]/10 rounded-lg transition-colors text-sm"
@@ -177,7 +178,7 @@ const Exams = () => {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]/80">
                   <Calendar size={16} className="text-bordo" />
-                  <span>{t('schedule.date')}: {new Date(exam.date).toLocaleDateString(i18n.language)} {new Date(exam.date).toLocaleTimeString(i18n.language, {hour: '2-digit', minute:'2-digit'})}</span>
+                  <span>{t('schedule.date')}: {formatDate(exam.date, 'd MMM yyyy, HH:mm', i18n.language)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]/80">
                   <Clock size={16} className="text-bordo" />

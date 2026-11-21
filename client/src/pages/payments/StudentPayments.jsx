@@ -21,7 +21,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
-import { formatDate } from '../../utils/formatDate';
+import { formatDate, toDateInputValue } from '../../utils/formatDate';
 import {
   useGetStudentPaymentsQuery,
   useCreatePaymentPlanMutation,
@@ -51,7 +51,7 @@ const fmtDate = (date, lang) => formatDate(date, 'd MMMM yyyy', lang);
 const initialForm = (existing) => ({
   amount: existing?.amount ?? '',
   type: existing?.type ?? 'monthly',
-  startDate: existing?.startDate ? existing.startDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
+  startDate: existing?.startDate ? existing.startDate.slice(0, 10) : toDateInputValue(),
   endDate: existing?.endDate ? existing.endDate.slice(0, 10) : '',
   description: existing?.description ?? '',
 });
@@ -323,6 +323,8 @@ const PlanCard = ({ plan, studentId }) => {
           </span>
           <button
             onClick={() => setEditing(true)}
+            aria-label={t('common.edit')}
+            title={t('common.edit')}
             className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
           >
             <Edit2 size={14} />
@@ -330,12 +332,15 @@ const PlanCard = ({ plan, studentId }) => {
           <button
             onClick={handleDelete}
             disabled={deleting}
+            aria-label={t('common.delete')}
+            title={t('common.delete')}
             className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-bordo hover:bg-bordo/10 transition-all"
           >
             <Trash2 size={14} />
           </button>
           <button
             onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
             className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
           >
             {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

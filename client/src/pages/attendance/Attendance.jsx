@@ -16,11 +16,12 @@ import {
 import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
+import { toDateInputValue } from '../../utils/formatDate';
 
 const Attendance = () => {
   const { t } = useTranslation();
   const [selectedGroup, setSelectedGroup] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => toDateInputValue());
   const [records, setRecords] = useState([]);
   const [topic, setTopic] = useState('');
 

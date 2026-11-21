@@ -16,10 +16,13 @@ import {
   useDeleteNotificationMutation,
 } from '../../features/notifications/notificationsApi';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/common/Spinner';
+import { notificationText } from '../../features/notifications/notificationText';
 
 const Notifications = () => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { data, isLoading } = useGetNotificationsQuery({ page: 1, limit: 50 });
   const [markAsRead] = useMarkAsReadMutation();
   const [markAllAsRead] = useMarkAllAsReadMutation();
@@ -33,6 +36,12 @@ const Notifications = () => {
     } catch {
       toast.error(t('notifications.markAsReadError'));
     }
+  };
+
+  // Opening a notification marks it read and goes to the page it is about
+  const handleOpen = (notification) => {
+    if (!notification.isRead) handleMarkAsRead(notification._id);
+    if (notification.link) navigate(notification.link);
   };
 
   const handleMarkAllAsRead = async () => {
@@ -87,7 +96,9 @@ const Notifications = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {notifications.map((notification, index) => (
+            {notifications.map((notification, index) => {
+              const { title, message } = notificationText(notification, t, i18n);
+              return (
               <motion.div
                 key={notification._id}
                 initial={{ opacity: 0, y: 10 }}
@@ -102,17 +113,21 @@ const Notifications = () => {
                 <div className={`p-2 rounded-lg ${notification.isRead ? 'bg-[var(--muted)] text-[var(--muted-foreground)]/60' : 'bg-bordo text-white'}`}>
                   <Bell size={20} />
                 </div>
-                <div className="flex-1">
+                <button
+                  type="button"
+                  onClick={() => handleOpen(notification)}
+                  className="flex-1 text-left rounded-lg focus-visible:outline-2 focus-visible:outline-bordo"
+                >
                   <h3 className={`font-semibold ${notification.isRead ? 'text-[var(--foreground)]/70' : 'text-[var(--foreground)]'}`}>
-                    {notification.title}
+                    {title}
                   </h3>
-                  <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{notification.message}</p>
+                  <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{message}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-[var(--muted-foreground)]/40">
                     <Clock size={12} />
                     {format(new Date(notification.createdAt), 'd MMM yyyy HH:mm', { locale: dateLocales[i18n.language] || az })}
                   </div>
-                </div>
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                </button>
+                <div className="flex items-center gap-2 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                   {!notification.isRead && (
                     <button
                       onClick={() => handleMarkAsRead(notification._id)}
@@ -131,7 +146,8 @@ const Notifications = () => {
                   </button>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
