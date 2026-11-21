@@ -20,7 +20,6 @@ app.use(errorHandler);
 
 const hash = (token) => crypto.createHash('sha256').update(token).digest('hex');
 
-// authLimiter allows 10 requests per window for this file; keep the request count below that.
 describe('Password reset', () => {
   beforeAll(() => {
     process.env.CLIENT_URL = 'https://client.example.com';
