@@ -30,12 +30,39 @@ export const authApi = apiSlice.injectEndpoints({
         body: credentials,
       }),
     }),
+    forgotPassword: builder.mutation({
+      query: (body) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: ({ token, password }) => ({
+        url: `/auth/reset-password/${encodeURIComponent(token)}`,
+        method: 'POST',
+        body: { password },
+      }),
+    }),
+    registerViaInvitation: builder.mutation({
+      query: ({ token, name, password }) => ({
+        url: `/auth/register-invitation/${encodeURIComponent(token)}`,
+        method: 'POST',
+        body: { name, password },
+      }),
+    }),
   }),
 });
 
-export const { 
-  useLoginMutation, 
-  useRegisterMutation, 
+export const {
+  useLoginMutation,
+  useRegisterMutation,
   useRefreshTokenMutation,
-  useGoogleLoginMutation 
+  useGoogleLoginMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
+  useRegisterViaInvitationMutation,
 } = authApi;
+
+// Mirrors the server rule in server/utils/passwordPolicy.js.
+export const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;

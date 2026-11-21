@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import User from '../models/userModel.js';
+import { isValidPassword, PASSWORD_RULE_MESSAGE } from '../utils/passwordPolicy.js';
 
 const USER_STATUSES = ['active', 'inactive', 'pending'];
 const USER_ROLES = ['admin', 'teacher', 'student'];
@@ -162,6 +163,51 @@ export const getUserById = async (req, res) => {
   }
 };
 
+// @desc    Create user
+// @route   POST /api/users
+// @access  Private/Admin
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role = 'student', status = 'active' } = req.body;
+    const trimmedName = typeof name === 'string' ? name.trim() : '';
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+
+    if (!trimmedName || !normalizedEmail) {
+      return res.status(400).json({ message: 'Ad və email doldurulmalıdır' });
+    }
+    if (!USER_ROLES.includes(role)) {
+      return res.status(400).json({ message: 'Yanlış istifadəçi rolu' });
+    }
+    if (!USER_STATUSES.includes(status)) {
+      return res.status(400).json({ message: 'Yanlış istifadəçi statusu' });
+    }
+    if (!isValidPassword(password)) {
+      return res.status(400).json({ message: PASSWORD_RULE_MESSAGE });
+    }
+    if (await User.exists({ email: normalizedEmail })) {
+      return res.status(400).json({ message: 'Bu email artıq istifadə olunur' });
+    }
+
+    const user = await User.create({
+      name: trimmedName,
+      email: normalizedEmail,
+      password,
+      role,
+      status,
+    });
+
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
 // @desc    Update user
 // @route   PUT /api/users/:id
 // @access  Private/Admin
@@ -173,8 +219,13 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
 
-    const { name, email, role, status } = req.body;
+    const { name, email, role, status, password } = req.body;
 
+    // The edit form sends an empty password when it should stay unchanged.
+    const newPassword = typeof password === 'string' && password !== '' ? password : undefined;
+    if (newPassword !== undefined && !isValidPassword(newPassword)) {
+      return res.status(400).json({ message: PASSWORD_RULE_MESSAGE });
+    }
     if (status !== undefined && !USER_STATUSES.includes(status)) {
       return res.status(400).json({ message: 'Yanlış istifadəçi statusu' });
     }
@@ -191,6 +242,7 @@ export const updateUser = async (req, res) => {
     if (typeof email === 'string' && email.trim()) user.email = email.trim().toLowerCase();
     if (role) user.role = role;
     if (status) user.status = status;
+    if (newPassword) user.password = newPassword;
 
     const updatedUser = await user.save();
 

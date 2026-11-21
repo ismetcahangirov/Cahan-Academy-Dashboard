@@ -60,7 +60,9 @@
     "confirmPassword": "Confirm password",
     "savePassword": "Save password",
     "passwordResetSuccess": "Password reset successfully",
-    "passwordsDoNotMatch": "Passwords do not match"
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordRule": "Password must be at least 6 characters and contain at least one letter and one digit. Allowed symbols: @$!%*#?&",
+    "tooManyRequests": "Too many attempts. Please try again in 15 minutes."
   },
   "dashboard": {
     "welcome": "Welcome, {{name}}! 👋",
@@ -592,8 +594,16 @@
     "subtitle": "Enter your email and we'll send you a link to reset your password",
     "backToLogin": "Back to login",
     "sendLink": "Send link",
-    "successMessage": "Password reset link sent to your email",
-    "emailPlaceholder": "example@cahan.az"
+    "successMessage": "Request received. Check your email",
+    "emailPlaceholder": "example@cahan.az",
+    "sentDescription": "If an account exists for {{email}}, we've sent it a link to reset the password. The link is valid for 10 minutes. If you don't see the email, check your spam folder.",
+    "sendAgain": "Send the link again",
+    "error": "The email could not be sent. Please try again a little later."
+  },
+  "resetPassword": {
+    "invalidLink": "This link is invalid or has expired.",
+    "requestNewLink": "Request a new link",
+    "error": "Could not reset the password. Please try again."
   },
   "detail": {
     "back": "Back",

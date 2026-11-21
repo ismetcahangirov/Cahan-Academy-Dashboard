@@ -9,13 +9,17 @@ import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 import PasswordInput from '../../components/common/PasswordInput';
+import { PASSWORD_REGEX } from '../../features/auth/authApi';
 
-const userSchema = (t) => z.object({
+// Password is required when creating; when editing, empty keeps the current one.
+const userSchema = (t, isEdit) => z.object({
   name: z.string().min(3, t('users.nameShort')),
   email: z.string().email(t('auth.emailInvalid')),
   role: z.enum(['student', 'teacher', 'admin']),
   status: z.enum(['active', 'inactive', 'pending']),
-  password: z.string().min(6, t('auth.passwordShort')).optional().or(z.literal('')),
+  password: isEdit
+    ? z.string().regex(PASSWORD_REGEX, t('auth.passwordRule')).optional().or(z.literal(''))
+    : z.string().regex(PASSWORD_REGEX, t('auth.passwordRule')),
 });
 
 const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
@@ -29,7 +33,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
     control,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(userSchema(t)),
+    resolver: zodResolver(userSchema(t, isEdit)),
     defaultValues: {
       name: '',
       email: '',

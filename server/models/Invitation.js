@@ -39,11 +39,10 @@ const invitationSchema = mongoose.Schema(
 );
 
 // Generate unique token before saving
-invitationSchema.pre('save', function (next) {
+invitationSchema.pre('save', function () {
   if (!this.token) {
     this.token = crypto.randomBytes(32).toString('hex');
   }
-  next();
 });
 
 const Invitation = mongoose.model('Invitation', invitationSchema);

@@ -132,6 +132,7 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_email_password
+EMAIL_FROM="Cahan Academy <your_email@gmail.com>"
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 CLIENT_URL=https://cahan-academy-dashboard.vercel.app

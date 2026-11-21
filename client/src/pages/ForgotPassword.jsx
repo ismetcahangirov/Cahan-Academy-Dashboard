@@ -1,11 +1,13 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, ChevronLeft, Send } from 'lucide-react';
+import { Mail, ChevronLeft, Send, MailCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Spinner from '../components/common/Spinner';
+import { useForgotPasswordMutation } from '../features/auth/authApi';
 
 const forgotPasswordSchema = (t) => z.object({
   email: z.string().email(t('auth.emailInvalid')),
@@ -13,9 +15,8 @@ const forgotPasswordSchema = (t) => z.object({
 
 const ForgotPassword = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  // Using a mock loading state since the endpoint logic will be implemented in backend later
-  const isLoading = false;
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  const [sentTo, setSentTo] = useState(null);
 
   const {
     register,
@@ -26,9 +27,13 @@ const ForgotPassword = () => {
   });
 
   const onSubmit = async (data) => {
-    // This will be connected to the backend authApi later
-    console.log(data);
-    toast.success(t('forgotPassword.successMessage'));
+    try {
+      await forgotPassword({ email: data.email }).unwrap();
+      setSentTo(data.email);
+      toast.success(t('forgotPassword.successMessage'));
+    } catch (err) {
+      toast.error(err?.status === 429 ? t('auth.tooManyRequests') : t('forgotPassword.error'));
+    }
   };
 
   return (
@@ -48,6 +53,19 @@ const ForgotPassword = () => {
           <p className="text-[var(--muted-foreground)]/60 text-sm">{t('forgotPassword.subtitle')}</p>
         </div>
 
+        {sentTo ? (
+          <div className="text-center space-y-4" role="status">
+            <MailCheck className="w-12 h-12 mx-auto text-bordo" />
+            <p className="text-sm text-[var(--foreground)]">{t('forgotPassword.sentDescription', { email: sentTo })}</p>
+            <button
+              type="button"
+              onClick={() => setSentTo(null)}
+              className="text-sm text-bordo hover:underline"
+            >
+              {t('forgotPassword.sendAgain')}
+            </button>
+          </div>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-[var(--foreground)]/80 block">{t('auth.email')}</label>
@@ -78,6 +96,7 @@ const ForgotPassword = () => {
             )}
           </button>
         </form>
+        )}
       </div>
     </div>
   );

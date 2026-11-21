@@ -1,7 +1,9 @@
 import Invitation from '../models/Invitation.js';
 import User from '../models/userModel.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
-import sendEmail from '../utils/sendEmail.js';
+import sendEmail, { buildClientUrl } from '../utils/sendEmail.js';
+
+const INVITATION_ROLES = ['teacher', 'student'];
 
 /**
  * @desc    Get all invitations
@@ -27,7 +29,15 @@ export const getInvitations = async (req, res) => {
  */
 export const sendInvitation = async (req, res) => {
   try {
-    const { email, role } = req.body;
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    const { role } = req.body;
+
+    if (!email) {
+      return sendError(res, 'Email is required', 400);
+    }
+    if (!INVITATION_ROLES.includes(role)) {
+      return sendError(res, 'Role must be teacher or student', 400);
+    }
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
@@ -50,26 +60,26 @@ export const sendInvitation = async (req, res) => {
       expiresAt,
     });
 
-    // Send Email
-    const acceptUrl = `${process.env.CLIENT_URL}/accept-invitation/${invitation.token}`;
-    const message = `
-      <h1>Siz Cahan Academy-yə dəvət olundunuz!</h1>
-      <p>Sizə ${role === 'teacher' ? 'müəllim' : 'tələbə'} rolu ilə dəvət göndərilib.</p>
-      <p>Dəvəti qəbul etmək və qeydiyyatdan keçmək üçün aşağıdakı linkə klikləyin:</p>
-      <a href="${acceptUrl}" style="display:inline-block; background:#b01b2e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Dəvəti Qəbul Et</a>
-      <p>Bu link 7 gün ərzində aktivdir.</p>
-    `;
-
     try {
+      const acceptUrl = buildClientUrl(`/accept-invitation/${invitation.token}`);
+      const roleLabel = role === 'teacher' ? 'müəllim' : 'tələbə';
       await sendEmail({
         email: invitation.email,
         subject: 'Cahan Academy Dəvəti',
-        html: message,
+        message: `Siz Cahan Academy-yə ${roleLabel} rolu ilə dəvət olundunuz. Qeydiyyatı tamamlamaq üçün bu linkə keçin (7 gün etibarlıdır): ${acceptUrl}`,
+        html: `
+          <h1>Siz Cahan Academy-yə dəvət olundunuz!</h1>
+          <p>Sizə ${roleLabel} rolu ilə dəvət göndərilib.</p>
+          <p>Dəvəti qəbul etmək və qeydiyyatdan keçmək üçün aşağıdakı linkə klikləyin:</p>
+          <a href="${acceptUrl}" style="display:inline-block; background:#b01b2e; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;">Dəvəti Qəbul Et</a>
+          <p>Bu link 7 gün ərzində aktivdir.</p>
+        `,
       });
     } catch (err) {
-      // If email fails, delete invitation and return error
+      // No email means nobody can accept it, so don't keep the invitation around.
+      console.error('Invitation email failed:', err.message);
       await Invitation.findByIdAndDelete(invitation._id);
-      return sendError(res, 'Email could not be sent', 500);
+      return sendError(res, 'Invitation email could not be sent. Check the email (SMTP) settings and try again.', 500);
     }
 
     return sendSuccess(res, 'Invitation sent successfully', invitation);

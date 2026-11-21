@@ -24,7 +24,8 @@ export const userApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: user,
       }),
-      invalidatesTags: ['User'],
+      // A new teacher/student also shows up in those lists.
+      invalidatesTags: ['User', { type: 'Teacher', id: 'LIST' }, { type: 'Student', id: 'LIST' }],
     }),
     updateUser: builder.mutation({
       query: ({ id, ...user }) => ({

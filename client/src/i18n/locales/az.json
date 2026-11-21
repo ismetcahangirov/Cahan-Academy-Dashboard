@@ -60,7 +60,9 @@
     "confirmPassword": "Şifrəni təsdiqləyin",
     "savePassword": "Şifrəni yadda saxla",
     "passwordResetSuccess": "Şifrə uğurla yeniləndi",
-    "passwordsDoNotMatch": "Şifrələr uyğun gəlmir"
+    "passwordsDoNotMatch": "Şifrələr uyğun gəlmir",
+    "passwordRule": "Şifrə ən azı 6 simvol olmalı, ən azı 1 hərf və 1 rəqəm içərməlidir. İcazə verilən simvollar: @$!%*#?&",
+    "tooManyRequests": "Çox sayda cəhd edildi. Zəhmət olmasa 15 dəqiqə sonra yenidən yoxlayın."
   },
   "dashboard": {
     "welcome": "Xoş gəldiniz, {{name}}! 👋",
@@ -592,8 +594,16 @@
     "subtitle": "Emailinizi daxil edin, biz sizə şifrəni yeniləmək üçün link göndərəcəyik",
     "backToLogin": "Girişə qayıt",
     "sendLink": "Linki göndər",
-    "successMessage": "Şifrə yeniləmə linki emailinizə göndərildi",
-    "emailPlaceholder": "nümunə@cahan.az"
+    "successMessage": "Sorğunuz qəbul edildi. Emailinizi yoxlayın",
+    "emailPlaceholder": "nümunə@cahan.az",
+    "sentDescription": "{{email}} ilə hesab varsa, ora şifrəni yeniləmək üçün link göndərdik. Link 10 dəqiqə etibarlıdır. Məktubu görmürsünüzsə, spam qovluğunu yoxlayın.",
+    "sendAgain": "Linki yenidən göndər",
+    "error": "Email göndərilmədi. Zəhmət olmasa bir az sonra yenidən cəhd edin."
+  },
+  "resetPassword": {
+    "invalidLink": "Bu link etibarsızdır və ya müddəti bitib.",
+    "requestNewLink": "Yeni link istə",
+    "error": "Şifrəni yeniləmək mümkün olmadı. Zəhmət olmasa yenidən cəhd edin."
   },
   "detail": {
     "back": "Geri",
