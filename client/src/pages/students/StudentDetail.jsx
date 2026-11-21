@@ -23,6 +23,8 @@ import {
 import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
+import { formatDays } from '../../utils/days';
+import { formatDate } from '../../utils/formatDate';
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
 const StatusBadge = ({ status }) => {
@@ -70,7 +72,7 @@ const StatCard = ({ icon: Icon, label, value, dimmed }) => (
 
 const GroupCard = ({ group }) => {
   const { t } = useTranslation();
-  const days = group?.schedule?.days?.join(', ') || '';
+  const days = formatDays(group?.schedule?.days, t);
   const time = group?.schedule?.startTime
     ? `${group.schedule.startTime}${group.schedule.endTime ? ' – ' + group.schedule.endTime : ''}`
     : null;
@@ -122,7 +124,7 @@ const GroupCard = ({ group }) => {
 const StudentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const { data: studentData, isLoading, isError } = useGetStudentByIdQuery(id);
   const { data: statsData, isLoading: statsLoading } = useGetStudentAttendanceStatsQuery(id);
@@ -136,12 +138,7 @@ const StudentDetail = () => {
   const total   = present + absent + late;
   const attendanceRate = total > 0 ? Math.round((present / total) * 100) : null;
 
-  const formatDate = (date) => {
-    if (!date) return '—';
-    const lang   = i18n.resolvedLanguage || i18n.language;
-    const locale = lang.startsWith('ru') ? 'ru-RU' : lang.startsWith('az') ? 'az-AZ' : 'en-US';
-    return new Date(date).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
-  };
+  const fmt = (date) => formatDate(date, 'dd MMMM yyyy') || '—';
 
   const groups = student?.groups || [];
 
@@ -243,8 +240,8 @@ const StudentDetail = () => {
             <h2 className="text-sm font-semibold text-[var(--foreground)] uppercase tracking-wider mb-4">{t('detail.info')}</h2>
             <InfoRow icon={UserIcon} label={t('detail.name')}      value={student.name} />
             <InfoRow icon={Mail}     label={t('detail.email')}     value={student.email} />
-            <InfoRow icon={Calendar} label={t('detail.createdAt')} value={formatDate(student.createdAt)} />
-            <InfoRow icon={Clock}    label={t('detail.updatedAt')} value={formatDate(student.updatedAt)} />
+            <InfoRow icon={Calendar} label={t('detail.createdAt')} value={fmt(student.createdAt)} />
+            <InfoRow icon={Clock}    label={t('detail.updatedAt')} value={fmt(student.updatedAt)} />
           </div>
         </motion.div>
       )}

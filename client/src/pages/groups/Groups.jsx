@@ -30,27 +30,21 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
+import { DAY_KEYS, DAY_NAMES, formatDays, toDayName } from '../../utils/days';
+import { formatDate } from '../../utils/formatDate';
 
-const getDays = (t) => [
-  t('schedule.days.monday'),
-  t('schedule.days.tuesday'),
-  t('schedule.days.wednesday'),
-  t('schedule.days.thursday'),
-  t('schedule.days.friday'),
-  t('schedule.days.saturday'),
-  t('schedule.days.sunday')
-];
+// Days are stored as language-neutral English names; labels follow the UI language
+const getDays = (t) => DAY_NAMES.map((value, i) => ({ value, label: t(`schedule.days.${DAY_KEYS[i]}`) }));
 
 // ─── Group Detail Modal ──────────────────────────────────────────────────────
-const GroupDetailModal = ({ groupId, onClose }) => {
-  const { t, i18n } = useTranslation();
-  const DAYS = getDays(t);
+const GroupDetailModal = ({ groupId, onClose, isAdmin }) => {
+  const { t } = useTranslation();
   const [studentSearch, setStudentSearch] = useState('');
   const [showAddStudent, setShowAddStudent] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState('');
 
   const { data: groupData, isLoading } = useGetGroupByIdQuery(groupId, { skip: !groupId });
-  const { data: studentsData } = useGetStudentsQuery({ limit: 200 }, { skip: !showAddStudent });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 200 }, { skip: !isAdmin || !showAddStudent });
   const [addStudentToGroup, { isLoading: isAdding }] = useAddStudentToGroupMutation();
 
   const group = groupData?.data;
@@ -140,9 +134,9 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                     </span>
                   </p>
                   <p className="text-sm font-medium text-[var(--foreground)]">
-                    {group.schedule.repetitionType === 'weekly' 
-                      ? group.schedule.days.map(d => (!isNaN(parseInt(d)) && parseInt(d) >= 0 && parseInt(d) <= 6) ? DAYS[parseInt(d)] : d).join(', ')
-                      : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
+                    {group.schedule.repetitionType === 'weekly'
+                      ? formatDays(group.schedule.days, t)
+                      : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
                     {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
                   </p>
                   {group.schedule.note && (
@@ -157,18 +151,20 @@ const GroupDetailModal = ({ groupId, onClose }) => {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-[var(--foreground)] text-sm">{t('sidebar.students')}</h4>
-                  <button
-                    onClick={() => setShowAddStudent(!showAddStudent)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo hover:bg-bordo/90 text-white text-xs font-semibold rounded-lg transition-all"
-                  >
-                    <UserPlus size={13} />
-                    {t('groups.addStudent')}
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setShowAddStudent(!showAddStudent)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo hover:bg-bordo/90 text-white text-xs font-semibold rounded-lg transition-all"
+                    >
+                      <UserPlus size={13} />
+                      {t('groups.addStudent')}
+                    </button>
+                  )}
                 </div>
 
-                {/* Add Student Panel */}
+                {/* Add Student Panel (POST /groups/:id/students is admin only) */}
                 <AnimatePresence>
-                  {showAddStudent && (
+                  {isAdmin && showAddStudent && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
@@ -181,7 +177,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
                           value={selectedStudentId}
                           onChange={setSelectedStudentId}
                           options={[
-                            { label: t('common.select') || 'Seçin...', value: '' },
+                            { label: t('common.select'), value: '' },
                             ...availableStudents.map(s => ({ label: `${s.name} — ${s.email}`, value: s._id }))
                           ]}
                         />
@@ -243,7 +239,7 @@ const GroupDetailModal = ({ groupId, onClose }) => {
 
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const DAYS = getDays(t);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingGroupId, setEditingGroupId] = useState(null);
@@ -269,8 +265,9 @@ const Groups = () => {
   const isAdmin = user?.role === 'admin';
 
   const { data: groupsData, isLoading } = useGetGroupsQuery();
-  const { data: teachersData } = useGetTeachersQuery({ limit: 100 });
-  const { data: studentsData } = useGetStudentsQuery({ limit: 500 });
+  // Only the admin form needs these lists (and only admins may fetch teachers)
+  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
   const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();
@@ -300,7 +297,8 @@ const Groups = () => {
       students: group.students?.map(s => typeof s === 'object' ? s._id : s) || [],
       schedule: {
         repetitionType: group.schedule?.repetitionType || 'weekly',
-        days: group.schedule?.days || [],
+        // Older groups stored localized names; normalise so the day buttons match
+        days: [...new Set((group.schedule?.days || []).map(toDayName).filter(Boolean))],
         specificDate: group.schedule?.specificDate ? new Date(group.schedule.specificDate).toISOString().split('T')[0] : '',
         startTime: group.schedule?.startTime || '',
         endTime: group.schedule?.endTime || '',
@@ -438,9 +436,9 @@ const Groups = () => {
                       <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-[var(--muted-foreground)]/30" />
                         <span>
-                          {group.schedule.repetitionType === 'weekly' 
-                            ? group.schedule.days.map(d => (!isNaN(parseInt(d)) && parseInt(d) >= 0 && parseInt(d) <= 6) ? DAYS[parseInt(d)] : d).join(', ')
-                            : group.schedule.specificDate ? new Date(group.schedule.specificDate).toLocaleDateString(i18n.language === 'az' ? 'az-AZ' : i18n.language === 'ru' ? 'ru-RU' : 'en-US') : ''}
+                          {group.schedule.repetitionType === 'weekly'
+                            ? formatDays(group.schedule.days, t)
+                            : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
                         </span>
                         <span className="text-[10px] text-[var(--muted-foreground)]/40 ml-auto">
                           {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
@@ -485,7 +483,7 @@ const Groups = () => {
       {/* Group Detail Modal */}
       <AnimatePresence>
         {selectedGroupId && (
-          <GroupDetailModal groupId={selectedGroupId} onClose={() => setSelectedGroupId(null)} />
+          <GroupDetailModal groupId={selectedGroupId} isAdmin={isAdmin} onClose={() => setSelectedGroupId(null)} />
         )}
       </AnimatePresence>
 
@@ -527,7 +525,7 @@ const Groups = () => {
                     value={formData.teacher}
                     onChange={(val) => setFormData({ ...formData, teacher: val })}
                     options={[
-                      { label: t('common.select') || 'Seçin...', value: '' },
+                      { label: t('common.select'), value: '' },
                       ...(teachersData?.data?.map(teacher => ({ label: teacher.name, value: teacher._id })) || [])
                     ]}
                     required
@@ -606,22 +604,23 @@ const Groups = () => {
                     <div className="flex flex-wrap gap-2">
                       {DAYS.map((day) => (
                         <button
-                          key={day}
+                          key={day.value}
                           type="button"
+                          aria-pressed={formData.schedule.days.includes(day.value)}
                           onClick={() => {
-                            const days = formData.schedule.days.includes(day)
-                              ? formData.schedule.days.filter((d) => d !== day)
-                              : [...formData.schedule.days, day];
+                            const days = formData.schedule.days.includes(day.value)
+                              ? formData.schedule.days.filter((d) => d !== day.value)
+                              : DAY_NAMES.filter((d) => d === day.value || formData.schedule.days.includes(d));
                             setFormData({ ...formData, schedule: { ...formData.schedule, days } });
                           }}
                           className={cn(
                             'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
-                            formData.schedule.days.includes(day)
+                            formData.schedule.days.includes(day.value)
                               ? 'bg-bordo border-bordo/50 text-white'
                               : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
                           )}
                         >
-                          {day}
+                          {day.label}
                         </button>
                       ))}
                     </div>
