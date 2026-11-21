@@ -686,6 +686,22 @@
       "quizAnswersGraded": {
         "title": "Quiz graded",
         "message": "Your answers in \"{{title}}\" were reviewed. Result: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Homework submitted",
+        "message": "{{student}} submitted the homework \"{{title}}\""
+      },
+      "classworkSubmitted": {
+        "title": "Classwork submitted",
+        "message": "{{student}} submitted the classwork \"{{title}}\""
+      },
+      "examSubmitted": {
+        "title": "Exam submitted",
+        "message": "{{student}} submitted the exam \"{{title}}\""
+      },
+      "quizSubmitted": {
+        "title": "Quiz completed",
+        "message": "{{student}} completed the quiz \"{{title}}\""
       }
     }
   },

@@ -692,6 +692,22 @@
       "quizAnswersGraded": {
         "title": "Квиз оценён",
         "message": "Ваши ответы в квизе «{{title}}» проверены. Результат: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Домашнее задание сдано",
+        "message": "{{student}}: домашнее задание «{{title}}» сдано"
+      },
+      "classworkSubmitted": {
+        "title": "Классная работа сдана",
+        "message": "{{student}}: классная работа «{{title}}» сдана"
+      },
+      "examSubmitted": {
+        "title": "Экзамен сдан",
+        "message": "{{student}}: экзамен «{{title}}» сдан"
+      },
+      "quizSubmitted": {
+        "title": "Квиз пройден",
+        "message": "{{student}}: квиз «{{title}}» пройден"
       }
     }
   },

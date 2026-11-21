@@ -683,6 +683,22 @@
       "quizAnswersGraded": {
         "title": "Quiz qiymətləndirildi",
         "message": "\"{{title}}\" quizindəki cavablarınız yoxlanıldı. Nəticə: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Ev tapşırığı təhvil verildi",
+        "message": "{{student}} \"{{title}}\" ev tapşırığını təhvil verdi"
+      },
+      "classworkSubmitted": {
+        "title": "Sinif işi təhvil verildi",
+        "message": "{{student}} \"{{title}}\" sinif işini təhvil verdi"
+      },
+      "examSubmitted": {
+        "title": "İmtahan təhvil verildi",
+        "message": "{{student}} \"{{title}}\" imtahanını təhvil verdi"
+      },
+      "quizSubmitted": {
+        "title": "Quiz tamamlandı",
+        "message": "{{student}} \"{{title}}\" quizini tamamladı"
       }
     }
   },
