@@ -39,9 +39,11 @@ export const isAnswerCorrect = (question, answer) => {
   return answer === correct;
 };
 
-// Returns { score, totalPoints, answers: [{ questionId, selectedOption, isCorrect }] }.
-// isCorrect is null for open-ended questions; their points stay in totalPoints so the
-// teacher decides on them.
+export const questionPoints = (question) => (Number(question.points) > 0 ? Number(question.points) : 1);
+
+// Returns { score, totalPoints, answers: [{ questionId, selectedOption, isCorrect, awardedPoints }] }.
+// isCorrect and awardedPoints are null for open-ended questions; their points stay in
+// totalPoints so the teacher decides on them.
 export const gradeAnswers = (questions, rawAnswers) => {
   const answerMap = normalizeAnswers(rawAnswers);
   let score = 0;
@@ -49,7 +51,7 @@ export const gradeAnswers = (questions, rawAnswers) => {
   const graded = [];
 
   (questions || []).forEach((question) => {
-    const points = Number(question.points) > 0 ? Number(question.points) : 1;
+    const points = questionPoints(question);
     totalPoints += points;
     const answer = answerMap.get(question._id.toString());
     const autoGraded = AUTO_GRADED_TYPES.includes(question.type);
@@ -59,10 +61,87 @@ export const gradeAnswers = (questions, rawAnswers) => {
       questionId: question._id,
       selectedOption: answer ?? '',
       isCorrect,
+      awardedPoints: autoGraded ? (isCorrect ? points : 0) : null,
     });
   });
 
   return { score, totalPoints, answers: graded };
+};
+
+// Auto-graded answers stored before awardedPoints existed fall back to isCorrect;
+// open-ended answers stay null until the teacher grades them.
+export const awardedPointsFor = (question, answer) => {
+  if (Number.isFinite(answer.awardedPoints)) return answer.awardedPoints;
+  if (!AUTO_GRADED_TYPES.includes(question.type)) return null;
+  return answer.isCorrect ? questionPoints(question) : 0;
+};
+
+// Stored answers joined with their questions; answers to deleted questions are dropped.
+export const reviewAnswers = (questions, answers) => {
+  const byId = new Map((questions || []).map((q) => [q._id.toString(), q]));
+  return (answers || []).flatMap((answer) => {
+    const question = byId.get(String(answer.questionId));
+    return question ? [{ question, answer, awarded: awardedPointsFor(question, answer) }] : [];
+  });
+};
+
+export const summarizeReview = (items) => ({
+  earnedPoints: items.reduce((sum, item) => sum + (item.awarded || 0), 0),
+  totalPoints: items.reduce((sum, item) => sum + questionPoints(item.question), 0),
+  pendingCount: items.filter((item) => item.awarded === null).length,
+});
+
+export const serializeReview = (items, { includeCorrectAnswers }) => items.map(({ question, answer, awarded }) => ({
+  questionId: question._id,
+  text: question.text,
+  type: question.type,
+  options: question.options || [],
+  points: questionPoints(question),
+  ...(includeCorrectAnswers ? { correctAnswer: question.correctAnswer ?? '' } : {}),
+  answer: answer.selectedOption ?? '',
+  isCorrect: answer.isCorrect ?? null,
+  awardedPoints: awarded,
+  autoGraded: AUTO_GRADED_TYPES.includes(question.type),
+}));
+
+// Accepts [{ questionId, points }] or { [questionId]: points }.
+const normalizeGrades = (grades) => {
+  const entries = Array.isArray(grades)
+    ? grades.filter((g) => g && g.questionId).map((g) => [String(g.questionId), g.points])
+    : Object.entries(grades && typeof grades === 'object' ? grades : {});
+  return new Map(entries);
+};
+
+// Validates teacher points for open-ended answers and writes them to the answer subdocuments.
+// Auto-graded points are frozen as they are and cannot be changed here.
+// Returns { error } or { changed, items }.
+export const applyManualGrades = (questions, answers, rawGrades) => {
+  const grades = normalizeGrades(rawGrades);
+  if (grades.size === 0) return { error: 'Qiymətləndiriləcək cavab göndərilməyib' };
+
+  const items = reviewAnswers(questions, answers);
+  const byQuestion = new Map(items.map((item) => [String(item.answer.questionId), item]));
+  for (const [questionId, raw] of grades) {
+    const item = byQuestion.get(questionId);
+    if (!item || AUTO_GRADED_TYPES.includes(item.question.type)) {
+      return { error: 'Yalnız açıq sualların balı əl ilə verilir' };
+    }
+    const max = questionPoints(item.question);
+    const points = typeof raw === 'number' || (typeof raw === 'string' && raw.trim() !== '') ? Number(raw) : NaN;
+    if (!Number.isFinite(points) || points < 0 || points > max) {
+      return { error: `Bal 0 ilə ${max} arasında olmalıdır` };
+    }
+  }
+
+  let changed = false;
+  items.forEach((item) => {
+    const key = String(item.answer.questionId);
+    const next = grades.has(key) ? Number(grades.get(key)) : item.awarded;
+    if (grades.has(key) && next !== item.awarded) changed = true;
+    if (next !== null) item.answer.awardedPoints = next;
+  });
+
+  return { changed, items: reviewAnswers(questions, answers) };
 };
 
 // Merges incoming question edits with stored ones so a missing / "undefined"

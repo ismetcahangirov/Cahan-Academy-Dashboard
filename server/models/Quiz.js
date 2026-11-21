@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-console.log('Quiz Model Loaded - Version 2 (with text/type fields)');
-
 const questionSchema = new mongoose.Schema({
   text: {
     type: String,
@@ -42,6 +40,8 @@ const quizAttemptSchema = new mongoose.Schema(
         questionId: mongoose.Schema.Types.ObjectId,
         selectedOption: String,
         isCorrect: Boolean,
+        // Auto-graded: fixed at submit time; open-ended: set by the teacher (null = not graded yet)
+        awardedPoints: Number,
       },
     ],
     score: {
@@ -89,6 +89,14 @@ const quizSchema = new mongoose.Schema(
       default: 30,
     },
     attempts: [quizAttemptSchema],
+    // When each student opened the quiz; the time limit runs from here
+    starts: [
+      {
+        _id: false,
+        student: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        startedAt: { type: Date, required: true },
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

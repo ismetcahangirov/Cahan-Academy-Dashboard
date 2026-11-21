@@ -3,19 +3,55 @@ import mongoose from 'mongoose';
 import Quiz from '../models/Quiz.js';
 import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
-import { gradeAnswers, mergeQuestions, stripCorrectAnswers } from '../utils/grading.js';
-import { notifyGroupStudents } from '../utils/notifyStudents.js';
+import {
+  applyManualGrades,
+  gradeAnswers,
+  mergeQuestions,
+  reviewAnswers,
+  serializeReview,
+  stripCorrectAnswers,
+  summarizeReview,
+} from '../utils/grading.js';
+import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
 import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
+
+// Late network requests are still accepted this long after the time limit.
+const SUBMIT_GRACE_MS = 2 * 60 * 1000;
 
 const idOf = (value) => (value && value._id ? value._id : value)?.toString();
 
-// Student view: no correct answers, only own attempt.
+const findByStudent = (list, studentId) => (list || []).find((item) => idOf(item.student) === String(studentId));
+
+// null when the quiz has no time limit
+const quizEndsAt = (quiz, startedAt) => {
+  const minutes = Number(quiz.timeLimit);
+  return minutes > 0 ? new Date(new Date(startedAt).getTime() + minutes * 60 * 1000) : null;
+};
+
+// Student view: no correct answers, only own attempt, questions only once the timer has started.
 const toStudentQuiz = (quiz, userId) => {
   const obj = typeof quiz.toObject === 'function' ? quiz.toObject() : quiz;
   const uid = userId.toString();
-  obj.questions = stripCorrectAnswers(obj.questions);
+  const start = findByStudent(obj.starts, uid);
   obj.attempts = (obj.attempts || []).filter((a) => idOf(a.student) === uid);
+  obj.questionCount = (obj.questions || []).length;
+  obj.questions = start || obj.attempts.length ? stripCorrectAnswers(obj.questions) : [];
+  obj.startedAt = start ? start.startedAt : null;
+  delete obj.starts;
   return obj;
+};
+
+const buildAttemptReview = (quiz, attempt, includeCorrectAnswers) => {
+  const items = reviewAnswers(quiz.questions, attempt.answers);
+  return {
+    student: attempt.student,
+    earnedPoints: attempt.score,
+    totalPoints: attempt.totalPoints,
+    percent: attempt.totalPoints > 0 ? Math.round((attempt.score / attempt.totalPoints) * 100) : 0,
+    submittedAt: attempt.completedAt,
+    pendingCount: summarizeReview(items).pendingCount,
+    answers: serializeReview(items, { includeCorrectAnswers }),
+  };
 };
 
 // Admin, or the teacher of the quiz's group
@@ -198,6 +234,22 @@ export const submitQuiz = asyncHandler(async (req, res) => {
     throw new Error('Bu quizə daxil olmaq icazəniz yoxdur');
   }
 
+  if (findByStudent(quiz.attempts, req.user._id)) {
+    res.status(400);
+    throw new Error('Siz artıq bu quizi tamamlamısınız');
+  }
+
+  const start = findByStudent(quiz.starts, req.user._id);
+  if (!start) {
+    res.status(400);
+    throw new Error('Quiz başlanmayıb');
+  }
+  const endsAt = quizEndsAt(quiz, start.startedAt);
+  if (endsAt && Date.now() > endsAt.getTime() + SUBMIT_GRACE_MS) {
+    res.status(400);
+    throw new Error('Quiz vaxtı bitib');
+  }
+
   const graded = gradeAnswers(quiz.questions, answers);
   const attempt = {
     student: req.user._id,
@@ -219,6 +271,117 @@ export const submitQuiz = asyncHandler(async (req, res) => {
   }
 
   return apiResponse.success(res, 'Quiz uğurla tamamlandı', attempt);
+});
+
+// @desc    Start the quiz timer (Student); repeated calls return the first start time
+// @route   POST /api/quizzes/:id/start
+// @access  Private/Student
+export const startQuiz = asyncHandler(async (req, res) => {
+  const quiz = await Quiz.findById(req.params.id);
+
+  if (!quiz) {
+    res.status(404);
+    throw new Error('Quiz tapılmadı');
+  }
+
+  const inGroup = await Group.exists({ _id: quiz.group, students: req.user._id });
+  if (!inGroup || !quiz.isActive) {
+    res.status(403);
+    throw new Error('Bu quizə daxil olmaq icazəniz yoxdur');
+  }
+
+  if (findByStudent(quiz.attempts, req.user._id)) {
+    res.status(400);
+    throw new Error('Siz artıq bu quizi tamamlamısınız');
+  }
+
+  // Atomic, so two tabs cannot record two different start times.
+  await Quiz.updateOne(
+    { _id: quiz._id, 'starts.student': { $ne: req.user._id } },
+    { $push: { starts: { student: req.user._id, startedAt: new Date() } } }
+  );
+  const { starts } = await Quiz.findById(quiz._id).select('starts').lean();
+  const { startedAt } = findByStudent(starts, req.user._id);
+
+  return apiResponse.success(res, 'Quiz başladı', {
+    startedAt,
+    endsAt: quizEndsAt(quiz, startedAt),
+    serverNow: new Date(),
+    timeLimit: quiz.timeLimit,
+    questions: stripCorrectAnswers(quiz.toObject().questions),
+  });
+});
+
+// @desc    One student's submitted answers (teacher/admin, or the student themself)
+// @route   GET /api/quizzes/:id/attempts/:studentId
+// @access  Private
+export const getQuizAttempt = asyncHandler(async (req, res) => {
+  const quiz = await Quiz.findById(req.params.id).populate('attempts.student', 'name email avatar');
+
+  if (!quiz) {
+    res.status(404);
+    throw new Error('Quiz tapılmadı');
+  }
+
+  const isSelf = req.user.role === 'student' && req.params.studentId === req.user._id.toString();
+  if (!isSelf && (req.user.role === 'student' || !(await canManageQuiz(req.user, quiz)))) {
+    res.status(403);
+    throw new Error('Bu cavablara baxmaq icazəniz yoxdur');
+  }
+
+  const attempt = findByStudent(quiz.attempts, req.params.studentId);
+  if (!attempt) {
+    res.status(404);
+    throw new Error('Nəticə tapılmadı');
+  }
+
+  return apiResponse.success(res, 'Cavablar gətirildi', buildAttemptReview(quiz, attempt, !isSelf));
+});
+
+// @desc    Grade open-ended answers of an attempt and recompute its score
+// @route   PUT /api/quizzes/:id/attempts/:studentId/grades
+// @access  Private/Teacher,Admin
+export const gradeQuizAttempt = asyncHandler(async (req, res) => {
+  const quiz = await Quiz.findById(req.params.id);
+
+  if (!quiz) {
+    res.status(404);
+    throw new Error('Quiz tapılmadı');
+  }
+
+  if (!(await canManageQuiz(req.user, quiz))) {
+    res.status(403);
+    throw new Error('Bu quizi qiymətləndirmək hüququnuz yoxdur');
+  }
+
+  const attempt = findByStudent(quiz.attempts, req.params.studentId);
+  if (!attempt) {
+    res.status(404);
+    throw new Error('Nəticə tapılmadı');
+  }
+
+  const graded = applyManualGrades(quiz.questions, attempt.answers, req.body.grades);
+  if (graded.error) {
+    res.status(400);
+    throw new Error(graded.error);
+  }
+
+  attempt.score = Math.min(summarizeReview(graded.items).earnedPoints, attempt.totalPoints);
+  await quiz.save({ validateModifiedOnly: true });
+
+  if (graded.changed) {
+    await notifyStudents([attempt.student], {
+      sender: req.user._id,
+      type: 'quiz',
+      title: 'Quiz qiymətləndirildi',
+      message: `"${quiz.title}" quizindəki cavablarınız yoxlanıldı. Nəticə: ${attempt.score}/${attempt.totalPoints}.`,
+      link: '/quizzes',
+    });
+  }
+
+  await quiz.populate('attempts.student', 'name email avatar');
+  const review = buildAttemptReview(quiz, findByStudent(quiz.attempts, req.params.studentId), true);
+  return apiResponse.success(res, 'Cavablar qiymətləndirildi', review);
 });
 
 // @desc    Delete quiz
