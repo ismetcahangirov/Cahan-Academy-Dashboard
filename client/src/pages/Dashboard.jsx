@@ -22,24 +22,24 @@ const useDarkMode = () => {
   return isDark;
 };
 
-const activityMonths = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul'];
+const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 const getActivityData = (stats) => {
-  // Real aylıq data gəlirsə onu istifadə et
   if (stats?.monthlyActivity?.length > 0) {
     return stats.monthlyActivity.map(({ month, value }) => ({ month, value }));
   }
-  // Fallback: statistikadan təxmini hesabla
-  const users = stats?.users?.total || 0;
-  const courses = stats?.courses?.total || 0;
-  const groups = stats?.groups?.total || 0;
-  const learningHours = stats?.learningHours?.total || 0;
-  const base = Math.max(8, users + courses * 3 + groups * 2 + Math.round(learningHours / 6));
-  return activityMonths.map((month, index) => {
-    const wave = [0.42, 0.56, 0.5, 0.72, 0.64, 0.82, 1][index];
-    return { month, value: Math.max(4, Math.round(base * wave)) };
-  });
+  // Məlumat yoxdursa son 7 ay üçün boş qrafik
+  const currentMonth = new Date().getMonth();
+  return Array.from({ length: 7 }, (_, index) => ({
+    month: MONTH_KEYS[(currentMonth - 6 + index + 12) % 12],
+    value: 0,
+  }));
 };
+
+const formatHours = (hours, t, language) =>
+  t('dashboard.hoursValue', {
+    value: new Intl.NumberFormat(language || undefined, { maximumFractionDigits: 1 }).format(hours || 0),
+  });
 
 const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
   const { t } = useTranslation();
@@ -200,7 +200,7 @@ const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
   );
 };
 
-const StatCard = ({ title, value, icon: Icon, trend, delay, isLoading }) => {
+const StatCard = ({ title, value, icon: Icon, trend, trendLabel, delay, isLoading }) => {
   const { t } = useTranslation();
   return (
     <motion.div
@@ -237,7 +237,7 @@ const StatCard = ({ title, value, icon: Icon, trend, delay, isLoading }) => {
                 {trend < 0 ? <TrendingDown size={14} className="mr-1" /> : <TrendingUp size={14} className="mr-1" />}
                 {trend > 0 ? `+${trend}` : trend}%
               </div>
-              <span className="text-white/65 text-xs">{t('dashboard.vsLastMonth')}</span>
+              <span className="text-white/65 text-xs">{trendLabel || t('dashboard.vsLastMonth')}</span>
             </div>
           )}
         </>
@@ -353,13 +353,14 @@ const PaymentWidget = () => {
 };
 
 const Dashboard = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const user = useSelector(selectCurrentUser);
   const { data: statsResponse, isLoading: statsLoading } = useGetStatsQuery();
   const { data: activitiesResponse, isLoading: activitiesLoading } = useGetActivitiesQuery();
 
   const stats = statsResponse?.data;
   const activities = activitiesResponse?.data || [];
+  const learningHours = formatHours(stats?.learningHours?.total, t, i18n?.language);
 
   return (
     <div className="space-y-8">
@@ -405,9 +406,10 @@ const Dashboard = () => {
             />
             <StatCard
               title={t('dashboard.learningHours')}
-              value={`${stats?.learningHours?.total || 0}s`}
+              value={learningHours}
               icon={Clock}
               trend={stats?.learningHours?.trend}
+              trendLabel={t('dashboard.hoursVsLastMonth')}
               delay={0.4}
               isLoading={statsLoading}
             />
@@ -437,7 +439,15 @@ const Dashboard = () => {
               delay={0.3}
               isLoading={statsLoading}
             />
-            <div className="hidden lg:block"></div>
+            <StatCard
+              title={t('dashboard.learningHours')}
+              value={learningHours}
+              icon={Clock}
+              trend={stats?.learningHours?.trend}
+              trendLabel={t('dashboard.hoursVsLastMonth')}
+              delay={0.4}
+              isLoading={statsLoading}
+            />
           </>
         )}
 
@@ -457,7 +467,15 @@ const Dashboard = () => {
               delay={0.2}
               isLoading={statsLoading}
             />
-            <div className="hidden lg:block" />
+            <StatCard
+              title={t('dashboard.myLearningHours')}
+              value={learningHours}
+              icon={Clock}
+              trend={stats?.learningHours?.trend}
+              trendLabel={t('dashboard.hoursVsLastMonth')}
+              delay={0.3}
+              isLoading={statsLoading}
+            />
             <div className="hidden lg:block" />
           </>
         )}

@@ -3,53 +3,87 @@ import Course from '../models/Course.js';
 import Group from '../models/Group.js';
 import Notification from '../models/Notification.js';
 import Attendance from '../models/Attendance.js';
+import { getAcademyNow } from '../utils/academyTime.js';
 
-// Son 7 ay üçün tarix aralığı və ay etiketlərini hazırlayır
-const getLast7Months = () => {
+const MONTH_LABELS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+// Son 7 ay (akademiya vaxtı ilə cari ay daxil). Dərs tarixləri "YYYY-MM-DD" kimi UTC gecə yarısında saxlanılır,
+// ona görə ay açarı UTC il-ay ilə uyğunlaşır.
+const getLast7Months = (now = new Date()) => {
+  const [year, month] = getAcademyNow(now).dateStr.split('-').map(Number);
   const months = [];
-  const now = new Date();
   for (let i = 6; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(Date.UTC(year, month - 1 - i, 1));
     months.push({
-      year: d.getFullYear(),
-      month: d.getMonth() + 1, // 1-indexed
-      label: d.toLocaleString('en-US', { month: 'short' }).toLowerCase(),
-      start: new Date(d.getFullYear(), d.getMonth(), 1),
-      end: new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999),
+      key: `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}`,
+      label: MONTH_LABELS[d.getUTCMonth()],
     });
   }
   return months;
 };
 
-// Verilmiş modeli aya görə aggregate edir
-const countByMonth = async (Model, dateField, months, extraMatch = {}) => {
-  const start = months[0].start;
-  const end = months[months.length - 1].end;
+// "HH:mm" → gün başlanğıcından dəqiqə; yanlış dəyər üçün null
+const parseTime = (value) => {
+  const match = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(String(value ?? '').trim());
+  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
+};
 
-  const result = await Model.aggregate([
-    {
-      $match: {
-        [dateField]: { $gte: start, $lte: end },
-        ...extraMatch,
-      },
-    },
+// Qrup cədvəlinə görə bir dərsin müddəti (dəqiqə). Bitmə başlanğıcdan tezdirsə dərs gecə yarısını keçir.
+// Vaxt yoxdursa və ya yanlışdırsa null: belə dərslər saata daxil edilmir.
+export const lessonDurationMinutes = (schedule) => {
+  const start = parseTime(schedule?.startTime);
+  const end = parseTime(schedule?.endTime);
+  if (start === null || end === null || start === end) return null;
+  return end > start ? end - start : end + 24 * 60 - start;
+};
+
+const toHours = (minutes) => Math.round(minutes / 6) / 10;
+
+const percentChange = (current, previous) =>
+  previous === 0 ? null : Math.round(((current - previous) / previous) * 100);
+
+// Keçirilmiş dərslər əsasında öyrənmə saatı və aylıq dərs sayı.
+// Hər Attendance sənədi (qrup + tarix) bir keçirilmiş dərsdir; müddəti qrupun schedule.startTime/endTime-dan gəlir.
+// studentId verilərsə yalnız həmin tələbənin iştirak etdiyi (present/late) dərslər sayılır.
+export const getLearningStats = async (match, { studentId, now } = {}) => {
+  const months = getLast7Months(now);
+  const lessonMatch = studentId
+    ? { ...match, records: { $elemMatch: { student: studentId, status: { $in: ['present', 'late'] } } } }
+    : match;
+
+  const rows = await Attendance.aggregate([
+    { $match: lessonMatch },
     {
       $group: {
-        _id: {
-          year: { $year: `$${dateField}` },
-          month: { $month: `$${dateField}` },
-        },
-        count: { $sum: 1 },
+        _id: { group: '$group', year: { $year: '$date' }, month: { $month: '$date' } },
+        lessons: { $sum: 1 },
       },
     },
   ]);
 
-  // Nəticəni ay-il açarına görə map et
-  const map = {};
-  result.forEach(({ _id, count }) => {
-    map[`${_id.year}-${_id.month}`] = count;
+  const groupIds = [...new Set(rows.map(({ _id }) => String(_id.group)))];
+  const groups = await Group.find({ _id: { $in: groupIds } }, 'schedule.startTime schedule.endTime').lean();
+  const durations = new Map(groups.map((g) => [String(g._id), lessonDurationMinutes(g.schedule)]));
+
+  let totalMinutes = 0;
+  const minutesByMonth = {};
+  const lessonsByMonth = {};
+  rows.forEach(({ _id, lessons }) => {
+    const key = `${_id.year}-${_id.month}`;
+    lessonsByMonth[key] = (lessonsByMonth[key] || 0) + lessons;
+    const duration = durations.get(String(_id.group));
+    if (!duration) return;
+    totalMinutes += duration * lessons;
+    minutesByMonth[key] = (minutesByMonth[key] || 0) + duration * lessons;
   });
-  return map;
+
+  const current = minutesByMonth[months[months.length - 1].key] || 0;
+  const previous = minutesByMonth[months[months.length - 2].key] || 0;
+
+  return {
+    learningHours: { total: toHours(totalMinutes), trend: percentChange(current, previous) },
+    monthlyActivity: months.map(({ key, label }) => ({ month: label, value: lessonsByMonth[key] || 0 })),
+  };
 };
 
 // Yeni yaradılan sənədlərin sayı: bu ay vs keçən ay (%). Keçən ay heç nə yoxdursa null (trend göstərilmir).
@@ -74,7 +108,6 @@ export const getStats = async (req, res) => {
   try {
     const role = req.user.role;
     const userId = req.user._id;
-    const months = getLast7Months();
 
     let dashboardData = {};
 
@@ -86,31 +119,19 @@ export const getStats = async (req, res) => {
       const students      = await User.countDocuments({ role: 'student' });
       const totalCourses  = await Course.countDocuments();
       const totalGroups   = await Group.countDocuments();
-      const learningHours = totalGroups * 48;
 
-      const [userMap, groupMap, attendanceMap, usersTrend, coursesTrend, groupsTrend] = await Promise.all([
-        countByMonth(User,       'createdAt',  months),
-        countByMonth(Group,      'createdAt',  months),
-        countByMonth(Attendance, 'createdAt',  months),
+      const [{ learningHours, monthlyActivity }, usersTrend, coursesTrend, groupsTrend] = await Promise.all([
+        getLearningStats({}),
         monthOverMonth(User),
         monthOverMonth(Course),
         monthOverMonth(Group),
       ]);
 
-      const monthlyActivity = months.map(({ year, month, label }) => {
-        const key = `${year}-${month}`;
-        const newUsers      = userMap[key]       || 0;
-        const newGroups     = groupMap[key]      || 0;
-        const attendances   = attendanceMap[key] || 0;
-        const value = newUsers * 3 + newGroups * 5 + attendances;
-        return { month: label, value };
-      });
-
       dashboardData = {
         users: { total: totalUsers, active: activeUsers, admins, teachers, students, trend: usersTrend },
         courses:      { total: totalCourses,  trend: coursesTrend },
         groups:       { total: totalGroups,   trend: groupsTrend },
-        learningHours:{ total: learningHours, trend: null },
+        learningHours,
         monthlyActivity,
       };
 
@@ -138,22 +159,15 @@ export const getStats = async (req, res) => {
       });
       const avgAttendance = totalRecords === 0 ? 0 : Math.round((presentRecords / totalRecords) * 100);
 
-      const [groupMap, attendanceMap] = await Promise.all([
-        countByMonth(Group, 'createdAt', months, { teacher: userId }),
-        countByMonth(Attendance, 'createdAt', months, { teacher: userId }),
-      ]);
-
-      const monthlyActivity = months.map(({ year, month, label }) => {
-        const key = `${year}-${month}`;
-        const newGroups = groupMap[key] || 0;
-        const attCount = attendanceMap[key] || 0;
-        return { month: label, value: newGroups * 5 + attCount };
+      const { learningHours, monthlyActivity } = await getLearningStats({
+        group: { $in: teacherGroups.map((g) => g._id) },
       });
 
       dashboardData = {
         groups: { total: totalGroups, trend: null },
         students: { total: totalStudents, trend: null },
         avgAttendance: { total: avgAttendance, trend: null },
+        learningHours,
         monthlyActivity,
       };
 
@@ -175,27 +189,12 @@ export const getStats = async (req, res) => {
       });
       const attendanceRate = totalRecords === 0 ? 0 : Math.round((presentRecords / totalRecords) * 100);
 
-      const [attendanceMap] = await Promise.all([
-        Attendance.aggregate([
-          { $match: { "records.student": userId, createdAt: { $gte: months[0].start, $lte: months[months.length - 1].end } } },
-          { $unwind: "$records" },
-          { $match: { "records.student": userId, "records.status": { $in: ["present", "late"] } } },
-          { $group: { _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } }, count: { $sum: 1 } } }
-        ]).then(res => {
-          const map = {};
-          res.forEach(({ _id, count }) => { map[`${_id.year}-${_id.month}`] = count; });
-          return map;
-        })
-      ]);
-
-      const monthlyActivity = months.map(({ year, month, label }) => {
-        const key = `${year}-${month}`;
-        return { month: label, value: attendanceMap[key] || 0 };
-      });
+      const { learningHours, monthlyActivity } = await getLearningStats({}, { studentId: userId });
 
       dashboardData = {
         enrolledGroups: { total: enrolledGroups, trend: null },
         myAttendance: { total: attendanceRate, trend: null },
+        learningHours,
         monthlyActivity,
       };
     }
