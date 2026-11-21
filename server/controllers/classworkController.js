@@ -4,6 +4,7 @@ import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
 import { createNotification } from '../utils/notificationService.js';
 import { parseSubmissionGrade } from '../utils/grading.js';
+import { notifyGroupTeacher } from '../utils/notifyStudents.js';
 import {
   buildGroupFilter,
   canManageGroup,
@@ -199,7 +200,8 @@ export const submitClasswork = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
-  if (!isGroupStudent(req.user, await loadGroupOf(classwork))) {
+  const group = await loadGroupOf(classwork);
+  if (!isGroupStudent(req.user, group)) {
     res.status(403);
     throw new Error('Siz yalnız öz qrupunuzun sinif işini təhvil verə bilərsiniz');
   }
@@ -230,6 +232,17 @@ export const submitClasswork = asyncHandler(async (req, res) => {
   }
 
   await classwork.save();
+
+  await notifyGroupTeacher(group, {
+    sender: req.user._id,
+    type: 'classwork',
+    title: 'Sinif işi təhvil verildi',
+    message: `${req.user.name} "${classwork.title}" sinif işini təhvil verdi`,
+    link: '/classworks',
+    key: 'classworkSubmitted',
+    params: { student: req.user.name, title: classwork.title },
+  });
+
   return apiResponse.success(
     res,
     'Sinif işi uğurla təhvil verildi',

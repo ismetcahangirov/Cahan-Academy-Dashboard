@@ -69,7 +69,7 @@
     "savePassword": "Save password",
     "passwordResetSuccess": "Password reset successfully",
     "passwordsDoNotMatch": "Passwords do not match",
-    "passwordRule": "Password must be at least 6 characters and contain at least one letter and one digit. Allowed symbols: @$!%*#?&",
+    "passwordRule": "Password must be at least 6 characters and contain at least one letter and one digit. Spaces are not allowed.",
     "tooManyRequests": "Too many attempts. Please try again in 15 minutes."
   },
   "dashboard": {
@@ -686,6 +686,22 @@
       "quizAnswersGraded": {
         "title": "Quiz graded",
         "message": "Your answers in \"{{title}}\" were reviewed. Result: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Homework submitted",
+        "message": "{{student}} submitted the homework \"{{title}}\""
+      },
+      "classworkSubmitted": {
+        "title": "Classwork submitted",
+        "message": "{{student}} submitted the classwork \"{{title}}\""
+      },
+      "examSubmitted": {
+        "title": "Exam submitted",
+        "message": "{{student}} submitted the exam \"{{title}}\""
+      },
+      "quizSubmitted": {
+        "title": "Quiz completed",
+        "message": "{{student}} completed the quiz \"{{title}}\""
       }
     }
   },

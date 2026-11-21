@@ -109,6 +109,21 @@ describe('User API', () => {
 
       expect(res.statusCode).toEqual(401);
     });
+
+    it('applies the shared password rule: symbols allowed, no digit or spaces rejected', async () => {
+      const change = (newPassword) => request(app)
+        .put('/api/users/profile/password')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ currentPassword: 'Password1', newPassword });
+
+      expect((await change('abcdef')).statusCode).toEqual(400);
+      expect((await change('abc 123')).statusCode).toEqual(400);
+
+      const ok = await change('new-pass_2.');
+      expect(ok.statusCode).toEqual(200);
+      const updated = await User.findById(userId).select('+password');
+      expect(await updated.matchPassword('new-pass_2.')).toBe(true);
+    });
   });
 
   describe('GET /api/users', () => {

@@ -69,7 +69,7 @@
     "savePassword": "Сохранить пароль",
     "passwordResetSuccess": "Пароль успешно обновлен",
     "passwordsDoNotMatch": "Пароли не совпадают",
-    "passwordRule": "Пароль должен содержать не менее 6 символов, минимум одну букву и одну цифру. Допустимые символы: @$!%*#?&",
+    "passwordRule": "Пароль должен содержать не менее 6 символов, минимум одну букву и одну цифру. Пробелы не допускаются.",
     "tooManyRequests": "Слишком много попыток. Повторите через 15 минут."
   },
   "dashboard": {
@@ -692,6 +692,22 @@
       "quizAnswersGraded": {
         "title": "Квиз оценён",
         "message": "Ваши ответы в квизе «{{title}}» проверены. Результат: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Домашнее задание сдано",
+        "message": "{{student}}: домашнее задание «{{title}}» сдано"
+      },
+      "classworkSubmitted": {
+        "title": "Классная работа сдана",
+        "message": "{{student}}: классная работа «{{title}}» сдана"
+      },
+      "examSubmitted": {
+        "title": "Экзамен сдан",
+        "message": "{{student}}: экзамен «{{title}}» сдан"
+      },
+      "quizSubmitted": {
+        "title": "Квиз пройден",
+        "message": "{{student}}: квиз «{{title}}» пройден"
       }
     }
   },

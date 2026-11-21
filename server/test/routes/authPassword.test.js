@@ -88,11 +88,11 @@ describe('Password reset', () => {
     user.resetPasswordExpire = Date.now() + 60_000;
     await user.save();
 
-    const res = await request(app).post('/api/auth/reset-password/validtoken').send({ password: 'NewPassword2' });
+    const res = await request(app).post('/api/auth/reset-password/validtoken').send({ password: 'new-pass_2.' });
     expect(res.statusCode).toBe(200);
 
     const stored = await User.findById(user._id).select('+password');
-    expect(await stored.matchPassword('NewPassword2')).toBe(true);
+    expect(await stored.matchPassword('new-pass_2.')).toBe(true);
     expect(stored.resetPasswordToken).toBeUndefined();
     expect(stored.resetPasswordExpire).toBeUndefined();
 

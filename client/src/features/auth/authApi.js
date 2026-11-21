@@ -65,4 +65,4 @@ export const {
 } = authApi;
 
 // Mirrors the server rule in server/utils/passwordPolicy.js.
-export const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/;
+export const PASSWORD_REGEX = /^(?=.*\p{L})(?=.*\d)[^\s\p{C}]{6,}$/u;

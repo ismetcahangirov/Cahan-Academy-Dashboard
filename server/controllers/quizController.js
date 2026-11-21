@@ -12,7 +12,7 @@ import {
   stripCorrectAnswers,
   summarizeReview,
 } from '../utils/grading.js';
-import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
+import { notifyGroupStudents, notifyGroupTeacher, notifyStudents } from '../utils/notifyStudents.js';
 import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
 
 // Late network requests are still accepted this long after the time limit.
@@ -269,6 +269,16 @@ export const submitQuiz = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Siz artıq bu quizi tamamlamısınız');
   }
+
+  await notifyGroupTeacher(quiz.group, {
+    sender: req.user._id,
+    type: 'quiz',
+    title: 'Quiz tamamlandı',
+    message: `${req.user.name} "${quiz.title}" quizini tamamladı`,
+    link: '/quizzes',
+    key: 'quizSubmitted',
+    params: { student: req.user.name, title: quiz.title },
+  });
 
   return apiResponse.success(res, 'Quiz uğurla tamamlandı', attempt);
 });

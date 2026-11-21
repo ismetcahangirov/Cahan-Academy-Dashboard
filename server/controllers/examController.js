@@ -11,7 +11,7 @@ import {
   stripCorrectAnswers,
   summarizeReview,
 } from '../utils/grading.js';
-import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
+import { notifyGroupStudents, notifyGroupTeacher, notifyStudents } from '../utils/notifyStudents.js';
 import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
 
 // Late network requests are still accepted this long after the exam ends.
@@ -412,6 +412,16 @@ export const submitStudentExam = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error('Siz artıq bu imtahanı vermisiniz');
   }
+
+  await notifyGroupTeacher(exam.group, {
+    sender: req.user._id,
+    type: 'other',
+    title: 'İmtahan təhvil verildi',
+    message: `${req.user.name} "${exam.title}" imtahanını təhvil verdi`,
+    link: '/exams',
+    key: 'examSubmitted',
+    params: { student: req.user.name, title: exam.title },
+  });
 
   res.status(200).json({
     success: true,

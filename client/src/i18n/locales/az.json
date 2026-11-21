@@ -69,7 +69,7 @@
     "savePassword": "Şifrəni yadda saxla",
     "passwordResetSuccess": "Şifrə uğurla yeniləndi",
     "passwordsDoNotMatch": "Şifrələr uyğun gəlmir",
-    "passwordRule": "Şifrə ən azı 6 simvol olmalı, ən azı 1 hərf və 1 rəqəm içərməlidir. İcazə verilən simvollar: @$!%*#?&",
+    "passwordRule": "Şifrə ən azı 6 simvol olmalı, ən azı 1 hərf və 1 rəqəm içərməlidir. Boşluq istifadə etmək olmaz.",
     "tooManyRequests": "Çox sayda cəhd edildi. Zəhmət olmasa 15 dəqiqə sonra yenidən yoxlayın."
   },
   "dashboard": {
@@ -683,6 +683,22 @@
       "quizAnswersGraded": {
         "title": "Quiz qiymətləndirildi",
         "message": "\"{{title}}\" quizindəki cavablarınız yoxlanıldı. Nəticə: {{score}}/{{total}}."
+      },
+      "homeworkSubmitted": {
+        "title": "Ev tapşırığı təhvil verildi",
+        "message": "{{student}} \"{{title}}\" ev tapşırığını təhvil verdi"
+      },
+      "classworkSubmitted": {
+        "title": "Sinif işi təhvil verildi",
+        "message": "{{student}} \"{{title}}\" sinif işini təhvil verdi"
+      },
+      "examSubmitted": {
+        "title": "İmtahan təhvil verildi",
+        "message": "{{student}} \"{{title}}\" imtahanını təhvil verdi"
+      },
+      "quizSubmitted": {
+        "title": "Quiz tamamlandı",
+        "message": "{{student}} \"{{title}}\" quizini tamamladı"
       }
     }
   },
