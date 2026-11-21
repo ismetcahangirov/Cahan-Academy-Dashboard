@@ -16,12 +16,17 @@ const examResultSchema = new mongoose.Schema(
     feedback: {
       type: String,
     },
+    // Online exams: raw points behind the 0-100 score
+    earnedPoints: Number,
+    totalPoints: Number,
     // Filled when the student takes the exam online
     answers: [
       {
         questionId: mongoose.Schema.Types.ObjectId,
         selectedOption: String,
         isCorrect: Boolean,
+        // Auto-graded: fixed at submit time; open-ended: set by the teacher (null = not graded yet)
+        awardedPoints: Number,
       },
     ],
   },

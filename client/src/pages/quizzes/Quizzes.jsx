@@ -208,7 +208,7 @@ const Quizzes = () => {
                 <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
                   <HelpCircle size={16} className="text-bordo" />
                   <span>
-                    {t('quizzes.questions')}: {quiz.questions?.length || 0}
+                    {t('quizzes.questions')}: {quiz.questionCount ?? quiz.questions?.length ?? 0}
                   </span>
                 </div>
               </div>

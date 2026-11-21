@@ -322,6 +322,146 @@ describe('Exam API', () => {
     });
   });
 
+  describe('answer review and manual grading', () => {
+    let liveExam, mc, tf, open, otherTeacherToken, classmateId, classmateToken;
+
+    const reviewAs = (token, sid = studentId) => request(app)
+      .get(`/api/exams/${liveExam._id}/results/${sid}`)
+      .set('Authorization', `Bearer ${token}`);
+    const gradeAs = (token, grades) => request(app)
+      .put(`/api/exams/${liveExam._id}/results/${studentId}/grades`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ grades });
+
+    beforeEach(async () => {
+      const otherTeacher = await User.create({
+        name: 'Other Teacher', email: 'otherteacher4@example.com', password: 'Password1', role: 'teacher', status: 'active'
+      });
+      otherTeacherToken = generateToken(otherTeacher._id);
+      const classmate = await User.create({
+        name: 'Classmate', email: 'classmate4@example.com', password: 'Password1', role: 'student', status: 'active'
+      });
+      classmateId = classmate._id;
+      classmateToken = generateToken(classmateId);
+      await Group.updateOne({ _id: groupId }, { $push: { students: classmateId } });
+
+      liveExam = await Exam.create({
+        title: 'Graded Exam',
+        date: new Date(Date.now() - 5 * 60 * 1000),
+        duration: 60,
+        group: groupId,
+        teacher: teacherId,
+        questions: [
+          { text: 'MC', type: 'multiple-choice', options: ['a', 'b', 'c'], correctAnswer: '2', points: 2 },
+          { text: 'TF', type: 'true-false', correctAnswer: 'false', points: 1 },
+          { text: 'Essay', type: 'open-ended', correctAnswer: '', points: 1 },
+        ],
+      });
+      [mc, tf, open] = liveExam.questions.map((q) => q._id.toString());
+      await request(app)
+        .post(`/api/exams/${liveExam._id}/submit`)
+        .set('Authorization', `Bearer ${studentToken}`)
+        .send({ answers: { [mc]: '2', [tf]: 'true', [open]: 'my essay' } });
+    });
+
+    it('stores raw points next to the 0-100 score on submit', async () => {
+      const saved = await Exam.findById(liveExam._id);
+      const result = saved.results[0];
+      expect(result.score).toBe(50);
+      expect(result.earnedPoints).toBe(2);
+      expect(result.totalPoints).toBe(4);
+      expect(result.answers.map((a) => a.awardedPoints)).toEqual([2, 0, null]);
+    });
+
+    it('shows the teacher every answer with question text and correct answer', async () => {
+      const res = await reviewAs(teacherToken);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.student.name).toBe('Student User');
+      expect(res.body.data.percent).toBe(50);
+      expect(res.body.data.pendingCount).toBe(1);
+      expect(res.body.data.answers.map((a) => [a.text, a.answer, a.correctAnswer, a.isCorrect, a.awardedPoints])).toEqual([
+        ['MC', '2', '2', true, 2],
+        ['TF', 'true', 'false', false, 0],
+        ['Essay', 'my essay', '', null, null],
+      ]);
+    });
+
+    it('grades open answers, keeps auto-graded points fixed and recomputes the percentage', async () => {
+      const res = await gradeAs(teacherToken, [{ questionId: open, points: 0.5 }]);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.earnedPoints).toBe(2.5);
+      expect(res.body.data.totalPoints).toBe(4);
+      expect(res.body.data.percent).toBe(63);
+
+      expect((await gradeAs(teacherToken, { [tf]: 1 })).statusCode).toBe(400);
+      expect((await gradeAs(teacherToken, { [open]: 2 })).statusCode).toBe(400);
+      expect((await gradeAs(teacherToken, { [open]: 'abc' })).statusCode).toBe(400);
+
+      const saved = await Exam.findById(liveExam._id);
+      expect(saved.results[0].score).toBe(63);
+      expect(saved.results[0].answers.map((a) => a.awardedPoints)).toEqual([2, 0, 0.5]);
+    });
+
+    it('grades results stored before raw points existed', async () => {
+      await Exam.updateOne({ _id: liveExam._id }, {
+        $unset: {
+          'results.0.earnedPoints': 1,
+          'results.0.totalPoints': 1,
+          'results.0.answers.0.awardedPoints': 1,
+          'results.0.answers.1.awardedPoints': 1,
+          'results.0.answers.2.awardedPoints': 1,
+        },
+      });
+
+      const res = await gradeAs(teacherToken, { [open]: 1 });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.data.earnedPoints).toBe(3);
+      expect(res.body.data.percent).toBe(75);
+    });
+
+    it('rejects grading a result without online answers', async () => {
+      await request(app)
+        .post(`/api/exams/${liveExam._id}/results`)
+        .set('Authorization', `Bearer ${teacherToken}`)
+        .send({ results: [{ student: classmateId, score: 70 }] });
+
+      const res = await request(app)
+        .put(`/api/exams/${liveExam._id}/results/${classmateId}/grades`)
+        .set('Authorization', `Bearer ${teacherToken}`)
+        .send({ grades: { [open]: 1 } });
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('allows only the group teacher or an admin to review and grade', async () => {
+      expect((await reviewAs(otherTeacherToken)).statusCode).toBe(403);
+      expect((await gradeAs(otherTeacherToken, { [open]: 1 })).statusCode).toBe(403);
+      expect((await gradeAs(studentToken, { [open]: 1 })).statusCode).toBe(403);
+      expect((await reviewAs(adminToken)).statusCode).toBe(200);
+      expect((await gradeAs(adminToken, { [open]: 1 })).statusCode).toBe(200);
+    });
+
+    it('shows a student only their own answers, only after the exam ends, without correct answers', async () => {
+      expect((await reviewAs(studentToken)).statusCode).toBe(403);
+
+      await Exam.updateOne({ _id: liveExam._id }, { date: new Date(Date.now() - 3 * 3600000) });
+      const own = await reviewAs(studentToken);
+      expect(own.statusCode).toBe(200);
+      expect(JSON.stringify(own.body)).not.toContain('correctAnswer');
+      expect(own.body.data.answers).toHaveLength(3);
+
+      expect((await reviewAs(classmateToken)).statusCode).toBe(403);
+      expect((await reviewAs(classmateToken, classmateId)).statusCode).toBe(404);
+    });
+
+    it('notifies the student when the grade changes, and not when it stays the same', async () => {
+      await gradeAs(teacherToken, { [open]: 1 });
+      await gradeAs(teacherToken, { [open]: 1 });
+      const notes = await Notification.find({ recipient: studentId, title: 'İmtahan nəticəsi yeniləndi' });
+      expect(notes).toHaveLength(1);
+      expect(notes[0].message).toContain('75/100');
+    });
+  });
+
   describe('notifications', () => {
     it('notifies group students when an exam is created', async () => {
       await request(app)

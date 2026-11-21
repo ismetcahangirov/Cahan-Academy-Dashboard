@@ -6,7 +6,10 @@ import {
   createQuiz,
   updateQuiz,
   submitQuiz,
-  deleteQuiz
+  deleteQuiz,
+  startQuiz,
+  getQuizAttempt,
+  gradeQuizAttempt,
 } from '../controllers/quizController.js';
 
 const router = express.Router();
@@ -20,7 +23,16 @@ router.route('/:id')
   .put(protect, authorize('admin', 'teacher'), updateQuiz)
   .delete(protect, authorize('admin', 'teacher'), deleteQuiz);
 
+router.route('/:id/start')
+  .post(protect, authorize('student'), startQuiz);
+
 router.route('/:id/submit')
   .post(protect, authorize('student'), submitQuiz);
+
+router.route('/:id/attempts/:studentId')
+  .get(protect, getQuizAttempt);
+
+router.route('/:id/attempts/:studentId/grades')
+  .put(protect, authorize('admin', 'teacher'), gradeQuizAttempt);
 
 export default router;

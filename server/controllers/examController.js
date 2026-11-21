@@ -2,7 +2,15 @@ import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
 import Exam from '../models/Exam.js';
 import Group from '../models/Group.js';
-import { gradeAnswers, mergeQuestions, stripCorrectAnswers } from '../utils/grading.js';
+import {
+  applyManualGrades,
+  gradeAnswers,
+  mergeQuestions,
+  reviewAnswers,
+  serializeReview,
+  stripCorrectAnswers,
+  summarizeReview,
+} from '../utils/grading.js';
 import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
 import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
 
@@ -27,6 +35,27 @@ const toStudentExam = (exam, userId, now = Date.now()) => {
   if (obj.group && typeof obj.group === 'object') delete obj.group.students;
   return obj;
 };
+
+// score stays 0-100; earnedPoints / totalPoints are the raw points behind it
+// (derived from the answers for results stored before those fields existed).
+const toPercent = (earned, total) => (total > 0 ? Math.min(100, Math.max(0, Math.round((earned / total) * 100))) : 0);
+
+const buildResultReview = (exam, result, includeCorrectAnswers) => {
+  const items = reviewAnswers(exam.questions, result.answers);
+  const summary = summarizeReview(items);
+  return {
+    student: result.student,
+    earnedPoints: result.earnedPoints ?? summary.earnedPoints,
+    totalPoints: result.totalPoints ?? summary.totalPoints,
+    percent: result.score,
+    feedback: result.feedback || '',
+    submittedAt: result.createdAt,
+    pendingCount: summary.pendingCount,
+    answers: serializeReview(items, { includeCorrectAnswers }),
+  };
+};
+
+const findResult = (exam, studentId) => exam.results.find((r) => idOf(r.student) === String(studentId));
 
 // Admin, or the teacher of the exam's group
 const canManageExam = async (user, exam) => {
@@ -358,9 +387,7 @@ export const submitStudentExam = asyncHandler(async (req, res) => {
   }
 
   const graded = gradeAnswers(exam.questions, answers);
-  const normalizedScore = graded.totalPoints > 0
-    ? Math.round((graded.score / graded.totalPoints) * 100)
-    : 0;
+  const normalizedScore = toPercent(graded.score, graded.totalPoints);
 
   // Atomic guard against double submission (two tabs, double click).
   const update = await Exam.updateOne(
@@ -370,6 +397,8 @@ export const submitStudentExam = asyncHandler(async (req, res) => {
         results: {
           student: req.user._id,
           score: normalizedScore,
+          earnedPoints: graded.score,
+          totalPoints: graded.totalPoints,
           feedback: '',
           answers: graded.answers,
         },
@@ -389,5 +418,92 @@ export const submitStudentExam = asyncHandler(async (req, res) => {
       correctPoints: graded.score,
       totalPoints: graded.totalPoints,
     }
+  });
+});
+
+// @desc    One student's submitted answers (teacher/admin, or the student after the exam ends)
+// @route   GET /api/exams/:id/results/:studentId
+// @access  Private
+export const getExamResultAnswers = asyncHandler(async (req, res) => {
+  const exam = await Exam.findById(req.params.id).populate('results.student', 'name email avatar');
+
+  if (!exam) {
+    res.status(404);
+    throw new Error('İmtahan tapılmadı');
+  }
+
+  const isSelf = req.user.role === 'student' && req.params.studentId === req.user._id.toString();
+  if (!isSelf && (req.user.role === 'student' || !(await canManageExam(req.user, exam)))) {
+    res.status(403);
+    throw new Error('Bu cavablara baxmaq icazəniz yoxdur');
+  }
+
+  const result = findResult(exam, req.params.studentId);
+  if (!result) {
+    res.status(404);
+    throw new Error('Nəticə tapılmadı');
+  }
+
+  // Classmates may still be writing until the window (and its grace period) closes.
+  if (isSelf && Date.now() <= getExamWindow(exam).end + SUBMIT_GRACE_MS) {
+    res.status(403);
+    throw new Error('Cavablarınız imtahan bitdikdən sonra görünəcək');
+  }
+
+  res.status(200).json({
+    success: true,
+    data: buildResultReview(exam, result, !isSelf),
+  });
+});
+
+// @desc    Grade open-ended answers of a result and recompute its score
+// @route   PUT /api/exams/:id/results/:studentId/grades
+// @access  Private/Teacher, Admin
+export const gradeExamResult = asyncHandler(async (req, res) => {
+  const exam = await Exam.findById(req.params.id);
+
+  if (!exam) {
+    res.status(404);
+    throw new Error('İmtahan tapılmadı');
+  }
+
+  if (!(await canManageExam(req.user, exam))) {
+    res.status(403);
+    throw new Error('Bu imtahanı qiymətləndirmək icazəniz yoxdur');
+  }
+
+  const result = findResult(exam, req.params.studentId);
+  if (!result) {
+    res.status(404);
+    throw new Error('Nəticə tapılmadı');
+  }
+
+  const graded = applyManualGrades(exam.questions, result.answers, req.body.grades);
+  if (graded.error) {
+    res.status(400);
+    throw new Error(graded.error);
+  }
+
+  const summary = summarizeReview(graded.items);
+  const totalPoints = result.totalPoints ?? summary.totalPoints;
+  result.totalPoints = totalPoints;
+  result.earnedPoints = Math.min(summary.earnedPoints, totalPoints);
+  result.score = toPercent(result.earnedPoints, totalPoints);
+  await exam.save({ validateModifiedOnly: true });
+
+  if (graded.changed) {
+    await notifyStudents([result.student], {
+      sender: req.user._id,
+      type: 'other',
+      title: 'İmtahan nəticəsi yeniləndi',
+      message: `"${exam.title}" imtahanındakı cavablarınız yoxlanıldı. Nəticə: ${result.score}/100.`,
+      link: '/exams',
+    });
+  }
+
+  await exam.populate('results.student', 'name email avatar');
+  res.status(200).json({
+    success: true,
+    data: buildResultReview(exam, findResult(exam, req.params.studentId), true),
   });
 });

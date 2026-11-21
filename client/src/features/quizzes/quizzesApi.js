@@ -48,6 +48,26 @@ export const quizzesApi = apiSlice.injectEndpoints({
         'Quiz',
       ],
     }),
+    startQuiz: builder.mutation({
+      query: (id) => ({
+        url: `/quizzes/${id}/start`,
+        method: 'POST',
+      }),
+      transformResponse: (response) => response.data,
+    }),
+    getQuizAttempt: builder.query({
+      query: ({ id, studentId }) => `/quizzes/${id}/attempts/${studentId}`,
+      providesTags: (result, error, { id, studentId }) => [{ type: 'Quiz', id: `${id}:${studentId}` }],
+      transformResponse: (response) => response.data,
+    }),
+    gradeQuizAttempt: builder.mutation({
+      query: ({ id, studentId, grades }) => ({
+        url: `/quizzes/${id}/attempts/${studentId}/grades`,
+        method: 'PUT',
+        body: { grades },
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Quiz', id }, 'Quiz'],
+    }),
     deleteQuiz: builder.mutation({
       query: (id) => ({
         url: `/quizzes/${id}`,
@@ -64,5 +84,8 @@ export const {
   useCreateQuizMutation,
   useUpdateQuizMutation,
   useSubmitQuizMutation,
+  useStartQuizMutation,
+  useGetQuizAttemptQuery,
+  useGradeQuizAttemptMutation,
   useDeleteQuizMutation,
 } = quizzesApi;

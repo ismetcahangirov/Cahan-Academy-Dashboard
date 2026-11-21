@@ -7,6 +7,8 @@ import {
   deleteExam,
   addExamResults,
   submitStudentExam,
+  getExamResultAnswers,
+  gradeExamResult,
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -26,6 +28,12 @@ router.route('/:id')
 
 router.route('/:id/results')
   .post(authorize('admin', 'teacher'), addExamResults);
+
+router.route('/:id/results/:studentId')
+  .get(getExamResultAnswers);
+
+router.route('/:id/results/:studentId/grades')
+  .put(authorize('admin', 'teacher'), gradeExamResult);
 
 router.route('/:id/submit')
   .post(authorize('student'), submitStudentExam);
