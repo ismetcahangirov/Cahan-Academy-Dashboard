@@ -2,6 +2,10 @@ import User from '../models/userModel.js';
 import Group from '../models/Group.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 
+const SORTABLE_FIELDS = ['createdAt', 'name', 'email', 'status'];
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
  * @desc    Get all teachers
  * @route   GET /api/teachers
@@ -12,8 +16,8 @@ export const getTeachers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const search = req.query.search || '';
-    const sortField = req.query.sort || 'createdAt';
+    const search = typeof req.query.search === 'string' ? escapeRegex(req.query.search) : '';
+    const sortField = SORTABLE_FIELDS.includes(req.query.sort) ? req.query.sort : 'createdAt';
     const sortOrder = req.query.order === 'asc' ? 1 : -1;
 
     // Build query
@@ -25,24 +29,37 @@ export const getTeachers = async (req, res) => {
       ],
     };
 
-    const total = await User.countDocuments(query);
+    const [total, active, groupsTotal] = await Promise.all([
+      User.countDocuments(query),
+      User.countDocuments({ ...query, status: 'active' }),
+      Group.countDocuments(),
+    ]);
     const teachers = await User.find(query)
-      .sort({ [sortField]: sortOrder })
+      .sort({ [sortField]: sortOrder, _id: 1 })
       .skip(skip)
       .limit(limit);
 
-    // Note: groupCount and studentCount will be implemented when Groups model is ready
-    const teachersWithStats = teachers.map(teacher => ({
-      ...teacher.toObject(),
-      groupCount: 0, 
-      studentCount: 0,
-    }));
+    const groups = await Group.find({ teacher: { $in: teachers.map((t) => t._id) } })
+      .select('teacher students')
+      .lean();
+
+    const teachersWithStats = teachers.map((teacher) => {
+      const own = groups.filter((g) => g.teacher.equals(teacher._id));
+      const studentIds = new Set(own.flatMap((g) => g.students.map(String)));
+      return {
+        ...teacher.toObject(),
+        groupCount: own.length,
+        studentCount: studentIds.size,
+      };
+    });
 
     return sendSuccess(res, 'Teachers fetched successfully', teachersWithStats, {
       page,
       limit,
       total,
       pages: Math.ceil(total / limit),
+      active,
+      groupsTotal,
     });
   } catch (error) {
     return sendError(res, error.message, 500);

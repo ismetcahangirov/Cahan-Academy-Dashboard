@@ -48,7 +48,22 @@ describe('Students API', () => {
     expect(alicesRow.group).toBe('Alpha, Beta');
     expect(res.body.data[3].group).toBeNull();
     expect(res.body.data[3].groups).toEqual([]);
-    expect(res.body.meta).toEqual({ page: 1, limit: 50, total: 4, pages: 1 });
+    expect(res.body.meta).toEqual({ page: 1, limit: 50, total: 4, pages: 1, active: 4, recent: 4 });
+  });
+
+  it('counts active and recent students across all pages, not just the current one', async () => {
+    await User.updateOne({ _id: bob._id }, { status: 'inactive' });
+    const old = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    await User.collection.updateOne({ _id: carol._id }, { $set: { createdAt: old } });
+
+    const res = await get(admin, '?limit=1');
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.meta).toMatchObject({ total: 4, pages: 4, active: 3, recent: 3 });
+
+    const scoped = await get(teacher, '?limit=1');
+    expect(scoped.body.meta).toMatchObject({ total: 2, active: 1, recent: 2 });
   });
 
   it('limits a teacher to students of the groups they teach', async () => {
