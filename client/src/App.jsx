@@ -24,6 +24,7 @@ const Invitations = lazy(() => import('./pages/invitations/Invitations'));
 const AcceptInvitation = lazy(() => import('./pages/invitations/AcceptInvitation'));
 const Groups = lazy(() => import('./pages/groups/Groups'));
 const Courses = lazy(() => import('./pages/courses/Courses'));
+const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
 const Attendance = lazy(() => import('./pages/attendance/Attendance'));
 const Homeworks = lazy(() => import('./pages/homeworks/Homeworks'));
 const Classworks = lazy(() => import('./pages/classworks/Classworks'));
@@ -91,20 +92,20 @@ function App() {
                 <Route path="/users/:id" element={<UserDetail />} />
                 <Route path="/invitations" element={<Invitations />} />
                 <Route path="/students/:id/payments" element={<StudentPayments />} />
-              </Route>
- 
-              {/* Admin + Teacher */}
-              <Route element={<RoleRoute roles={['admin', 'teacher']} />}>
                 <Route path="/teachers" element={<Teachers />} />
                 <Route path="/teachers/:id" element={<TeacherDetail />} />
               </Route>
  
+              {/* Admin + Teacher */}
+              <Route element={<RoleRoute roles={['admin', 'teacher']} />}>
+                <Route path="/students" element={<Students />} />
+                <Route path="/students/:id" element={<StudentDetail />} />
+                <Route path="/attendance" element={<Attendance />} />
+              </Route>
+ 
               {/* All authenticated users */}
-              <Route path="/students" element={<Students />} />
-              <Route path="/students/:id" element={<StudentDetail />} />
               <Route path="/groups" element={<Groups />} />
               <Route path="/courses" element={<Courses />} />
-              <Route path="/attendance" element={<Attendance />} />
               <Route path="/homeworks" element={<Homeworks />} />
               <Route path="/classworks" element={<Classworks />} />
               <Route path="/exams" element={<Exams />} />
@@ -112,7 +113,7 @@ function App() {
               <Route path="/quizzes" element={<Quizzes />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/schedule" element={<Schedule />} />
-              <Route path="/courses/:id" element={<div className="text-white p-6">Kurs Detalları (Tezliklə)</div>} />
+              <Route path="/courses/:id" element={<CourseDetail />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
             </Route>

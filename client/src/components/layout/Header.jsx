@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
-import { Menu, Bell, Search, Globe, ChevronDown } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, Bell, Search, Globe } from 'lucide-react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetUnreadCountQuery } from '../../features/notifications/notificationsApi';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +17,15 @@ const Header = ({ setIsMobileOpen }) => {
   const { t, i18n } = useTranslation();
   
   const unreadCount = countData?.count || 0;
+  // The global search looks up students, which only staff can list
+  const canSearch = user?.role === 'admin' || user?.role === 'teacher';
+  const [query, setQuery] = useState('');
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = query.trim();
+    navigate(q ? `/students?search=${encodeURIComponent(q)}` : '/students');
+  };
 
   const languages = [
     { code: 'az', name: 'AZE' },
@@ -40,14 +47,23 @@ const Header = ({ setIsMobileOpen }) => {
         </button>
 
         {/* Search Bar (Desktop) */}
-        <div className="hidden md:flex items-center gap-2 bg-[var(--muted)]/50 border border-[var(--border)] rounded-full px-4 py-2 w-64 focus-within:ring-1 focus-within:ring-bordo focus-within:border-bordo transition-all">
-          <Search size={16} className="text-[var(--muted-foreground)]/40" />
-          <input
-            type="text"
-            placeholder={t('common.search')}
-            className="bg-transparent border-none outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--muted-foreground)]/40"
-          />
-        </div>
+        {canSearch && (
+          <form
+            role="search"
+            onSubmit={handleSearch}
+            className="hidden md:flex items-center gap-2 bg-[var(--muted)]/50 border border-[var(--border)] rounded-full px-4 py-2 w-64 focus-within:ring-1 focus-within:ring-bordo focus-within:border-bordo transition-all"
+          >
+            <Search size={16} className="text-[var(--muted-foreground)]/40" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('students.searchPlaceholder')}
+              aria-label={t('students.searchPlaceholder')}
+              className="bg-transparent border-none outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--muted-foreground)]/40"
+            />
+          </form>
+        )}
       </div>
 
       <div className="flex items-center gap-4">
