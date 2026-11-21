@@ -4,6 +4,7 @@ import Exam from '../models/Exam.js';
 import Group from '../models/Group.js';
 import { gradeAnswers, mergeQuestions, stripCorrectAnswers } from '../utils/grading.js';
 import { notifyGroupStudents, notifyStudents } from '../utils/notifyStudents.js';
+import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
 
 // Late network requests are still accepted this long after the exam ends.
 const SUBMIT_GRACE_MS = 2 * 60 * 1000;
@@ -27,12 +28,11 @@ const toStudentExam = (exam, userId, now = Date.now()) => {
   return obj;
 };
 
+// Admin, or the teacher of the exam's group
 const canManageExam = async (user, exam) => {
   if (user.role === 'admin') return true;
-  if (user.role !== 'teacher') return false;
-  if (idOf(exam.teacher) === user._id.toString()) return true;
-  if (exam.group && exam.group.teacher) return idOf(exam.group.teacher) === user._id.toString();
-  return Boolean(await Group.exists({ _id: idOf(exam.group), teacher: user._id }));
+  const group = exam.group?.teacher ? exam.group : await Group.findById(idOf(exam.group)).select('teacher');
+  return canManageGroup(user, group);
 };
 
 const rethrowAsBadRequest = (res, error) => {
@@ -48,22 +48,16 @@ const rethrowAsBadRequest = (res, error) => {
 // @access  Private
 export const getExams = asyncHandler(async (req, res) => {
   const { groupId, teacherId } = req.query;
-  const filters = [];
+  const query = {};
 
-  if (req.user.role === 'student') {
-    const groups = await Group.find({ students: req.user._id }).select('_id');
-    filters.push({ group: { $in: groups.map((g) => g._id) } });
-  } else if (req.user.role === 'teacher') {
-    const groups = await Group.find({ teacher: req.user._id }).select('_id');
-    filters.push({ $or: [{ teacher: req.user._id }, { group: { $in: groups.map((g) => g._id) } }] });
-  }
-
-  if (groupId && mongoose.isValidObjectId(groupId)) filters.push({ group: groupId });
+  // Own groups only; groupId can narrow but never widen that
+  const groupFilter = await buildGroupFilter(req.user, groupId);
+  if (groupFilter !== undefined) query.group = groupFilter;
   if (teacherId && req.user.role === 'admin' && mongoose.isValidObjectId(teacherId)) {
-    filters.push({ teacher: teacherId });
+    query.teacher = teacherId;
   }
 
-  const exams = await Exam.find(filters.length ? { $and: filters } : {})
+  const exams = await Exam.find(query)
     .populate('group', 'name')
     .populate('teacher', 'name avatar')
     .sort({ date: 1 });
@@ -140,7 +134,7 @@ export const createExam = asyncHandler(async (req, res) => {
     throw new Error('Qrup tapılmadı');
   }
 
-  if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+  if (!canManageGroup(req.user, targetGroup)) {
     res.status(403);
     throw new Error('Siz yalnız öz qruplarınıza imtahan əlavə edə bilərsiniz');
   }
@@ -200,7 +194,7 @@ export const updateExam = asyncHandler(async (req, res) => {
       res.status(404);
       throw new Error('Qrup tapılmadı');
     }
-    if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+    if (!canManageGroup(req.user, targetGroup)) {
       res.status(403);
       throw new Error('Siz yalnız öz qruplarınıza imtahan əlavə edə bilərsiniz');
     }

@@ -5,6 +5,7 @@ import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
 import { gradeAnswers, mergeQuestions, stripCorrectAnswers } from '../utils/grading.js';
 import { notifyGroupStudents } from '../utils/notifyStudents.js';
+import { buildGroupFilter, canManageGroup } from '../utils/groupAccess.js';
 
 const idOf = (value) => (value && value._id ? value._id : value)?.toString();
 
@@ -17,11 +18,10 @@ const toStudentQuiz = (quiz, userId) => {
   return obj;
 };
 
+// Admin, or the teacher of the quiz's group
 const canManageQuiz = async (user, quiz) => {
   if (user.role === 'admin') return true;
-  if (user.role !== 'teacher') return false;
-  if (idOf(quiz.teacher) === user._id.toString()) return true;
-  return Boolean(await Group.exists({ _id: idOf(quiz.group), teacher: user._id }));
+  return canManageGroup(user, await Group.findById(idOf(quiz.group)).select('teacher'));
 };
 
 const rethrowAsBadRequest = (res, error) => {
@@ -36,27 +36,15 @@ const rethrowAsBadRequest = (res, error) => {
 // @route   GET /api/quizzes
 // @access  Private
 export const getQuizzes = asyncHandler(async (req, res) => {
-  const filters = [];
   const isStudent = req.user.role === 'student';
+  const filter = {};
 
-  if (req.user.role === 'teacher') {
-    const groups = await Group.find({ teacher: req.user._id }).select('_id');
-    filters.push({ group: { $in: groups.map((g) => g._id) } });
-  } else if (isStudent) {
-    const groups = await Group.find({ students: req.user._id }).select('_id');
-    filters.push({ group: { $in: groups.map((g) => g._id) } });
-    filters.push({ isActive: true });
-  }
+  // Own groups only (teacher: taught, student: enrolled); groupId narrows, never widens
+  const groupFilter = await buildGroupFilter(req.user, req.query.groupId);
+  if (groupFilter !== undefined) filter.group = groupFilter;
+  if (isStudent) filter.isActive = true;
 
-  // Narrows the role restriction above, never widens it.
-  if (req.query.groupId) {
-    if (!mongoose.isValidObjectId(req.query.groupId)) {
-      return apiResponse.success(res, 'Quizlər uğurla gətirildi', []);
-    }
-    filters.push({ group: req.query.groupId });
-  }
-
-  let query = Quiz.find(filters.length ? { $and: filters } : {})
+  let query = Quiz.find(filter)
     .populate('group', 'name')
     .populate('teacher', 'name')
     .sort('-createdAt');
@@ -114,7 +102,7 @@ export const createQuiz = asyncHandler(async (req, res) => {
     throw new Error('Qrup tapılmadı');
   }
 
-  if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+  if (!canManageGroup(req.user, targetGroup)) {
     res.status(403);
     throw new Error('Siz yalnız öz qruplarınıza quiz əlavə edə bilərsiniz');
   }
@@ -170,7 +158,7 @@ export const updateQuiz = asyncHandler(async (req, res) => {
       res.status(404);
       throw new Error('Qrup tapılmadı');
     }
-    if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
+    if (!canManageGroup(req.user, targetGroup)) {
       res.status(403);
       throw new Error('Siz yalnız öz qruplarınıza quiz əlavə edə bilərsiniz');
     }
