@@ -17,9 +17,12 @@ const questionSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  // option index ('0', '1', ...) or 'true' / 'false'; open-ended questions have none
   correctAnswer: {
     type: String,
-    required: true,
+    required: function requiredForAutoGraded() {
+      return this.type !== 'open-ended';
+    },
   },
   points: {
     type: Number,
