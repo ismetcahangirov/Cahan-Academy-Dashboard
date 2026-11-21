@@ -3,6 +3,15 @@ import Group from '../models/Group.js';
 import Attendance from '../models/Attendance.js';
 import mongoose from 'mongoose';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { buildGroupFilter } from '../utils/groupAccess.js';
+
+const SORTABLE_FIELDS = ['createdAt', 'name', 'email', 'status'];
+
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Teachers may only open students of the groups they teach
+const teacherCanSeeStudent = (user, studentId) =>
+  Group.exists({ teacher: user._id, students: studentId });
 
 /**
  * @desc    Get all students
@@ -14,9 +23,9 @@ export const getStudents = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const search = req.query.search || '';
+    const search = typeof req.query.search === 'string' ? escapeRegex(req.query.search) : '';
     const groupId = req.query.groupId;
-    const sortField = req.query.sort || 'createdAt';
+    const sortField = SORTABLE_FIELDS.includes(req.query.sort) ? req.query.sort : 'createdAt';
     const sortOrder = req.query.order === 'asc' ? 1 : -1;
 
     // Build query
@@ -28,25 +37,36 @@ export const getStudents = async (req, res) => {
       ],
     };
 
-    // If groupId is provided (will be implemented fully when Groups model is ready)
-    if (groupId) {
-      query.groupId = groupId;
+    // Teachers only see students of the groups they teach; groupId narrows within that
+    const groupFilter = await buildGroupFilter(req.user, groupId);
+    if (groupFilter) {
+      const studentIds = await Group.find({ _id: groupFilter }).distinct('students');
+      query._id = { $in: studentIds };
     }
-
-    // Teachers can only see students (logic to be refined when Groups model is ready)
-    // For now, if role is teacher, we could potentially filter by their groups
 
     const total = await User.countDocuments(query);
     const students = await User.find(query)
-      .sort({ [sortField]: sortOrder })
+      .sort({ [sortField]: sortOrder, _id: 1 })
       .skip(skip)
       .limit(limit);
 
-    // Note: group info will be added when Groups model is ready
-    const studentsWithGroup = students.map(student => ({
-      ...student.toObject(),
-      group: null, // Placeholder
-    }));
+    const groupsQuery = { students: { $in: students.map((s) => s._id) } };
+    if (req.user.role === 'teacher') groupsQuery.teacher = req.user._id;
+    const groups = await Group.find(groupsQuery)
+      .select('name students')
+      .sort('name')
+      .lean();
+
+    const studentsWithGroup = students.map((student) => {
+      const studentGroups = groups
+        .filter((g) => g.students.some((id) => id.equals(student._id)))
+        .map((g) => ({ _id: g._id, name: g.name }));
+      return {
+        ...student.toObject(),
+        groups: studentGroups,
+        group: studentGroups.map((g) => g.name).join(', ') || null,
+      };
+    });
 
     return sendSuccess(res, 'Students fetched successfully', studentsWithGroup, {
       page,
@@ -69,6 +89,10 @@ export const getStudentById = async (req, res) => {
     const student = await User.findOne({ _id: req.params.id, role: 'student' });
 
     if (!student) {
+      return sendError(res, 'Student not found', 404);
+    }
+
+    if (req.user.role === 'teacher' && !(await teacherCanSeeStudent(req.user, student._id))) {
       return sendError(res, 'Student not found', 404);
     }
 
@@ -98,6 +122,10 @@ export const getStudentAttendanceStats = async (req, res) => {
   try {
     const student = await User.findOne({ _id: req.params.id, role: 'student' });
     if (!student) return sendError(res, 'Student not found', 404);
+
+    if (req.user.role === 'teacher' && !(await teacherCanSeeStudent(req.user, student._id))) {
+      return sendError(res, 'Student not found', 404);
+    }
 
     const stats = await Attendance.aggregate([
       { $unwind: '$records' },

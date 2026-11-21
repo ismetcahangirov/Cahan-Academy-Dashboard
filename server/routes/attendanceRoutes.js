@@ -4,7 +4,7 @@ import {
   markAttendance,
   getGroupStats,
 } from '../controllers/attendanceController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.use(protect);
 
 router.route('/')
   .get(getAttendance)
-  .post(markAttendance);
+  .post(authorize('admin', 'teacher'), markAttendance);
 
 router.get('/stats/:groupId', getGroupStats);
 

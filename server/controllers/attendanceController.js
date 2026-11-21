@@ -2,6 +2,11 @@ import mongoose from 'mongoose';
 import Attendance from '../models/Attendance.js';
 import Group from '../models/Group.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import { canManageGroup, canViewGroup } from '../utils/groupAccess.js';
+
+const findGroup = (id) => (mongoose.isValidObjectId(id) ? Group.findById(id) : null);
+
+const recordStudentId = (record) => (record.student?._id ?? record.student)?.toString();
 
 /**
  * @desc    Get attendance for a group and date
@@ -17,31 +22,32 @@ export const getAttendance = async (req, res) => {
     }
 
     const queryDate = new Date(date);
+    if (Number.isNaN(queryDate.getTime())) {
+      return sendError(res, 'Invalid date', 400);
+    }
     queryDate.setHours(0, 0, 0, 0);
 
-    let query = { group, date: queryDate };
+    const targetGroup = await findGroup(group);
+    if (!targetGroup) return sendError(res, 'Qrup tapılmadı', 404);
 
-    // Role-based access control
-    if (req.user.role === 'teacher') {
-      // Check if teacher belongs to this group
-      const targetGroup = await Group.findById(group);
-      if (targetGroup.teacher.toString() !== req.user._id.toString()) {
-        return sendError(res, 'Siz yalnız öz qruplarınızın davamiyyətini görə bilərsiniz', 403);
-      }
-    } else if (req.user.role === 'student') {
-      // Check if student is in this group
-      const targetGroup = await Group.findById(group);
-      if (!targetGroup.students.includes(req.user._id)) {
-        return sendError(res, 'Siz yalnız daxil olduğunuz qrupların davamiyyətini görə bilərsiniz', 403);
-      }
+    if (!canViewGroup(req.user, targetGroup)) {
+      return sendError(
+        res,
+        req.user.role === 'teacher'
+          ? 'Siz yalnız öz qruplarınızın davamiyyətini görə bilərsiniz'
+          : 'Siz yalnız daxil olduğunuz qrupların davamiyyətini görə bilərsiniz',
+        403
+      );
     }
 
-    const attendance = await Attendance.findOne(query).populate('records.student', 'name avatar');
+    const attendance = await Attendance.findOne({ group: targetGroup._id, date: queryDate })
+      .populate('records.student', 'name avatar')
+      .lean();
 
     if (attendance && req.user.role === 'student') {
-      // Filter records to only show the student's own record
+      // A student only sees their own record
       attendance.records = attendance.records.filter(
-        r => r.student._id.toString() === req.user._id.toString()
+        (r) => recordStudentId(r) === req.user._id.toString()
       );
     }
 
@@ -60,22 +66,34 @@ export const markAttendance = async (req, res) => {
   try {
     const { group, date, records, topic } = req.body;
 
-    if (!group || !date || !records) {
+    if (!group || !date || !Array.isArray(records)) {
       return sendError(res, 'Missing required fields', 400);
     }
 
-    // Teacher validation
-    if (req.user.role === 'teacher') {
-      const targetGroup = await Group.findById(group);
-      if (targetGroup.teacher.toString() !== req.user._id.toString()) {
-        return sendError(res, 'Siz yalnız öz qruplarınıza davamiyyət yaza bilərsiniz', 403);
-      }
+    const targetGroup = await findGroup(group);
+    if (!targetGroup) return sendError(res, 'Qrup tapılmadı', 404);
+
+    // Only admin or the group's own teacher may write attendance
+    if (!canManageGroup(req.user, targetGroup)) {
+      return sendError(res, 'Siz yalnız öz qruplarınıza davamiyyət yaza bilərsiniz', 403);
     }
 
     const queryDate = new Date(date);
+    if (Number.isNaN(queryDate.getTime())) {
+      return sendError(res, 'Invalid date', 400);
+    }
     queryDate.setHours(0, 0, 0, 0);
 
-    let attendance = await Attendance.findOne({ group, date: queryDate });
+    let attendance = await Attendance.findOne({ group: targetGroup._id, date: queryDate });
+
+    // Records may only reference the group's students (or students already in this record)
+    const allowedStudents = new Set([
+      ...targetGroup.students.map((s) => s.toString()),
+      ...(attendance?.records || []).map(recordStudentId),
+    ]);
+    if (records.some((r) => !r || !allowedStudents.has(String(recordStudentId(r))))) {
+      return sendError(res, 'Davamiyyət yalnız qrupun tələbələri üçün yazıla bilər', 400);
+    }
 
     if (attendance) {
       // Update
@@ -86,7 +104,7 @@ export const markAttendance = async (req, res) => {
     } else {
       // Create
       attendance = await Attendance.create({
-        group,
+        group: targetGroup._id,
         date: queryDate,
         records,
         topic,
@@ -108,19 +126,22 @@ export const markAttendance = async (req, res) => {
 export const getGroupStats = async (req, res) => {
   try {
     // Access control for stats
-    const targetGroup = await Group.findById(req.params.groupId);
+    const targetGroup = await findGroup(req.params.groupId);
     if (!targetGroup) return sendError(res, 'Qrup tapılmadı', 404);
 
-    if (req.user.role === 'teacher' && targetGroup.teacher.toString() !== req.user._id.toString()) {
-      return sendError(res, 'Siz yalnız öz qruplarınızın statistikasını görə bilərsiniz', 403);
+    if (!canViewGroup(req.user, targetGroup)) {
+      return sendError(
+        res,
+        req.user.role === 'teacher'
+          ? 'Siz yalnız öz qruplarınızın statistikasını görə bilərsiniz'
+          : 'Bu qrupun statistikasını görmək icazəniz yoxdur',
+        403
+      );
     }
 
-    let matchQuery = { group: new mongoose.Types.ObjectId(req.params.groupId) };
+    let matchQuery = { group: targetGroup._id };
 
     if (req.user.role === 'student') {
-      if (!targetGroup.students.includes(req.user._id)) {
-        return sendError(res, 'Bu qrupun statistikasını görmək icazəniz yoxdur', 403);
-      }
       matchQuery['records.student'] = new mongoose.Types.ObjectId(req.user._id);
     }
 

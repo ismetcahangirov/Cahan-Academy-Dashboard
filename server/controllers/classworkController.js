@@ -2,32 +2,55 @@ import asyncHandler from 'express-async-handler';
 import Classwork from '../models/Classwork.js';
 import Group from '../models/Group.js';
 import apiResponse from '../utils/apiResponse.js';
+import { createNotification } from '../utils/notificationService.js';
+import {
+  buildGroupFilter,
+  canManageGroup,
+  canViewGroup,
+  isGroupStudent,
+} from '../utils/groupAccess.js';
+
+const loadGroupOf = (classwork) => Group.findById(classwork.group?._id ?? classwork.group);
+
+const isOwnSubmission = (sub, user) =>
+  !!sub.student && (sub.student._id ?? sub.student).toString() === user._id.toString();
+
+// Students only ever see their own submission
+const withVisibleSubmissions = (classwork, user) => {
+  const data = typeof classwork.toObject === 'function' ? classwork.toObject() : classwork;
+  if (user.role === 'student') {
+    data.submissions = (data.submissions || []).filter((sub) => isOwnSubmission(sub, user));
+  }
+  return data;
+};
+
+const notifyStudents = async (studentIds, notification) => {
+  try {
+    await Promise.all(
+      studentIds.map((recipient) => createNotification({ ...notification, recipient }))
+    );
+  } catch (error) {
+    console.error('Bildiriş göndərilmədi:', error);
+  }
+};
 
 // @desc    Get all classworks
 // @route   GET /api/classworks
 // @access  Private
 export const getClassworks = asyncHandler(async (req, res) => {
-  let query = {};
-
-  if (req.user.role === 'teacher') {
-    query.teacher = req.user._id;
-  } else if (req.user.role === 'student') {
-    const groups = await Group.find({ students: req.user._id });
-    const groupIds = groups.map(g => g._id);
-    query.group = { $in: groupIds };
-  }
-
-  if (req.query.groupId) {
-    query.group = req.query.groupId;
-  }
+  const query = {};
+  const groupFilter = await buildGroupFilter(req.user, req.query.groupId);
+  if (groupFilter) query.group = groupFilter;
 
   const classworks = await Classwork.find(query)
     .populate('group', 'name')
     .populate('teacher', 'name')
     .populate('submissions.student', 'name surname avatar')
-    .sort('-createdAt');
+    .sort('-createdAt')
+    .lean();
 
-  return apiResponse.success(res, 'Sinif işləri uğurla gətirildi', classworks);
+  const visible = classworks.map((cw) => withVisibleSubmissions(cw, req.user));
+  return apiResponse.success(res, 'Sinif işləri uğurla gətirildi', visible);
 });
 
 // @desc    Get single classwork
@@ -44,14 +67,16 @@ export const getClassworkById = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
-  if (req.user.role === 'student') {
-    const studentSubmission = classwork.submissions.find(
-      sub => sub.student._id.toString() === req.user._id.toString()
-    );
-    classwork.submissions = studentSubmission ? [studentSubmission] : [];
+  if (!canViewGroup(req.user, await loadGroupOf(classwork))) {
+    res.status(403);
+    throw new Error('Bu sinif işinə baxmaq hüququnuz yoxdur');
   }
 
-  return apiResponse.success(res, 'Sinif işi detalları uğurla gətirildi', classwork);
+  return apiResponse.success(
+    res,
+    'Sinif işi detalları uğurla gətirildi',
+    withVisibleSubmissions(classwork, req.user)
+  );
 });
 
 // @desc    Create new classwork
@@ -66,6 +91,11 @@ export const createClasswork = asyncHandler(async (req, res) => {
     throw new Error('Qrup tapılmadı');
   }
 
+  if (!canManageGroup(req.user, groupExists)) {
+    res.status(403);
+    throw new Error('Siz yalnız öz qruplarınız üçün sinif işi yarada bilərsiniz');
+  }
+
   const classwork = await Classwork.create({
     title,
     description,
@@ -77,6 +107,14 @@ export const createClasswork = asyncHandler(async (req, res) => {
   const createdClasswork = await Classwork.findById(classwork._id)
     .populate('group', 'name')
     .populate('teacher', 'name');
+
+  await notifyStudents(groupExists.students, {
+    sender: req.user._id,
+    type: 'classwork',
+    title: 'Yeni sinif işi',
+    message: `${groupExists.name} qrupu üçün yeni sinif işi: "${classwork.title}"`,
+    link: '/classworks',
+  });
 
   return apiResponse.success(res, 'Sinif işi uğurla yaradıldı', createdClasswork, 201);
 });
@@ -94,7 +132,7 @@ export const updateClasswork = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
-  if (classwork.teacher.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+  if (!canManageGroup(req.user, await loadGroupOf(classwork))) {
     res.status(403);
     throw new Error('Bu sinif işini yeniləmək hüququnuz yoxdur');
   }
@@ -122,7 +160,7 @@ export const deleteClasswork = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
-  if (classwork.teacher.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+  if (!canManageGroup(req.user, await loadGroupOf(classwork))) {
     res.status(403);
     throw new Error('Bu sinif işini silmək hüququnuz yoxdur');
   }
@@ -141,6 +179,11 @@ export const submitClasswork = asyncHandler(async (req, res) => {
   if (!classwork) {
     res.status(404);
     throw new Error('Sinif işi tapılmadı');
+  }
+
+  if (!isGroupStudent(req.user, await loadGroupOf(classwork))) {
+    res.status(403);
+    throw new Error('Siz yalnız öz qrupunuzun sinif işini təhvil verə bilərsiniz');
   }
 
   // Merge files + links into one array
@@ -169,7 +212,11 @@ export const submitClasswork = asyncHandler(async (req, res) => {
   }
 
   await classwork.save();
-  return apiResponse.success(res, 'Sinif işi uğurla təhvil verildi', classwork);
+  return apiResponse.success(
+    res,
+    'Sinif işi uğurla təhvil verildi',
+    withVisibleSubmissions(classwork, req.user)
+  );
 });
 
 // @desc    Grade classwork submission (Teacher)
@@ -184,7 +231,7 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
-  if (classwork.teacher.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+  if (!canManageGroup(req.user, await loadGroupOf(classwork))) {
     res.status(403);
     throw new Error('Bu sinif işini qiymətləndirmək hüququnuz yoxdur');
   }
@@ -203,6 +250,15 @@ export const gradeClasswork = asyncHandler(async (req, res) => {
   classwork.submissions[subIndex].status = 'graded';
 
   await classwork.save();
+
+  await notifyStudents([classwork.submissions[subIndex].student], {
+    sender: req.user._id,
+    type: 'classwork',
+    title: 'Sinif işiniz qiymətləndirildi',
+    message: `"${classwork.title}" sinif işiniz qiymətləndirildi: ${grade}`,
+    link: '/classworks',
+  });
+
   return apiResponse.success(res, 'Sinif işi uğurla qiymətləndirildi', classwork);
 });
 
@@ -217,6 +273,11 @@ export const removeClassworkSubmission = asyncHandler(async (req, res) => {
     throw new Error('Sinif işi tapılmadı');
   }
 
+  if (!isGroupStudent(req.user, await loadGroupOf(classwork))) {
+    res.status(403);
+    throw new Error('Siz yalnız öz qrupunuzun sinif işini idarə edə bilərsiniz');
+  }
+
   const existingIndex = classwork.submissions.findIndex(
     sub => sub.student.toString() === req.user._id.toString() || sub.student._id?.toString() === req.user._id.toString()
   );
@@ -226,5 +287,9 @@ export const removeClassworkSubmission = asyncHandler(async (req, res) => {
     await classwork.save();
   }
 
-  return apiResponse.success(res, 'Sinif işi göndərişi uğurla silindi', classwork);
+  return apiResponse.success(
+    res,
+    'Sinif işi göndərişi uğurla silindi',
+    withVisibleSubmissions(classwork, req.user)
+  );
 });
