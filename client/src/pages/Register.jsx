@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, Lock, User as UserIcon, LogIn, Globe, ChevronDown } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, LogIn, ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRef } from 'react';
 import { motion } from 'framer-motion';

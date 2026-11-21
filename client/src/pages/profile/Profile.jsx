@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { User, Mail, Camera, Shield, Edit2, Save, X } from 'lucide-react';
 import { useGetProfileQuery, useUpdateProfileMutation } from '../../features/profile/profileApi';
 import { useDispatch } from 'react-redux';
@@ -20,18 +19,19 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', role: '', avatar: '' });
 
-  useEffect(() => {
-    if (profileData) {
-      // profileData is the user directly (due to transformResponse)
-      const user = profileData.data ?? profileData;
-      setForm({
-        name: user.name || '',
-        email: user.email || '',
-        role: user.role || '',
-        avatar: user.avatar || '',
-      });
-    }
-  }, [profileData]);
+  // Reset the form whenever fresh profile data arrives (adjusting state during render, no effect)
+  const [syncedProfile, setSyncedProfile] = useState(null);
+  if (profileData && profileData !== syncedProfile) {
+    setSyncedProfile(profileData);
+    // profileData is the user directly (due to transformResponse)
+    const user = profileData.data ?? profileData;
+    setForm({
+      name: user.name || '',
+      email: user.email || '',
+      role: user.role || '',
+      avatar: user.avatar || '',
+    });
+  }
 
   const handleChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
 

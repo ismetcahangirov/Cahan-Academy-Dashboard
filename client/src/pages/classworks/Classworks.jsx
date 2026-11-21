@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, CheckCircle, Clock, Link, Pen
+  Plus, Search, Calendar, Users, FileText, Trash2, X, BookOpen, Clock, Link, Pen
 } from 'lucide-react';
 import {
   useGetClassworksQuery,

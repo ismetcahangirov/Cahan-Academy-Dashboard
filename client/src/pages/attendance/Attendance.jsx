@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { 
   Calendar, 
   Users, 
@@ -26,7 +25,7 @@ const Attendance = () => {
   const [topic, setTopic] = useState('');
 
   const { data: groupsData } = useGetGroupsQuery();
-  const { data: attendanceData, isLoading: isFetching } = useGetAttendanceQuery(
+  const { data: attendanceData } = useGetAttendanceQuery(
     { group: selectedGroup, date },
     { skip: !selectedGroup }
   );
@@ -34,7 +33,10 @@ const Attendance = () => {
 
   const currentGroup = groupsData?.data?.find(g => g._id === selectedGroup);
 
-  useEffect(() => {
+  // Load the saved record (or a fresh one) when the data changes; adjusting state during render, no effect
+  const [syncedFrom, setSyncedFrom] = useState({});
+  if (syncedFrom.attendanceData !== attendanceData || syncedFrom.currentGroup !== currentGroup) {
+    setSyncedFrom({ attendanceData, currentGroup });
     if (attendanceData?.data) {
       setRecords(attendanceData.data.records);
       setTopic(attendanceData.data.topic || '');
@@ -46,7 +48,7 @@ const Attendance = () => {
       })));
       setTopic('');
     }
-  }, [attendanceData, currentGroup]);
+  }
 
   const handleStatusChange = (studentId, status) => {
     setRecords(prev => prev.map(rec =>
