@@ -779,6 +779,22 @@ npx vitest authSlice.test.js
 npx vitest --reporter verbose
 ```
 
+### Lokal E2E stend (brauzerdə əl ilə və ya Playwright ilə yoxlama)
+
+`server/scripts/e2e-local.mjs` yaddaşda müvəqqəti MongoDB (`mongodb-memory-server`) qaldırır, demo məlumatları yaradır və API-ni `5000` portunda işə salır. `server/.env` istifadə olunmur, real bazaya qoşulmur, email göndərilmir (SMTP yoxdur, dəvət göndərişi aydın xəta qaytarır). Prosesi dayandıranda bütün məlumat silinir.
+
+```bash
+# 1-ci terminal: API + demo məlumat
+cd server
+E2E_PASSWORD='<istənilən test parolu>' npm run e2e:local   # E2E_PASSWORD verilməsə, təsadüfi parol çap olunur
+
+# 2-ci terminal: client lokal API-yə baxır
+cd client
+VITE_API_URL=http://localhost:5000/api npm run dev
+```
+
+Yaradılan hesablar (hamısı eyni parolla): `admin@e2e.example.com`, `teacher@e2e.example.com`, `student1@e2e.example.com`, `student2@e2e.example.com`. Demo məlumat: hər iki tələbənin olduğu, müəllimə bağlı həftəlik cədvəlli qrup (bu gün də daxil), kurs, ev tapşırığı, sinif işi, imtahan (çoxseçimli + doğru/yanlış + açıq sual, tarix = indi, 30 dəqiqə), quiz (eyni sual növləri) və iki keçmiş dərs üçün davamiyyət.
+
 ---
 
 ## 9. Coverage Hədəfləri
