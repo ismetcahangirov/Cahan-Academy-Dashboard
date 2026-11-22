@@ -22,7 +22,7 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
-  --font-script: "EB Garamond", "Garamond", "Georgia", serif; /* titles use the body serif (owner: same font as the input placeholders) */
+  --font-script: "Cahan Display", "EB Garamond", "Georgia", serif; /* titles: the academy's own typeface (docs/brand/font/cahan-display) */
   --font-serif: "EB Garamond", "Garamond", "Georgia", serif;
   --font-sc: "Cormorant SC", "EB Garamond", "Georgia", serif;
   --font-sans: "EB Garamond", "Garamond", "Georgia", serif;
