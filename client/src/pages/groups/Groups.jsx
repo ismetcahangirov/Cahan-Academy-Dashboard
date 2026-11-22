@@ -75,7 +75,8 @@ const GroupDetailModal = ({ groupId, onClose, isAdmin }) => {
       open
       onClose={onClose}
       size="lg"
-      title={isLoading ? t('common.loading') : group?.name}
+      title={t('groups.detailsTitle')}
+      entity={isLoading ? t('common.loading') : group?.name}
       subtitle={isLoading ? undefined : group?.course}
     >
       {isLoading ? (

@@ -462,7 +462,8 @@ const Classworks = () => {
         open={Boolean(isGradeModalOpen && gradingClasswork)}
         onClose={() => setIsGradeModalOpen(false)}
         size="lg"
-        title={gradingClasswork ? `${gradingClasswork.title} - ${t('classworks.submissions')}` : ''}
+        title={t('classworks.submissions')}
+        entity={gradingClasswork?.title}
         subtitle={gradingClasswork ? `${t('common.group')}: ${gradingClasswork.group?.name ?? ''}` : undefined}
       >
         {gradingClasswork && (!gradingClasswork.submissions?.length ? (

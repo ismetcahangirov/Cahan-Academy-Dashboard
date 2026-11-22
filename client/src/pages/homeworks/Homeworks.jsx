@@ -484,7 +484,8 @@ const Homeworks = () => {
         open={Boolean(isGradeModalOpen && gradingHomework)}
         onClose={() => setIsGradeModalOpen(false)}
         size="lg"
-        title={gradingHomework ? `${gradingHomework.title} - ${t('homeworks.submissions')}` : ''}
+        title={t('homeworks.submissions')}
+        entity={gradingHomework?.title}
         subtitle={gradingHomework ? `${t('common.group')}: ${gradingHomework.group?.name ?? ''}` : undefined}
       >
         {gradingHomework && (!gradingHomework.submissions?.length ? (
