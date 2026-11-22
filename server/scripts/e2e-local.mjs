@@ -16,7 +16,7 @@ Object.assign(process.env, {
   JWT_REFRESH_SECRET: crypto.randomBytes(32).toString('hex'),
   JWT_EXPIRES_IN: '1h',
   JWT_REFRESH_EXPIRES_IN: '7d',
-  CLIENT_URL: 'http://localhost:5173',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
   ACADEMY_TIMEZONE: 'Asia/Baku',
   ADMIN_EMAIL: '',
   ADMIN_PASSWORD: '',
