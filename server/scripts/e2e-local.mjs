@@ -102,7 +102,7 @@ await Course.create({
   status: 'published',
 });
 
-await Homework.create({
+const homework = await Homework.create({
   title: 'E2E Homework: Landing page',
   description: 'Build a landing page and submit the repository link.',
   group: group._id,
@@ -110,7 +110,7 @@ await Homework.create({
   dueDate: new Date(Date.now() + 7 * DAY),
 });
 
-await Classwork.create({
+const classwork = await Classwork.create({
   title: 'E2E Classwork: Flexbox',
   description: 'Recreate the layout from class.',
   group: group._id,
@@ -118,7 +118,7 @@ await Classwork.create({
   dueDate: new Date(Date.now() + 2 * DAY),
 });
 
-await Exam.create({
+const exam = await Exam.create({
   title: 'E2E Exam: JavaScript basics',
   description: 'Auto-graded and open-ended questions',
   group: group._id,
@@ -132,7 +132,7 @@ await Exam.create({
   ],
 });
 
-await Quiz.create({
+const quiz = await Quiz.create({
   title: 'E2E Quiz: CSS',
   description: 'Quick CSS check',
   group: group._id,
@@ -159,6 +159,38 @@ for (const daysAgo of [7, 2]) {
     ],
   });
 }
+
+// Student Two has already handed things in, so the grading / results / answer-review modals have
+// a row to show (Student One keeps everything open for the take/submit flows).
+homework.submissions.push({ student: student2._id, status: 'submitted', submittedAt: new Date(), files: ['https://github.com/e2e/landing-page'], note: 'Responsive version included.' });
+await homework.save();
+classwork.submissions.push({ student: student2._id, status: 'submitted', submittedAt: new Date(), files: ['https://codepen.io/e2e/flexbox'] });
+await classwork.save();
+const [q1, q2, q3] = exam.questions;
+exam.results.push({
+  student: student2._id,
+  score: 50,
+  earnedPoints: 2,
+  totalPoints: 4,
+  answers: [
+    { questionId: q1._id, selectedOption: '1', isCorrect: true, awardedPoints: 1 },
+    { questionId: q2._id, selectedOption: 'true', isCorrect: true, awardedPoints: 1 },
+    { questionId: q3._id, selectedOption: 'let is block scoped, var is function scoped and hoisted.', awardedPoints: null },
+  ],
+});
+await exam.save();
+const [z1, z2, z3] = quiz.questions;
+quiz.attempts.push({
+  student: student2._id,
+  score: 1,
+  totalPoints: 4,
+  answers: [
+    { questionId: z1._id, selectedOption: '0', isCorrect: true, awardedPoints: 1 },
+    { questionId: z2._id, selectedOption: 'false', isCorrect: false, awardedPoints: 0 },
+    { questionId: z3._id, selectedOption: 'Grid for two-dimensional layouts.', awardedPoints: null },
+  ],
+});
+await quiz.save();
 
 // A second group with a long name: exercises wrapping/truncation in tables and pills
 await Group.create({

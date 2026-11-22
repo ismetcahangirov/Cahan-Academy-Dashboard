@@ -12,12 +12,15 @@
 // Usage (local stack only):
 //   E2E_PASSWORD=... node scripts/color-audit.mjs --base http://localhost:5173 --api http://localhost:5000/api \
 //     --routes "public:/login,admin:/,teacher:/groups" [--themes light,dark] [--widths 1440,390] [--out color-audit] [--scope "main"]
+//   Interactive states: --actions "click=role=button[name=/Yeni/]" (+ --name) or --plan scripts/qa-plan.json
+//   [--only <regex>]: modals, menus and toasts are audited after the steps run (see scripts/lib/session.mjs).
+//   --shots <dir> also saves a screenshot of every audited state (one browser pass for audit + visual review).
 // Output: <out>/color-audit.json + <out>/color-audit.txt; exit code 1 when anything violates the law.
 // Escape hatch (needs a reason in review): data-color-audit-ignore on an element skips its subtree.
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiLogin, assertLocal, newContext, parseRoutes, settle } from './lib/session.mjs';
+import { apiLogin, assertLocal, loadTargets, newContext, runActions, settle, targetSlug } from './lib/session.mjs';
 
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, a, i, arr) => (a.startsWith('--') ? [...acc, [a.slice(2), arr[i + 1]]] : acc), [])
@@ -25,7 +28,6 @@ const args = Object.fromEntries(
 const base = args.base || 'http://localhost:5173';
 const api = args.api || 'http://localhost:5000/api';
 const out = args.out || 'color-audit';
-const routes = parseRoutes(args.routes || 'public:/login,admin:/');
 const themes = (args.themes || 'light,dark').split(',');
 const widths = (args.widths || '1440,390').split(',').map(Number);
 const TOL = Number(args.tolerance || 4);
@@ -281,19 +283,36 @@ async function auditFocus(page, tol) {
 
 /* ---------------------------------------------------------------- run */
 mkdirSync(out, { recursive: true });
+if (args.shots) mkdirSync(args.shots, { recursive: true });
+const targets = await loadTargets(args, api, readFileSync);
 const browser = await chromium.launch();
 const report = [];
 let total = 0;
 try {
-  for (const { role, path } of routes) {
+  for (const target of targets) {
+    const { role, path, steps } = target;
+    const label = `${role}:${path}${target.name ? ` #${target.name}` : ''}`;
     const session = role === 'public' ? null : await apiLogin(api, role);
-    for (const theme of themes) {
-      for (const width of widths) {
+    for (const theme of target.themes || themes) {
+      for (const width of target.widths || widths) {
         const context = await newContext(browser, { theme, viewport: { width, height: width < 600 ? 844 : 900 }, session, reducedMotion: 'reduce' });
         const page = await context.newPage();
-        await page.goto(base + path, { waitUntil: 'domcontentloaded' });
-        await settle(page);
+        try {
+          await page.goto(base + path, { waitUntil: 'domcontentloaded' });
+          await settle(page);
+          await runActions(page, steps, { log: console.log });
+        } catch (e) {
+          total += 1;
+          report.push({ route: path, name: target.name, role, theme, width, checks: 0, rasters: 0, violations: [{ selector: '-', prop: 'action', value: e.message, rendered: '-', distance: -1 }] });
+          console.log(`FAIL ${label} ${theme} ${width}px — ${e.message}`);
+          await context.close();
+          continue;
+        }
+        if (args.shots) {
+          await page.screenshot({ path: join(args.shots, `${targetSlug(target)}-${theme}-${width}.png`), fullPage: !steps.length });
+        }
         const { violations, rasterResults, checks } = await auditPage(page, TOL, args.scope);
+        // with a modal/menu open, keep focus inside it (Tab cycles there) — still audits the rings
         const focus = await auditFocus(page, TOL);
         const rasterViolations = rasterResults
           .filter((r) => r.error || (r.pixels > 0 && r.off / r.pixels > RASTER_MAX_OFF))
@@ -314,8 +333,8 @@ try {
           return true;
         });
         total += unique.length;
-        report.push({ route: path, role, theme, width, checks, rasters: rasterResults.length, violations: unique });
-        console.log(`${unique.length ? 'FAIL' : 'ok  '} ${role}:${path} ${theme} ${width}px — ${checks} colour checks, ${rasterResults.length} rasters, ${unique.length} violations`);
+        report.push({ route: path, name: target.name, role, theme, width, checks, rasters: rasterResults.length, violations: unique });
+        console.log(`${unique.length ? 'FAIL' : 'ok  '} ${label} ${theme} ${width}px — ${checks} colour checks, ${rasterResults.length} rasters, ${unique.length} violations`);
         await context.close();
       }
     }
@@ -327,7 +346,7 @@ try {
 writeFileSync(join(out, 'color-audit.json'), JSON.stringify({ tolerance: TOL, total, report }, null, 2));
 const lines = [`Colour audit — tolerance ±${TOL}/channel — ${total} violation(s)`, ''];
 for (const r of report) {
-  lines.push(`## ${r.role}:${r.route} · ${r.theme} · ${r.width}px — ${r.violations.length} violation(s)`);
+  lines.push(`## ${r.role}:${r.route}${r.name ? ` #${r.name}` : ''} · ${r.theme} · ${r.width}px — ${r.violations.length} violation(s)`);
   for (const v of r.violations.slice(0, 200)) lines.push(`  - ${v.prop}: ${v.value} -> ${v.rendered} (off by ${v.distance})  @ ${v.selector}`);
   if (r.violations.length > 200) lines.push(`  … ${r.violations.length - 200} more in color-audit.json`);
   lines.push('');

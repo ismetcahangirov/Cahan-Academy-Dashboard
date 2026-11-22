@@ -1,0 +1,574 @@
+[
+  {
+    "role": "public",
+    "path": "/login"
+  },
+  {
+    "role": "public",
+    "path": "/register"
+  },
+  {
+    "role": "public",
+    "path": "/forgot-password"
+  },
+  {
+    "role": "public",
+    "path": "/reset-password/qa-invalid-token"
+  },
+  {
+    "role": "public",
+    "path": "/accept-invitation/qa-invalid-token"
+  },
+  {
+    "role": "public",
+    "path": "/login",
+    "name": "error",
+    "actions": [
+      "fill=input[type=email]|nobody@e2e.example.com",
+      "fill=input[type=password]|WrongPass123",
+      "click=form button[type=submit]",
+      "wait=1500"
+    ]
+  },
+  {
+    "role": "public",
+    "path": "/login",
+    "name": "lang-menu",
+    "actions": [
+      "click=button[aria-haspopup=menu]"
+    ]
+  },
+  {
+    "role": "public",
+    "path": "/register",
+    "name": "validation",
+    "actions": [
+      "click=form button[type=submit]",
+      "wait=400"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/"
+  },
+  {
+    "role": "admin",
+    "path": "/teachers"
+  },
+  {
+    "role": "admin",
+    "path": "/teachers/{teacher}"
+  },
+  {
+    "role": "admin",
+    "path": "/students"
+  },
+  {
+    "role": "admin",
+    "path": "/students/{student}"
+  },
+  {
+    "role": "admin",
+    "path": "/students/{student}/payments"
+  },
+  {
+    "role": "admin",
+    "path": "/groups"
+  },
+  {
+    "role": "admin",
+    "path": "/courses"
+  },
+  {
+    "role": "admin",
+    "path": "/courses/{course}"
+  },
+  {
+    "role": "admin",
+    "path": "/attendance"
+  },
+  {
+    "role": "admin",
+    "path": "/homeworks"
+  },
+  {
+    "role": "admin",
+    "path": "/classworks"
+  },
+  {
+    "role": "admin",
+    "path": "/exams"
+  },
+  {
+    "role": "admin",
+    "path": "/quizzes"
+  },
+  {
+    "role": "admin",
+    "path": "/schedule"
+  },
+  {
+    "role": "admin",
+    "path": "/notifications"
+  },
+  {
+    "role": "admin",
+    "path": "/invitations"
+  },
+  {
+    "role": "admin",
+    "path": "/users"
+  },
+  {
+    "role": "admin",
+    "path": "/users/{pendingUser}"
+  },
+  {
+    "role": "admin",
+    "path": "/settings"
+  },
+  {
+    "role": "admin",
+    "path": "/profile"
+  },
+  {
+    "role": "admin",
+    "path": "/",
+    "name": "lang-menu",
+    "actions": [
+      "click=header button[aria-haspopup=menu]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/",
+    "name": "drawer",
+    "actions": [
+      "click=role=button[name=/Menyunu aç/]"
+    ],
+    "widths": [
+      390
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/groups",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Qrup/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/groups",
+    "name": "details",
+    "actions": [
+      "click=role=button[name=/^Detallar/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/groups",
+    "name": "teacher-select",
+    "actions": [
+      "click=role=button[name=/Yeni Qrup/i]",
+      "click=[role=dialog] [aria-haspopup=listbox]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/teachers",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Müəllim/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/teachers",
+    "name": "row-menu",
+    "actions": [
+      "click=role=button[name=/Əməliyyatlar/i]"
+    ],
+    "widths": [
+      1440
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/students",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Tələbə/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/students",
+    "name": "group-filter",
+    "actions": [
+      "click=role=button[name=/Bütün qruplar/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/courses",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Kurs/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/courses",
+    "name": "edit",
+    "actions": [
+      "click=role=button[name=/Kursu redaktə et/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/attendance",
+    "name": "group",
+    "actions": [
+      "click=main button:has-text(\"E2E Frontend Group\")",
+      "wait=600"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/homeworks",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Tapşırıq/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/classworks",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Sinif İşi/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/invitations",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Dəvət/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/invitations",
+    "name": "validation",
+    "actions": [
+      "click=role=button[name=/Yeni Dəvət/i]",
+      "click=[role=dialog] button[type=submit]",
+      "wait=500"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/users",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni İstifadəçi/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/users",
+    "name": "row-menu",
+    "actions": [
+      "click=role=button[name=/Əməliyyatlar/i]"
+    ],
+    "widths": [
+      1440
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/users",
+    "name": "pending-filter",
+    "actions": [
+      "click=role=button[name=/^Gözləyir/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/students/{student}/payments",
+    "name": "new-plan",
+    "actions": [
+      "click=role=button[name=/Yeni Plan/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/settings",
+    "name": "notifications-tab",
+    "actions": [
+      "click=role=tab[name=/Bildirişlər/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/settings",
+    "name": "language-tab",
+    "actions": [
+      "click=role=tab[name=/Dil Seçimi/i]"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/settings",
+    "name": "password-toast",
+    "actions": [
+      "fill=main input[type=password] >> nth=0|WrongOld123",
+      "fill=main input[type=password] >> nth=1|NewPass1234",
+      "fill=main input[type=password] >> nth=2|Mismatch1234",
+      "click=role=button[name=/Şifrəni Yenilə/i]",
+      "wait=800"
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/profile",
+    "name": "edit",
+    "actions": [
+      "click=role=button[name=/Redaktə et/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/"
+  },
+  {
+    "role": "teacher",
+    "path": "/students"
+  },
+  {
+    "role": "teacher",
+    "path": "/students/{student}"
+  },
+  {
+    "role": "teacher",
+    "path": "/groups"
+  },
+  {
+    "role": "teacher",
+    "path": "/attendance"
+  },
+  {
+    "role": "teacher",
+    "path": "/courses"
+  },
+  {
+    "role": "teacher",
+    "path": "/courses/{course}"
+  },
+  {
+    "role": "teacher",
+    "path": "/homeworks"
+  },
+  {
+    "role": "teacher",
+    "path": "/classworks"
+  },
+  {
+    "role": "teacher",
+    "path": "/exams"
+  },
+  {
+    "role": "teacher",
+    "path": "/quizzes"
+  },
+  {
+    "role": "teacher",
+    "path": "/schedule"
+  },
+  {
+    "role": "teacher",
+    "path": "/notifications"
+  },
+  {
+    "role": "teacher",
+    "path": "/settings"
+  },
+  {
+    "role": "teacher",
+    "path": "/profile"
+  },
+  {
+    "role": "teacher",
+    "path": "/homeworks",
+    "name": "grade",
+    "actions": [
+      "click=role=button[name=/^Yoxla/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/classworks",
+    "name": "grade",
+    "actions": [
+      "click=role=button[name=/Təhvil verilənlər/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/exams",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni İmtahan/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/exams",
+    "name": "edit",
+    "actions": [
+      "click=main button[aria-label=\"Redaktə et\"]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/exams",
+    "name": "results",
+    "actions": [
+      "click=role=button[name=/Nəticələri İdarə Et/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/exams",
+    "name": "review",
+    "actions": [
+      "click=role=button[name=/Nəticələri İdarə Et/i]",
+      "click=[role=dialog] >> role=button[name=/Cavablar|Yoxla|Bax|Review/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/quizzes",
+    "name": "create",
+    "actions": [
+      "click=role=button[name=/Yeni Quiz/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/quizzes",
+    "name": "results",
+    "actions": [
+      "click=role=button[name=/^Nəticələr/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/quizzes",
+    "name": "review",
+    "actions": [
+      "click=role=button[name=/^Nəticələr/i]",
+      "click=[role=dialog] >> role=button[name=/Cavablar|Yoxla|Bax|Review/i]"
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/attendance",
+    "name": "group",
+    "actions": [
+      "click=main button:has-text(\"E2E Frontend Group\")",
+      "wait=600"
+    ]
+  },
+  {
+    "role": "student",
+    "path": "/"
+  },
+  {
+    "role": "student",
+    "path": "/groups"
+  },
+  {
+    "role": "student",
+    "path": "/courses"
+  },
+  {
+    "role": "student",
+    "path": "/courses/{course}"
+  },
+  {
+    "role": "student",
+    "path": "/homeworks"
+  },
+  {
+    "role": "student",
+    "path": "/classworks"
+  },
+  {
+    "role": "student",
+    "path": "/exams"
+  },
+  {
+    "role": "student",
+    "path": "/exams/{exam}/take"
+  },
+  {
+    "role": "student",
+    "path": "/quizzes"
+  },
+  {
+    "role": "student",
+    "path": "/schedule"
+  },
+  {
+    "role": "student",
+    "path": "/notifications"
+  },
+  {
+    "role": "student",
+    "path": "/settings"
+  },
+  {
+    "role": "student",
+    "path": "/profile"
+  },
+  {
+    "role": "student",
+    "path": "/meeting/{schedule}"
+  },
+  {
+    "role": "student",
+    "path": "/homeworks",
+    "name": "submit",
+    "actions": [
+      "click=role=button[name=/Tapşırığı təhvil ver/i]"
+    ]
+  },
+  {
+    "role": "student",
+    "path": "/classworks",
+    "name": "submit",
+    "actions": [
+      "click=role=button[name=/Sinif işini təhvil ver/i]"
+    ]
+  },
+  {
+    "role": "student",
+    "path": "/quizzes",
+    "name": "take",
+    "actions": [
+      "click=role=button[name=/İndi Başla/i]"
+    ]
+  },
+  {
+    "role": "student",
+    "path": "/groups",
+    "name": "details",
+    "actions": [
+      "?click=role=button[name=/^Detallar/i]"
+    ]
+  }
+]
