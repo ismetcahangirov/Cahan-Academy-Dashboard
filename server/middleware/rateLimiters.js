@@ -27,6 +27,11 @@ export const applyRateLimits = (app) => {
   // Vercel sits in front of the app: take the client IP from its X-Forwarded-For entry
   app.set('trust proxy', 1);
 
+  // The throwaway local e2e stack (scripts/e2e-local.mjs) drives hundreds of page loads in a few minutes
+  // for screenshots / audits / perf probes; there the limits would turn real pages into 429 error states.
+  // Never in production: the flag is ignored when NODE_ENV is production.
+  if (process.env.E2E_LOCAL_NO_RATE_LIMIT === '1' && process.env.NODE_ENV !== 'production') return;
+
   // Only failed logins count, so a class logging in from one network is not locked out
   app.use(
     '/api/auth/login',

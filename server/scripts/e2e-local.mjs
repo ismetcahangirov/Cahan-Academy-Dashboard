@@ -17,6 +17,8 @@ Object.assign(process.env, {
   JWT_EXPIRES_IN: '1h',
   JWT_REFRESH_EXPIRES_IN: '7d',
   CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+  // QA scripts load hundreds of pages from one IP; see middleware/rateLimiters.js
+  E2E_LOCAL_NO_RATE_LIMIT: '1',
   ACADEMY_TIMEZONE: 'Asia/Baku',
   ADMIN_EMAIL: '',
   ADMIN_PASSWORD: '',
