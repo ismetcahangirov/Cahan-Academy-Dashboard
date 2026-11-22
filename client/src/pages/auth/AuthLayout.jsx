@@ -85,11 +85,11 @@ const AuthLayout = ({ children, className }) => (
     {/* ---------------------------------------------------------------- centred form card */}
     <div className="relative w-full max-w-[30rem]">
       <WaxSeal size={76} className="relative z-10 mx-auto -mb-9 block" />
-      {/* oval frame (owner): elliptical radii, no corner flourishes (they would sit outside the curve) */}
+      {/* oval frame (owner): elliptical radii, no corner flourishes; fill = brand wine at high transparency so the watermark shows through */}
       <OrnateFrame
         paper
         corners="none"
-        className="relative bg-transparent bg-none px-8 pb-20 pt-20 shadow-none sm:px-16"
+        className="relative bg-[rgba(92,0,14,0.07)] bg-none px-8 pb-20 pt-20 shadow-none sm:px-16 dark:bg-[rgba(92,0,14,0.32)]"
         style={{ borderRadius: '50% / 25%' }}
       >
         <div className={cn('mx-auto w-full max-w-[26rem]', className)}>{children}</div>
