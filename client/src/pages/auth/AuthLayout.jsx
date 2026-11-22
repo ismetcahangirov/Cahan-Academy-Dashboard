@@ -54,7 +54,7 @@ const AuthLayout = ({ children, className }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="relative min-h-screen bg-paper lg:grid lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)]">
+    <div className="relative flex min-h-screen flex-col bg-paper lg:grid lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)]">
       {/* ---------------------------------------------------------------- wine hero */}
       <aside className="theme-wine login-hero relative isolate overflow-hidden lg:min-h-screen">
         <PetalField className="absolute inset-0 -z-10" />
@@ -85,7 +85,7 @@ const AuthLayout = ({ children, className }) => {
       <DrapedRibbon className="absolute left-[46%] top-[-14px] z-20 hidden w-72 -translate-x-[42%] lg:block" />
 
       {/* ---------------------------------------------------------------- parchment form */}
-      <main className="paper relative flex flex-col items-center px-5 pb-12 sm:px-8 lg:min-h-screen lg:justify-center lg:py-16">
+      <main className="paper relative flex flex-1 flex-col items-center px-5 pb-12 sm:px-8 lg:min-h-screen lg:justify-center lg:py-16">
         <WaxSeal size={72} className="relative z-10 -mt-12 mb-2 lg:hidden" />
 
         <div className="absolute right-6 top-6 z-30 hidden lg:block">

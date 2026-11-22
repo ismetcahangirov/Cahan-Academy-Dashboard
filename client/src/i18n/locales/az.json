@@ -666,6 +666,8 @@
     "deleteError": "Bildiriş silinərkən xəta baş verdi",
     "noNotifications": "Hələ ki, heç bir bildirişiniz yoxdur.",
     "markAsReadBtn": "Oxunmuş işarələ",
+    "emptyTitle": "Bildiriş yoxdur",
+    "unreadCount": "{{count}} oxunmamış",
     "deleteBtn": "Sil",
     "messages": {
       "homeworkCreated": {

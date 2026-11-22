@@ -678,6 +678,11 @@
     "deleteError": "Ошибка при удалении уведомления",
     "noNotifications": "У вас пока нет уведомлений.",
     "markAsReadBtn": "Отметить как прочитанное",
+    "emptyTitle": "Уведомлений нет",
+    "unreadCount_one": "{{count}} непрочитанное",
+    "unreadCount_few": "{{count}} непрочитанных",
+    "unreadCount_many": "{{count}} непрочитанных",
+    "unreadCount_other": "{{count}} непрочитанных",
     "deleteBtn": "Удалить",
     "messages": {
       "homeworkCreated": {

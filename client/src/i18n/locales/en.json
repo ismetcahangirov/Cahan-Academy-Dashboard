@@ -670,6 +670,9 @@
     "deleteError": "Error deleting notification",
     "noNotifications": "You have no notifications yet.",
     "markAsReadBtn": "Mark as read",
+    "emptyTitle": "All quiet",
+    "unreadCount_one": "{{count}} unread",
+    "unreadCount_other": "{{count}} unread",
     "deleteBtn": "Delete",
     "messages": {
       "homeworkCreated": {

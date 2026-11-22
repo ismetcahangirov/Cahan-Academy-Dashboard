@@ -1,17 +1,31 @@
 import { useState } from 'react';
-import { Shield, Key, Bell, Globe } from 'lucide-react';
+import { Key, Bell, Globe, Check } from 'lucide-react';
 import { useUpdatePasswordMutation } from '../../features/profile/profileApi';
 import { PASSWORD_REGEX } from '../../features/auth/authApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import Spinner from '../../components/common/Spinner';
-import PasswordInput from '../../components/common/PasswordInput';
+import { Badge, Button, CardHeader, EmptyState, PageShell } from '../../components/ui';
+import { EdelweissGlyph, OrnamentDivider } from '../../components/ornament';
+import AuthPasswordField from '../auth/AuthPasswordField';
+import { cn } from '../../lib/utils';
+
+const TABS = [
+  { id: 'security', icon: Key, label: 'settings.security' },
+  { id: 'notifications', icon: Bell, label: 'settings.notifications' },
+  { id: 'language', icon: Globe, label: 'settings.language' },
+];
+
+const LANGUAGES = [
+  { code: 'az', name: 'Azərbaycan' },
+  { code: 'en', name: 'English' },
+  { code: 'ru', name: 'Русский' },
+];
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
   const [updatePassword, { isLoading: isUpdating }] = useUpdatePasswordMutation();
   const [activeTab, setActiveTab] = useState('security');
-  
+
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -51,133 +65,148 @@ const Settings = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Shield className="text-bordo w-8 h-8" />
-        <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('settings.title')}</h1>
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Sidebar Tabs */}
-        <div className="w-full md:w-64 space-y-2">
-          <button 
-            onClick={() => setActiveTab('security')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${activeTab === 'security' ? 'bg-bordo text-white' : 'text-[var(--muted-foreground)]/60 hover:bg-[var(--muted)] hover:text-[var(--foreground)]'}`}
-          >
-            <Key size={18} />
-            <span className="font-medium">{t('settings.security')}</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('notifications')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${activeTab === 'notifications' ? 'bg-bordo text-white' : 'text-[var(--muted-foreground)]/60 hover:bg-[var(--muted)] hover:text-[var(--foreground)]'}`}
-          >
-            <Bell size={18} />
-            <span className="font-medium">{t('settings.notifications')}</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('language')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left ${activeTab === 'language' ? 'bg-bordo text-white' : 'text-[var(--muted-foreground)]/60 hover:bg-[var(--muted)] hover:text-[var(--foreground)]'}`}
-          >
-            <Globe size={18} />
-            <span className="font-medium">{t('settings.language')}</span>
-          </button>
+    <PageShell width="narrow" title={t('settings.title')} className="max-w-5xl">
+      <div className="flex flex-col gap-6 md:flex-row">
+        {/* tabs: a vertical list on desktop, a scrollable row on mobile */}
+        <div
+          role="tablist"
+          aria-orientation="vertical"
+          aria-label={t('settings.title')}
+          className="orn-stagger -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:mx-0 md:w-60 md:shrink-0 md:flex-col md:overflow-visible md:px-0"
+        >
+          {TABS.map(({ id, icon: Icon, label }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`settings-tab-${id}`}
+                aria-selected={active}
+                aria-controls={`settings-panel-${id}`}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  'relative flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-[var(--radius-md)] border px-4 py-2.5 text-left text-[1rem] transition-colors duration-[var(--dur-1)]',
+                  active
+                    ? 'border-line-strong bg-surface font-semibold text-accent-text shadow-[var(--shadow-sm)]'
+                    : 'border-transparent text-ink-muted hover:bg-surface-2 hover:text-ink'
+                )}
+              >
+                <Icon size={18} strokeWidth={1.6} aria-hidden="true" />
+                <span className="flex-1">{t(label)}</span>
+                {active && <EdelweissGlyph className="hidden h-3.5 w-3.5 text-accent-text md:block" />}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 sm:p-8">
+        {/* content */}
+        <section
+          role="tabpanel"
+          id={`settings-panel-${activeTab}`}
+          aria-labelledby={`settings-tab-${activeTab}`}
+          className="card-paper orn-rise min-w-0 flex-1 p-5 sm:p-8"
+          key={activeTab}
+        >
           {activeTab === 'security' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-1">{t('settings.changePassword')}</h2>
-                <p className="text-sm text-[var(--muted-foreground)]/50">{t('settings.passwordDesc')}</p>
-              </div>
+            <div>
+              <CardHeader title={t('settings.changePassword')} />
+              <p className="mt-1.5 max-w-lg text-[0.98rem] text-ink-muted">{t('settings.passwordDesc')}</p>
+              <OrnamentDivider align="start" className="my-6" />
 
-              <form onSubmit={handlePasswordSubmit} className="space-y-5 max-w-md">
-                <div className="space-y-2">
-                  <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.currentPassword')}</label>
-                  <PasswordInput 
-                    name="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={handlePasswordChange}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.newPassword')}</label>
-                  <PasswordInput 
-                    name="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={handlePasswordChange}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[var(--muted-foreground)]/70">{t('settings.confirmPassword')}</label>
-                  <PasswordInput 
-                    name="confirmPassword"
-                    value={passwordForm.confirmPassword}
-                    onChange={handlePasswordChange}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-                  />
-                </div>
+              <form onSubmit={handlePasswordSubmit} className="max-w-md space-y-5">
+                <AuthPasswordField
+                  label={t('settings.currentPassword')}
+                  name="currentPassword"
+                  autoComplete="current-password"
+                  value={passwordForm.currentPassword}
+                  onChange={handlePasswordChange}
+                />
+                <AuthPasswordField
+                  label={t('settings.newPassword')}
+                  name="newPassword"
+                  autoComplete="new-password"
+                  value={passwordForm.newPassword}
+                  onChange={handlePasswordChange}
+                />
+                <AuthPasswordField
+                  label={t('settings.confirmPassword')}
+                  name="confirmPassword"
+                  autoComplete="new-password"
+                  value={passwordForm.confirmPassword}
+                  onChange={handlePasswordChange}
+                />
 
                 <div className="pt-2">
-                  <button 
-                    type="submit" 
-                    disabled={isUpdating}
-                    className="flex items-center justify-center gap-2 w-full sm:w-auto bg-bordo hover:bg-bordo/80 text-white px-6 py-2.5 rounded-xl transition-colors font-medium disabled:opacity-50"
-                  >
-                    {isUpdating && <Spinner size="sm" color="white" />}
+                  <Button type="submit" loading={isUpdating} className="w-full sm:w-auto">
                     {t('settings.updatePassword')}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
           )}
 
           {activeTab === 'notifications' && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <Bell className="w-16 h-16 text-[var(--muted-foreground)]/10 mb-4" />
-              <h3 className="text-lg font-medium text-[var(--foreground)] mb-2">{t('settings.notifications')}</h3>
-              <p className="text-[var(--muted-foreground)]/50 max-w-sm">{t('settings.notifDesc')}</p>
-            </div>
+            <EmptyState
+              sketch="notebook"
+              title={t('settings.notifications')}
+              description={t('settings.notifDesc')}
+              action={<Badge>{t('settings.comingSoon')}</Badge>}
+            />
           )}
 
           {activeTab === 'language' && (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-1">{t('settings.language')}</h2>
-                <p className="text-sm text-[var(--muted-foreground)]/50">{t('settings.langDesc')}</p>
-              </div>
+            <div>
+              <CardHeader title={t('settings.language')} />
+              <p className="mt-1.5 text-[0.98rem] text-ink-muted">{t('settings.langDesc')}</p>
+              <OrnamentDivider align="start" className="my-6" />
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  { code: 'az', name: 'Azərbaycan' },
-                  { code: 'en', name: 'English' },
-                  { code: 'ru', name: 'Русский' }
-                ].map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => i18n.changeLanguage(lang.code)}
-                    className={`flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-300 group ${
-                      i18n.language === lang.code 
-                        ? 'bg-bordo/10 border-bordo text-[var(--foreground)]' 
-                        : 'bg-[var(--input)] border-[var(--border)] text-[var(--muted-foreground)]/60 hover:bg-[var(--muted)] hover:border-[var(--muted-foreground)]/20'
-                    }`}
-                  >
-                    <span className="text-2xl font-bold text-bordo mb-3 uppercase group-hover:scale-110 transition-transform">{lang.code}</span>
-                    <span className="font-medium">{lang.name}</span>
-                    {i18n.language === lang.code && (
-                      <div className="mt-2 w-1.5 h-1.5 rounded-full bg-bordo shadow-[0_0_8px_rgba(123,0,28,0.8)]" />
-                    )}
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" role="radiogroup" aria-label={t('settings.selectLang')}>
+                {LANGUAGES.map((lang) => {
+                  const active = i18n.language === lang.code;
+                  return (
+                    <button
+                      key={lang.code}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      lang={lang.code}
+                      onClick={() => i18n.changeLanguage(lang.code)}
+                      className={cn(
+                        'card-hover relative flex flex-row items-center gap-4 rounded-[var(--radius-lg)] border p-4 text-left sm:flex-col sm:gap-2 sm:p-6 sm:text-center',
+                        active
+                          ? 'card-ornate border-line-strong'
+                          : 'border-line bg-surface hover:bg-surface-2'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'sc flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-[1.05rem]',
+                          active ? 'border-accent bg-accent text-accent-fg' : 'border-line-strong text-accent-text'
+                        )}
+                      >
+                        {lang.code}
+                      </span>
+                      <span className={cn('relative text-[1.05rem]', active ? 'font-semibold text-ink' : 'text-ink-muted')}>
+                        {lang.name}
+                      </span>
+                      {active && (
+                        <Check
+                          size={18}
+                          strokeWidth={2}
+                          aria-hidden="true"
+                          className="relative ml-auto text-accent-text sm:absolute sm:right-4 sm:top-4 sm:ml-0"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </div>
+    </PageShell>
   );
 };
 

@@ -1,14 +1,5 @@
-import { motion } from 'framer-motion';
-import { Bell, Check, Trash2, Clock } from 'lucide-react';
-import { format } from 'date-fns';
-import { az, enUS, ru } from 'date-fns/locale';
+import { Bell, BellDot, Check, CheckCheck, Trash2, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-
-const dateLocales = {
-  az: az,
-  en: enUS,
-  ru: ru
-};
 import {
   useGetNotificationsQuery,
   useMarkAsReadMutation,
@@ -17,8 +8,10 @@ import {
 } from '../../features/notifications/notificationsApi';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import Spinner from '../../components/common/Spinner';
 import { notificationText } from '../../features/notifications/notificationText';
+import { formatDate } from '../../utils/formatDate';
+import { Badge, Button, Card, EmptyState, PageShell, Skeleton } from '../../components/ui';
+import { cn } from '../../lib/utils';
 
 const Notifications = () => {
   const { t, i18n } = useTranslation();
@@ -29,6 +22,7 @@ const Notifications = () => {
   const [deleteNotification] = useDeleteNotificationMutation();
 
   const notifications = data?.data || [];
+  const unread = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAsRead = async (id) => {
     try {
@@ -62,96 +56,110 @@ const Notifications = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner />
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-2">
-          <Bell className="text-bordo" />
-          {t('notifications.title')}
-        </h1>
-        {notifications.some((n) => !n.isRead) && (
-          <button
-            onClick={handleMarkAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--muted)] hover:bg-[var(--border)] text-[var(--foreground)] rounded-lg transition-colors text-sm border border-[var(--border)]"
-          >
-            <Check size={16} />
+    <PageShell
+      width="narrow"
+      title={t('notifications.title')}
+      subtitle={!isLoading && notifications.length > 0 ? t('notifications.unreadCount', { count: unread }) : undefined}
+      actions={
+        unread > 0 && (
+          <Button variant="outline" icon={CheckCheck} onClick={handleMarkAllAsRead}>
             {t('notifications.markAllAsRead')}
-          </button>
-        )}
-      </div>
-
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
-        {notifications.length === 0 ? (
-          <div className="text-center py-12 text-[var(--muted-foreground)]/50">
-            <Bell className="mx-auto h-12 w-12 mb-4 opacity-20" />
-            <p>{t('notifications.noNotifications')}</p>
-          </div>
+          </Button>
+        )
+      }
+    >
+      <Card className="overflow-hidden">
+        {isLoading ? (
+          <ul className="divide-y divide-line-hair" aria-busy="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <li key={i} className="flex gap-4 px-4 py-5 sm:px-6">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-1/3" />
+                  <Skeleton className="h-3.5 w-2/3" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : notifications.length === 0 ? (
+          <EmptyState sketch="notebook" title={t('notifications.emptyTitle')} description={t('notifications.noNotifications')} />
         ) : (
-          <div className="space-y-4">
-            {notifications.map((notification, index) => {
+          <ul className="orn-stagger divide-y divide-line-hair">
+            {notifications.map((notification) => {
               const { title, message } = notificationText(notification, t, i18n);
+              const isUnread = !notification.isRead;
               return (
-              <motion.div
-                key={notification._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`flex items-start gap-4 p-4 rounded-xl border ${
-                  notification.isRead
-                    ? 'bg-[var(--muted)]/30 border-[var(--border)]'
-                    : 'bg-bordo/10 border-bordo/30'
-                } transition-colors group`}
-              >
-                <div className={`p-2 rounded-lg ${notification.isRead ? 'bg-[var(--muted)] text-[var(--muted-foreground)]/60' : 'bg-bordo text-white'}`}>
-                  <Bell size={20} />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleOpen(notification)}
-                  className="flex-1 text-left rounded-lg focus-visible:outline-2 focus-visible:outline-bordo"
-                >
-                  <h3 className={`font-semibold ${notification.isRead ? 'text-[var(--foreground)]/70' : 'text-[var(--foreground)]'}`}>
-                    {title}
-                  </h3>
-                  <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{message}</p>
-                  <div className="flex items-center gap-2 mt-2 text-xs text-[var(--muted-foreground)]/40">
-                    <Clock size={12} />
-                    {format(new Date(notification.createdAt), 'd MMM yyyy HH:mm', { locale: dateLocales[i18n.language] || az })}
-                  </div>
-                </button>
-                <div className="flex items-center gap-2 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                  {!notification.isRead && (
-                    <button
-                      onClick={() => handleMarkAsRead(notification._id)}
-                      className="p-2 text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-colors tooltip"
-                      title={t('notifications.markAsReadBtn')}
-                    >
-                      <Check size={16} />
-                    </button>
+                <li
+                  key={notification._id}
+                  className={cn(
+                    'group relative flex items-start gap-3 px-4 py-4 transition-colors duration-[var(--dur-1)] sm:gap-4 sm:px-6',
+                    isUnread ? 'bg-accent-soft' : 'hover:bg-surface-2'
                   )}
-                  <button
-                    onClick={() => handleDelete(notification._id)}
-                    className="p-2 text-[var(--muted-foreground)]/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors tooltip"
-                    title={t('notifications.deleteBtn')}
+                >
+                  {/* unread = filled seal-like disc + "new" badge; read = outline disc (never colour alone) */}
+                  {isUnread && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-[3px] bg-accent-text" />}
+                  <span
+                    className={cn(
+                      'mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border',
+                      isUnread ? 'border-accent bg-accent text-accent-fg' : 'border-line-strong text-ink-muted'
+                    )}
                   >
-                    <Trash2 size={16} />
+                    {isUnread ? (
+                      <BellDot size={18} strokeWidth={1.6} aria-hidden="true" />
+                    ) : (
+                      <Bell size={18} strokeWidth={1.6} aria-hidden="true" />
+                    )}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOpen(notification)}
+                    className="min-w-0 flex-1 rounded-[var(--radius-sm)] text-left"
+                  >
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className={cn('text-[1.05rem] leading-snug', isUnread ? 'font-semibold text-ink' : 'text-ink')}>
+                        {title}
+                      </span>
+                      {isUnread && <Badge tone="accent">{t('dashboard.new')}</Badge>}
+                    </span>
+                    {message && <span className="mt-1 block text-[0.98rem] text-ink-muted">{message}</span>}
+                    <span className="time-italic mt-1.5 flex items-center gap-1.5 text-[0.9rem] text-ink-subtle">
+                      <Clock size={13} strokeWidth={1.6} aria-hidden="true" />
+                      {formatDate(notification.createdAt, 'd MMM yyyy, HH:mm', i18n.language)}
+                    </span>
                   </button>
-                </div>
-              </motion.div>
+
+                  <div className="flex shrink-0 items-center gap-1 transition-opacity duration-[var(--dur-1)] pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100">
+                    {isUnread && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        iconOnly
+                        icon={Check}
+                        onClick={() => handleMarkAsRead(notification._id)}
+                        aria-label={t('notifications.markAsReadBtn')}
+                        title={t('notifications.markAsReadBtn')}
+                      />
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      iconOnly
+                      icon={Trash2}
+                      onClick={() => handleDelete(notification._id)}
+                      aria-label={t('notifications.deleteBtn')}
+                      title={t('notifications.deleteBtn')}
+                    />
+                  </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         )}
-      </div>
-    </div>
+      </Card>
+    </PageShell>
   );
 };
 
