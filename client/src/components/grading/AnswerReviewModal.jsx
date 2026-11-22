@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useGetQuizAttemptQuery, useGradeQuizAttemptMutation } from '../../features/quizzes/quizzesApi';
 import { useGetExamResultAnswersQuery, useGradeExamResultMutation } from '../../features/exams/examsApi';
+import { Button, Input, Modal, StatusPill } from '../ui';
 import Spinner from '../common/Spinner';
 
 // One student's submitted answers for a quiz or an exam. With canGrade the teacher
 // can give points to open-ended answers; students get a read-only view.
+// Correct / wrong use the non-colour status system: filled + check vs outline + cross.
 const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) => {
   const { t } = useTranslation();
   const ns = kind === 'quiz' ? 'quizzes' : 'exams';
@@ -68,42 +69,42 @@ const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) =
   const renderStatus = (a) => {
     if (a.autoGraded) {
       return (
-        <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${a.isCorrect ? 'text-green-500' : 'text-red-400'}`}>
-          {a.isCorrect ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-          {a.isCorrect ? t(`${ns}.answerCorrect`) : t(`${ns}.answerWrong`)}
-          <span className="text-[var(--muted-foreground)]">
-            · {t(`${ns}.awardedOf`, { awarded: a.awardedPoints ?? 0, points: a.points })}
+        <span className="inline-flex flex-wrap items-center gap-2">
+          <StatusPill status={a.isCorrect ? 'success' : 'absent'}>
+            {a.isCorrect ? t(`${ns}.answerCorrect`) : t(`${ns}.answerWrong`)}
+          </StatusPill>
+          <span className="num text-[0.9rem] text-ink-muted">
+            {t(`${ns}.awardedOf`, { awarded: a.awardedPoints ?? 0, points: a.points })}
           </span>
         </span>
       );
     }
     if (canGrade) {
       return (
-        <label className="inline-flex flex-wrap items-center gap-2 text-xs text-[var(--muted-foreground)]">
-          {t(`${ns}.points`)}
-          <input
-            type="number"
-            min="0"
-            max={a.points}
-            step="0.5"
-            value={valueFor(a)}
-            onChange={(e) => setEdits((prev) => ({ ...prev, [a.questionId]: e.target.value }))}
-            className="w-20 bg-[var(--input)] border border-[var(--border)] rounded-lg px-2 py-1 text-sm text-[var(--foreground)] text-center focus:outline-none focus:border-bordo transition-colors"
-          />
-          <span>/ {a.points}</span>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-2 text-[0.95rem] text-ink-muted">
+            <span className="sc text-[0.8rem]">{t(`${ns}.points`)}</span>
+            <Input
+              type="number"
+              min="0"
+              max={a.points}
+              step="0.5"
+              value={valueFor(a)}
+              onChange={(e) => setEdits((prev) => ({ ...prev, [a.questionId]: e.target.value }))}
+              className="num w-24 text-center"
+            />
+            <span className="num">/ {a.points}</span>
+          </label>
           {a.awardedPoints === null && (
-            <span className="text-amber-500">{t(`${ns}.awaitingReview`)}</span>
+            <StatusPill status="pending">{t(`${ns}.awaitingReview`)}</StatusPill>
           )}
-        </label>
+        </div>
       );
     }
     return a.awardedPoints === null ? (
-      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-500">
-        <Clock size={14} />
-        {t(`${ns}.awaitingReview`)}
-      </span>
+      <StatusPill status="pending">{t(`${ns}.awaitingReview`)}</StatusPill>
     ) : (
-      <span className="text-xs text-[var(--muted-foreground)]">
+      <span className="num text-[0.95rem] text-ink-muted">
         {t(`${ns}.awardedOf`, { awarded: a.awardedPoints, points: a.points })}
       </span>
     );
@@ -113,13 +114,13 @@ const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) =
     if (isLoading) return <div className="flex justify-center py-12"><Spinner /></div>;
     if (isError || !review) {
       return (
-        <p className="text-center py-12 text-[var(--muted-foreground)]">
+        <p className="py-12 text-center text-ink-muted">
           {error?.data?.message || t('common.error')}
         </p>
       );
     }
     if (answers.length === 0) {
-      return <p className="text-center py-12 text-[var(--muted-foreground)]">{t(`${ns}.noOnlineAnswers`)}</p>;
+      return <p className="py-12 text-center text-ink-muted">{t(`${ns}.noOnlineAnswers`)}</p>;
     }
     return (
       <div className="space-y-4">
@@ -127,28 +128,32 @@ const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) =
           const given = answerLabel(a);
           const correct = correctLabel(a);
           return (
-            <div key={a.questionId} className="bg-[var(--muted)]/20 border border-[var(--border)] rounded-xl p-4 space-y-3">
-              <p className="text-sm font-medium text-[var(--foreground)] whitespace-pre-wrap">
-                <span className="text-bordo font-bold mr-2">{i + 1}.</span>
-                {a.text}
-                <span className="ml-2 text-xs text-[var(--muted-foreground)]">
-                  ({t(`${ns}.pointsCount`, { count: a.points })})
+            <div key={a.questionId} className="card-paper space-y-3 p-4">
+              <p className="flex items-baseline gap-3 text-[1.05rem] font-medium text-ink">
+                <span className="time-italic w-7 shrink-0 text-right text-[1.5rem] leading-none text-accent-text dark:text-ink">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
+                  {a.text}
+                  <span className="num ml-2 text-[0.85rem] font-normal text-ink-muted">
+                    ({t(`${ns}.pointsCount`, { count: a.points })})
+                  </span>
                 </span>
               </p>
-              <div className="text-sm">
-                <p className="text-xs text-[var(--muted-foreground)] mb-1">{t(`${ns}.studentAnswer`)}</p>
+              <div className="pl-10">
+                <p className="sc mb-1 text-[0.78rem] text-ink-muted">{t(`${ns}.studentAnswer`)}</p>
                 {given === null ? (
-                  <p className="italic text-[var(--muted-foreground)]">{t(`${ns}.noAnswer`)}</p>
+                  <p className="italic text-ink-muted">{t(`${ns}.noAnswer`)}</p>
                 ) : (
-                  <p className="text-[var(--foreground)] whitespace-pre-wrap break-words">{given}</p>
+                  <p className="whitespace-pre-wrap break-words text-ink">{given}</p>
                 )}
+                {correct !== null && (
+                  <p className="mt-2 text-[0.95rem] text-ink-muted">
+                    {t(`${ns}.correctAnswer`)}: <span className="font-semibold text-ink">{correct}</span>
+                  </p>
+                )}
+                <div className="mt-3">{renderStatus(a)}</div>
               </div>
-              {correct !== null && (
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  {t(`${ns}.correctAnswer`)}: <span className="text-[var(--foreground)]">{correct}</span>
-                </p>
-              )}
-              <div>{renderStatus(a)}</div>
             </div>
           );
         })}
@@ -156,80 +161,41 @@ const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) =
     );
   };
 
+  const subtitle = review ? (
+    <span className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+      <span className="num">
+        {t(`${ns}.reviewSummary`, {
+          earned: review.earnedPoints,
+          total: review.totalPoints,
+          percent: review.percent,
+        })}
+      </span>
+      {review.pendingCount > 0 && (
+        <StatusPill status="pending">{t(`${ns}.pendingReview`, { count: review.pendingCount })}</StatusPill>
+      )}
+    </span>
+  ) : undefined;
+
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-2xl bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl flex flex-col max-h-[90vh]"
-        >
-          <div className="flex items-start justify-between gap-4 p-5 border-b border-[var(--border)]">
-            <div className="min-w-0">
-              <h2 className="text-lg font-bold text-[var(--foreground)] truncate">
-                {t(`${ns}.reviewTitle`)}{review?.student?.name ? `: ${review.student.name}` : ''}
-              </h2>
-              {review && (
-                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-[var(--muted-foreground)] mt-1">
-                  <span>
-                    {t(`${ns}.reviewSummary`, {
-                      earned: review.earnedPoints,
-                      total: review.totalPoints,
-                      percent: review.percent,
-                    })}
-                  </span>
-                  {review.pendingCount > 0 && (
-                    <span className="text-amber-500">{t(`${ns}.pendingReview`, { count: review.pendingCount })}</span>
-                  )}
-                </p>
-              )}
-            </div>
-            <button
-              onClick={onClose}
-              aria-label={t(`${ns}.close`)}
-              className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-5">{renderBody()}</div>
-
-          <div className="flex gap-3 p-5 border-t border-[var(--border)]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-xl transition-colors font-medium"
-            >
-              {t(`${ns}.close`)}
-            </button>
-            {canGrade && openAnswers.length > 0 && (
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="flex-1 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex justify-center items-center gap-2"
-              >
-                {isSaving ? <Spinner size="sm" color="white" /> : (
-                  <>
-                    <Save size={18} />
-                    <span>{t(`${ns}.saveGrades`)}</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+    <Modal
+      open
+      onClose={onClose}
+      size="lg"
+      title={`${t(`${ns}.reviewTitle`)}${review?.student?.name ? `: ${review.student.name}` : ''}`}
+      subtitle={subtitle}
+      footer={(
+        <>
+          <Button variant="ghost" onClick={onClose}>{t(`${ns}.close`)}</Button>
+          {canGrade && openAnswers.length > 0 && (
+            <Button icon={Save} onClick={handleSave} loading={isSaving}>
+              {t(`${ns}.saveGrades`)}
+            </Button>
+          )}
+        </>
+      )}
+    >
+      {renderBody()}
+    </Modal>
   );
 };
 
