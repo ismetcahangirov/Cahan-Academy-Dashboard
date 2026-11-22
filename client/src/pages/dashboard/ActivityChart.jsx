@@ -78,8 +78,12 @@ const useWidth = () => {
     observer.current?.disconnect();
     observer.current = null;
     if (!el) return;
-    setWidth(el.clientWidth);
-    if (typeof ResizeObserver === 'undefined') return;
+    // no synchronous clientWidth read here: it forced a full layout inside React's commit (~100 ms at
+    // 4x throttle). The observer reports the first size right after the browser's own layout.
+    if (typeof ResizeObserver === 'undefined') {
+      setWidth(el.clientWidth);
+      return;
+    }
     observer.current = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)));
     observer.current.observe(el);
   }, []);

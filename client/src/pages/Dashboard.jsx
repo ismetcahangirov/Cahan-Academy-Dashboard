@@ -12,10 +12,15 @@ import { LaceEdge, ScriptTitle, Timeline, TimelineItem, WaveEdge } from '../comp
 import ActivityChart from './dashboard/ActivityChart';
 import TodayAgenda from './dashboard/TodayAgenda';
 
-const formatHours = (hours, t, language) =>
-  t('dashboard.hoursValue', {
-    value: new Intl.NumberFormat(language || undefined, { maximumFractionDigits: 1 }).format(hours || 0),
-  });
+// Hours with at most one decimal in the UI language's separators. Hand-rolled on purpose: constructing
+// Intl.NumberFormat('az') on mount cost ~60 ms of main thread under 4x CPU throttle (route change trace).
+const SEPARATORS = { en: [',', '.'], ru: ['\u00a0', ','], az: ['.', ','] };
+const formatHours = (hours, t, language) => {
+  const [group, decimal] = SEPARATORS[String(language || 'az').slice(0, 2)] || SEPARATORS.az;
+  const [int, frac] = (Math.round((Number(hours) || 0) * 10) / 10).toFixed(1).split('.');
+  const value = int.replace(/\B(?=(\d{3})+(?!\d))/g, group) + (frac === '0' ? '' : decimal + frac);
+  return t('dashboard.hoursValue', { value });
+};
 
 const trendProps = (trend, label) => {
   if (typeof trend !== 'number') return {};
