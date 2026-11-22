@@ -3,6 +3,8 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Spinner from '../../components/common/Spinner';
+import { Button } from '../../components/ui';
+import { OrnamentDivider, WaxSeal } from '../../components/ornament';
 import {
   useJoinOrCreateMeetingMutation,
   useStartMeetingMutation,
@@ -140,15 +142,16 @@ export default function MeetingRoom() {
   return (
     <div className="fixed inset-0 z-50 bg-black">
       {waiting && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/90 text-white">
-          <Spinner />
-          <p className="text-sm text-gray-300">{t('meeting.waitingForHost')}</p>
-          <button
-            onClick={() => navigate('/schedule')}
-            className="mt-2 px-4 py-1.5 text-xs rounded-md border border-gray-600 hover:bg-gray-800 transition-colors"
-          >
+        <div className="theme-wine login-hero absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-6 text-center">
+          <WaxSeal size={88} />
+          <OrnamentDivider draw={false} />
+          <div className="flex items-center gap-3 text-ink">
+            <Spinner />
+            <p className="text-[1.1rem]" role="status">{t('meeting.waitingForHost')}</p>
+          </div>
+          <Button variant="outline" motif={false} className="mt-2" onClick={() => navigate('/schedule')}>
             {t('meeting.back')}
-          </button>
+          </Button>
         </div>
       )}
       {!ready && !waiting && !error && (
