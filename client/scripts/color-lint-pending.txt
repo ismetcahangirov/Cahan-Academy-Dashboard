@@ -27,7 +27,5 @@ src/pages/quizzes/Quizzes.jsx
 src/pages/quizzes/TakeQuizModal.jsx
 src/pages/schedule/Schedule.jsx
 src/pages/settings/Settings.jsx
-src/pages/students/StudentDetail.jsx
-src/pages/students/Students.jsx
 src/components/grading/AnswerReviewModal.jsx
 src/components/schedule/JoinClassButton.jsx
