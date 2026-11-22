@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/useTheme';
 import Dropdown from '../../components/common/Dropdown';
 import { BrandMark } from '../../components/brand';
-import { EdelweissCorner, OrnateFrame, WaxSeal } from '../../components/ornament';
+import { EdelweissCorner } from '../../components/ornament';
 import { cn } from '../../lib/utils';
 
 /**
  * AuthLayout — the shared auth composition (Login, Register, Forgot/Reset password, Accept invitation).
  * Full-screen flat paper colour, the brand mark (no wordmark) as a large faint watermark behind, a small edelweiss
- * cluster in every corner, and the form centred in a transparent ornate frame under a wax seal.
+ * cluster in every corner, and the form centred on the page (no card, frame or seal).
  *
  * <AuthLayout>
  *   <ScriptTitle align="center" size="page" title=… subtitle=… />
@@ -82,18 +82,9 @@ const AuthLayout = ({ children, className }) => (
       <ThemeToggle />
     </div>
 
-    {/* ---------------------------------------------------------------- centred form card */}
-    <div className="relative w-full max-w-[37rem]">
-      <WaxSeal size={76} className="relative z-10 mx-auto -mb-9 block" />
-      {/* moon-like frame (owner): circular semicircle ends like the crescent's arc, no corner flourishes; fill = brand wine at high transparency so the watermark shows through */}
-      <OrnateFrame
-        paper
-        corners="none"
-        className="relative bg-[rgba(92,0,14,0.07)] bg-none px-8 pb-20 pt-20 shadow-none sm:px-24 dark:bg-[rgba(92,0,14,0.32)]"
-        style={{ borderRadius: '9999px' }}
-      >
-        <div className={cn('mx-auto w-full max-w-[22rem]', className)}>{children}</div>
-      </OrnateFrame>
+    {/* ---------------------------------------------------------------- centred form (owner: no card, frame or seal) */}
+    <div className="relative w-full max-w-[37rem] px-4 py-8 sm:px-24">
+      <div className={cn('mx-auto w-full max-w-[22rem]', className)}>{children}</div>
     </div>
   </div>
 );
