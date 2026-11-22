@@ -260,6 +260,7 @@ def parchment(src, name, size=512):
 
 RECIPES = {
     "lace-corner": lambda s: ink_asset(s, "lace-corner", 360, lo=0.08, hi=0.8),
+    "edel-corner": lambda s: ink_asset(s, "edel-corner", 320, lo=0.08, hi=0.85),
     "lace-edge": lambda s: lace_edge(s, "lace-edge", 120),
     "sketch-books": lambda s: ink_asset(s, "sketch-books", 320, lo=0.1, hi=0.9),
     "sketch-inkwell": lambda s: ink_asset(s, "sketch-inkwell", 360, lo=0.1, hi=0.9),

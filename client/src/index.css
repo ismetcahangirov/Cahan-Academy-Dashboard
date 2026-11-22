@@ -79,6 +79,7 @@
   --tex-lace-edge: url("/ornaments/lace-edge.webp");
   --tex-lace-edge-v: url("/ornaments/lace-edge-v.webp");
   --tex-lace-corner: url("/ornaments/lace-corner.webp");
+  --tex-edel-corner: url("/ornaments/edel-corner.webp");
   --tex-bookmark: url("/ornaments/bookmark-ribbon.webp");
   --tex-ribbon: url("/ornaments/draped-ribbon.webp");
   --tex-seal: url("/ornaments/wax-seal.webp");
@@ -212,6 +213,7 @@
   --tex-lace-edge: url("/ornaments/lace-edge-dark.webp");
   --tex-lace-edge-v: url("/ornaments/lace-edge-v-dark.webp");
   --tex-lace-corner: url("/ornaments/lace-corner-dark.webp");
+  --tex-edel-corner: url("/ornaments/edel-corner-dark.webp");
   --tex-bookmark: url("/ornaments/bookmark-ribbon-dark.webp");
   --tex-ribbon: url("/ornaments/draped-ribbon-dark.webp");
   --tex-seal: url("/ornaments/wax-seal-dark.webp");
