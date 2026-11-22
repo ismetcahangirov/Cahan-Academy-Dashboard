@@ -62,7 +62,7 @@ const ThemeToggle = () => {
 };
 
 const AuthLayout = ({ children, className }) => (
-  <div className="relative isolate flex min-h-screen bg-[var(--paper)] flex-col items-center justify-center overflow-hidden px-4 py-20 sm:px-6">
+  <div className="relative isolate flex min-h-screen bg-[var(--paper)] flex-col items-center justify-center overflow-hidden px-4 py-16 sm:px-6">
     {/* ---------------------------------------------------------------- background (follows the page theme) */}
     <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
       {/* parchment texture, toned down to a soft hint (owner: not flat, not as strong as .paper) */}
@@ -89,8 +89,8 @@ const AuthLayout = ({ children, className }) => (
       <OrnateFrame
         paper
         corners="none"
-        className="relative bg-transparent bg-none px-7 pb-16 pt-16 shadow-none sm:px-14"
-        style={{ borderRadius: '50% / 16%' }}
+        className="relative bg-transparent bg-none px-8 pb-20 pt-20 shadow-none sm:px-16"
+        style={{ borderRadius: '50% / 25%' }}
       >
         <div className={cn('mx-auto w-full max-w-[26rem]', className)}>{children}</div>
       </OrnateFrame>
