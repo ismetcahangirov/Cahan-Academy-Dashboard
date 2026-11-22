@@ -1,5 +1,9 @@
 {
   "common": {
+    "openMenu": "Открыть меню",
+    "expandMenu": "Развернуть меню",
+    "collapseMenu": "Свернуть меню",
+    "profile": "Профиль",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
     "welcome": "Добро пожаловать в Cahan Academy",
@@ -33,6 +37,10 @@
     "goBack": "Вернуться назад"
   },
   "auth": {
+    "welcomeScript": "С возвращением",
+    "googleContinue": "Продолжить с Google",
+    "heroLine": "Учимся вместе",
+    "heroSub": "Уроки · Задания · Экзамены",
     "loginTitle": "Cahan Academy",
     "loginSubtitle": "Продолжайте свои уроки, войдя в систему",
     "email": "Электронная почта",

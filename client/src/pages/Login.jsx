@@ -1,25 +1,41 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLoginMutation } from '../features/auth/authApi';
+import { useLoginMutation, useGoogleLoginMutation } from '../features/auth/authApi';
 import { setCredentials, selectIsAuthenticated } from '../features/auth/authSlice';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { Mail, Lock, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Dropdown from '../components/common/Dropdown';
-import Spinner from '../components/common/Spinner';
-
-import { GoogleLogin } from '@react-oauth/google';
-import { useGoogleLoginMutation } from '../features/auth/authApi';
 import PasswordInput from '../components/common/PasswordInput';
+import GoogleButton from '../components/common/GoogleButton';
+import { Button, FormField, Input } from '../components/ui';
+import { BrandLogo } from '../components/brand';
+import {
+  DrapedRibbon,
+  LaceCorner,
+  LaceEdge,
+  OrnamentDivider,
+  ScriptTitle,
+  WaveEdge,
+  WaxSeal,
+  EdelweissGlyph,
+} from '../components/ornament';
+import PetalField from '../components/three/PetalField';
 
 const loginSchema = (t) => z.object({
   email: z.string().email(t('auth.emailInvalid')),
   password: z.string().min(6, t('auth.passwordShort')),
 });
+
+const languages = [
+  { code: 'az', name: 'Azərbaycanca' },
+  { code: 'en', name: 'English' },
+  { code: 'ru', name: 'Русский' },
+];
 
 const Login = () => {
   const { t, i18n } = useTranslation();
@@ -38,14 +54,7 @@ const Login = () => {
     resolver: zodResolver(loginSchema(t)),
   });
 
-  const languages = [
-    { code: 'az', name: 'AZE', flag: '🇦🇿' },
-    { code: 'en', name: 'ENG', flag: '🇺🇸' },
-    { code: 'ru', name: 'RUS', flag: '🇷🇺' }
-  ];
-
-  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
-
+  const currentLang = languages.find((l) => l.code === i18n.language) || languages[0];
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -75,115 +84,144 @@ const Login = () => {
     }
   };
 
+  const busy = isLoading || isGoogleLoading;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
-      {/* Background Orbs */}
-      {/* Language Switcher (Floating) */}
-      <div className="absolute top-8 right-8 z-50">
-        <Dropdown
-          label={currentLang.code}
-          icon={<span className="text-xl">{currentLang.flag}</span>}
-          items={languages.map(lang => ({
-            label: lang.name,
-            icon: lang.flag,
-            active: i18n.language === lang.code,
-            onClick: () => i18n.changeLanguage(lang.code)
-          }))}
-          buttonClassName="px-4 py-2 rounded-xl bg-[var(--card)] backdrop-blur-md border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all shadow-xl"
-          menuClassName="w-44"
-        />
-      </div>
-
-      <div className="w-full max-w-md bg-[var(--card)] backdrop-blur-xl rounded-2xl border border-[var(--border)] p-8 shadow-2xl relative z-10">
-        <div className="text-center mb-8">
-          <img
-            src="/cahan-logo.svg"
-            alt="Cahan Academy"
-            className="brand-logo mx-auto mb-4 h-16 w-16 object-contain"
+    <div className="relative min-h-screen bg-paper lg:grid lg:grid-cols-[minmax(0,46fr)_minmax(0,54fr)]">
+      {/* ---------------------------------------------------------------- wine hero */}
+      <aside className="theme-wine login-hero relative isolate overflow-hidden lg:min-h-screen">
+        <PetalField className="absolute inset-0 -z-10" />
+        <LaceCorner corner="tl" className="absolute left-0 top-0 w-32 sm:w-44 lg:w-60" />
+        <LaceCorner corner="bl" className="absolute bottom-0 left-0 hidden w-52 lg:block" />
+        <DrapedRibbon className="absolute -right-10 -top-3 w-52 sm:w-64 lg:hidden" />
+        <div className="absolute left-4 top-4 z-30 lg:hidden">
+          <Dropdown
+            label={currentLang.code.toUpperCase()}
+            icon={<Globe size={15} strokeWidth={1.5} />}
+            items={languages.map((lang) => ({
+              label: lang.name,
+              active: i18n.language === lang.code,
+              onClick: () => i18n.changeLanguage(lang.code),
+            }))}
+            align="left"
+            menuClassName="w-44"
           />
-          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('auth.loginTitle')}</h1>
-          <p className="text-[var(--muted-foreground)]/60">{t('auth.loginSubtitle')}</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--muted-foreground)]/80 block">{t('auth.email')}</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
-                {...register('email')}
-                type="email"
-                className={`w-full bg-[var(--input)] border ${errors.email ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
-                placeholder={t('auth.emailPlaceholder')}
-              />
-            </div>
-            {errors.email && <p className="text-xs text-bordo mt-1">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-[var(--muted-foreground)]/80 block">{t('auth.password')}</label>
-              <Link to="/forgot-password" title={t('auth.forgotPassword')} className="text-xs text-bordo hover:underline">
-                {t('auth.forgotPassword')}
-              </Link>
-            </div>
-            <div className="relative">
-              <Lock className="z-10 pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <PasswordInput
-                {...register('password')}
-                className={`w-full bg-[var(--input)] border ${errors.password ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
-                placeholder={t('auth.passwordPlaceholder')}
-              />
-            </div>
-            {errors.password && <p className="text-xs text-bordo mt-1">{errors.password.message}</p>}
-          </div>
-
-          <button
-            disabled={isLoading || isGoogleLoading}
-            type="submit"
-            className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Spinner size="sm" color="white" />
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" />
-                {t('auth.loginBtn')}
-              </>
-            )}
-          </button>
-        </form>
-
-        <div className="mt-6">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[var(--border)]"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[var(--card)] px-2 text-[var(--muted-foreground)]/40">{t('auth.or')}</span>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={onGoogleSuccess}
-              onError={() => toast.error(t('auth.googleLoginError'))}
-              theme="outline"
-              shape="pill"
-              text="signin_with"
-            />
-          </div>
+        <div className="relative flex flex-col items-center px-6 pb-20 pt-12 text-center sm:pb-24 lg:min-h-screen lg:justify-center lg:pb-16 lg:pt-16">
+          <BrandLogo className="orn-rise h-32 w-auto text-white sm:h-40 lg:h-56" />
+          <p className="orn-rise mt-6 font-script text-[2.3rem] leading-none text-white sm:text-[2.7rem] lg:mt-10 lg:text-[3.2rem]">
+            {t('auth.heroLine')}
+          </p>
+          <OrnamentDivider className="mt-4 hidden sm:flex" />
+          <p className="sc mt-3 hidden text-[0.85rem] text-ink-muted sm:block lg:text-[0.95rem]">{t('auth.heroSub')}</p>
+          <WaxSeal size={92} className="mt-10 hidden lg:inline-block" />
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-[var(--muted-foreground)]/60 text-sm">
+        {/* lace trim + wave into the parchment (bottom on mobile, right edge on desktop) */}
+        <LaceEdge direction="up" size={22} className="absolute inset-x-0 bottom-9 lg:hidden" />
+        <WaveEdge fill="var(--paper-base)" className="absolute inset-x-0 -bottom-px lg:hidden" />
+        <WaveEdge vertical fill="var(--paper-base)" className="absolute inset-y-0 -right-px hidden lg:block" />
+      </aside>
+
+      {/* ribbon draped over the join of the two panels (desktop) */}
+      <DrapedRibbon className="absolute left-[46%] top-[-14px] z-20 hidden w-72 -translate-x-[42%] lg:block" />
+
+      {/* ---------------------------------------------------------------- parchment form */}
+      <main className="paper relative flex flex-col items-center px-5 pb-12 sm:px-8 lg:min-h-screen lg:justify-center lg:py-16">
+        <WaxSeal size={72} className="relative z-10 -mt-12 mb-2 lg:hidden" />
+
+        <div className="absolute right-6 top-6 z-30 hidden lg:block">
+          <Dropdown
+            label={currentLang.code.toUpperCase()}
+            icon={<Globe size={15} strokeWidth={1.5} />}
+            items={languages.map((lang) => ({
+              label: lang.name,
+              active: i18n.language === lang.code,
+              onClick: () => i18n.changeLanguage(lang.code),
+            }))}
+            menuClassName="w-44"
+          />
+        </div>
+
+        <div className="w-full max-w-[26rem] pt-4 lg:pt-0">
+          <ScriptTitle align="center" size="page" title={t('auth.welcomeScript')} subtitle={t('auth.loginSubtitle')} />
+
+          <form onSubmit={handleSubmit(onSubmit)} className="orn-rise mt-8 space-y-5" noValidate>
+            <FormField label={t('auth.email')} error={errors.email?.message}>
+              {(id, describedBy, invalid) => (
+                <Input
+                  id={id}
+                  type="email"
+                  autoComplete="email"
+                  icon={Mail}
+                  invalid={invalid}
+                  aria-describedby={describedBy}
+                  placeholder={t('auth.emailPlaceholder')}
+                  {...register('email')}
+                />
+              )}
+            </FormField>
+
+            <FormField
+              error={errors.password?.message}
+              label={
+                <span className="flex items-baseline justify-between gap-3">
+                  <span>{t('auth.password')}</span>
+                  <Link to="/forgot-password" className="link font-serif text-[0.9rem] font-normal tracking-normal">
+                    {t('auth.forgotPassword')}
+                  </Link>
+                </span>
+              }
+            >
+              {(id, describedBy, invalid) => (
+                <div className="relative">
+                  <Lock
+                    aria-hidden="true"
+                    strokeWidth={1.6}
+                    className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-[1.05rem] w-[1.05rem] -translate-y-1/2 text-ink-subtle"
+                  />
+                  <PasswordInput
+                    id={id}
+                    autoComplete="current-password"
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={describedBy}
+                    className="field field-icon"
+                    placeholder={t('auth.passwordPlaceholder')}
+                    {...register('password')}
+                  />
+                </div>
+              )}
+            </FormField>
+
+            <Button type="submit" size="lg" block loading={isLoading} disabled={busy} motif>
+              {t('auth.loginBtn')}
+            </Button>
+          </form>
+
+          <div className="my-7 flex items-center gap-3 text-ornament" role="separator">
+            <span className="h-px flex-1 bg-line-strong" />
+            <EdelweissGlyph className="h-3.5 w-3.5" />
+            <span className="sc text-[0.8rem] text-ink-muted">{t('auth.or')}</span>
+            <EdelweissGlyph className="h-3.5 w-3.5" />
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
+
+          <GoogleButton
+            label={t('auth.googleContinue')}
+            disabled={busy}
+            onSuccess={onGoogleSuccess}
+            onError={() => toast.error(t('auth.googleLoginError'))}
+          />
+
+          <p className="mt-8 text-center text-[0.98rem] text-ink-muted">
             {t('auth.noAccount')}{' '}
-            <Link to="/register" className="text-bordo font-semibold hover:underline">
+            <Link to="/register" className="link font-semibold">
               {t('auth.registerLink')}
             </Link>
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
