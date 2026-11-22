@@ -22,7 +22,7 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
-  --font-script: "Cormorant Garamond", "EB Garamond", "Georgia", serif; /* titles: upright display serif, 500 (owner: no handwriting, not italic, lighter) */
+  --font-script: "Tinos", "Times New Roman", "Times", serif; /* titles: Times-style bold serif (owner reference: "Qeydiyyat davam edir" post) */
   --font-serif: "EB Garamond", "Garamond", "Georgia", serif;
   --font-sc: "Cormorant SC", "EB Garamond", "Georgia", serif;
   --font-sans: "EB Garamond", "Garamond", "Georgia", serif;

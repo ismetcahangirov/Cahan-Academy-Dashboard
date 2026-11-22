@@ -21,7 +21,7 @@ NM = os.path.join(HERE, "..", "node_modules", "@fontsource")
 
 # Must match the imports in src/fonts.js
 FONTS = [
-    "cormorant-garamond/500.css",
+    "tinos/700.css",
     "eb-garamond/400.css",
     "eb-garamond/400-italic.css",
     "eb-garamond/500.css",

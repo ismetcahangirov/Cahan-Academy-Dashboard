@@ -1,7 +1,7 @@
 // Self-hosted fonts (@fontsource, bundled by Vite, font-display: swap).
 // Coverage of Azerbaijani (əƏğĞıİşŞçÇöÖüÜ) and Cyrillic is proven by scripts/font-coverage.py;
 // keep its FONTS list in sync with these imports.
-import '@fontsource/cormorant-garamond/500.css';
+import '@fontsource/tinos/700.css';
 import '@fontsource/eb-garamond/400.css';
 import '@fontsource/eb-garamond/400-italic.css';
 import '@fontsource/eb-garamond/500.css';
