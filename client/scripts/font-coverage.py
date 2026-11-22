@@ -21,8 +21,6 @@ NM = os.path.join(HERE, "..", "node_modules", "@fontsource")
 
 # Must match the imports in src/fonts.js
 FONTS = [
-    "libre-baskerville/400.css",  # titles; no Cyrillic -> Tinos below covers ru
-    "tinos/400.css",
     "eb-garamond/400.css",
     "eb-garamond/400-italic.css",
     "eb-garamond/500.css",

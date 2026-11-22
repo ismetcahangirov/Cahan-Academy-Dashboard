@@ -18,11 +18,11 @@ import OrnamentDivider from './OrnamentDivider';
  * semibold, wraps cleanly). Only a detail page may use its entity's (person's) name as the page title.
  */
 const SIZES = {
-  // sized for Libre Baskerville (wide serif); the old script font needed ~35% more
-  hero: 'text-[2.4rem] sm:text-[3rem]',
-  page: 'text-[1.9rem] sm:text-[2.2rem]',
-  section: 'text-[1.55rem] sm:text-[1.75rem]',
-  card: 'text-[1.3rem]',
+  // sized for EB Garamond titles; the old script font needed ~25% more
+  hero: 'text-[2.7rem] sm:text-[3.3rem]',
+  page: 'text-[2.1rem] sm:text-[2.45rem]',
+  section: 'text-[1.7rem] sm:text-[1.95rem]',
+  card: 'text-[1.4rem]',
 };
 
 const ScriptTitle = ({
