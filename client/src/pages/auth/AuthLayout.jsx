@@ -1,5 +1,6 @@
-import { Globe } from 'lucide-react';
+import { Globe, Moon, Sun } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../context/useTheme';
 import Dropdown from '../../components/common/Dropdown';
 import { BrandMark } from '../../components/brand';
 import { EdelweissCorner, OrnateFrame, WaxSeal } from '../../components/ornament';
@@ -42,10 +43,30 @@ const LanguageMenu = ({ align }) => {
 
 const CORNER_SIZE = 'w-20 sm:w-28 lg:w-36';
 
+const ThemeToggle = () => {
+  const { t } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+  const label = theme === 'dark' ? t('common.lightMode') : t('common.darkMode');
+  return (
+    <button
+      type="button"
+      onClick={toggleTheme}
+      aria-label={label}
+      title={label}
+      aria-pressed={theme === 'dark'}
+      className="flex h-[2.15rem] w-[2.15rem] items-center justify-center rounded-full border border-line-strong bg-surface text-ink-muted transition-colors hover:border-ornament-soft hover:text-ink"
+    >
+      {theme === 'dark' ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
+    </button>
+  );
+};
+
 const AuthLayout = ({ children, className }) => (
   <div className="relative isolate flex min-h-screen bg-[var(--paper)] flex-col items-center justify-center overflow-hidden px-4 py-20 sm:px-6">
     {/* ---------------------------------------------------------------- background (follows the page theme) */}
     <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+      {/* parchment texture, toned down to a soft hint (owner: not flat, not as strong as .paper) */}
+      <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'var(--tex-paper)', backgroundSize: '512px 512px' }} />
       <div className="absolute inset-0 flex items-center justify-center">
         <BrandMark className="h-[92vh] w-auto max-w-[96vw] text-wine opacity-[0.16] dark:text-white dark:opacity-[0.12]" />
       </div>
@@ -55,9 +76,10 @@ const AuthLayout = ({ children, className }) => (
       <EdelweissCorner corner="br" className={cn('absolute bottom-0 right-0', CORNER_SIZE)} />
     </div>
 
-    {/* language menu: top centre, clear of the corner ornaments */}
-    <div className="absolute left-1/2 top-5 z-30 -translate-x-1/2">
+    {/* language menu + theme toggle: top centre, clear of the corner ornaments */}
+    <div className="absolute left-1/2 top-5 z-30 flex -translate-x-1/2 items-center gap-2">
       <LanguageMenu align="left" />
+      <ThemeToggle />
     </div>
 
     {/* ---------------------------------------------------------------- centred form card */}
