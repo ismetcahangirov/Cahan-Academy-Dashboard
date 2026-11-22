@@ -37,10 +37,21 @@ const RASTER_MAX_OFF = Number(args['raster-max-off'] || 0.002); // fraction of o
 assertLocal(base);
 
 /* ---------------------------------------------------------------- in-page auditor */
-async function auditPage(page, tol, scope) {
-  return page.evaluate(async ({ TOL, SCOPE }) => {
+async function auditPage(page, tol, scope, skipRasters = []) {
+  return page.evaluate(async ({ TOL, SCOPE, SKIP }) => {
     const WINE = [92, 0, 14];
+    // memoised per rounded colour: raster textures repeat the same few hundred tones
+    const lawCache = new Map();
     const onLaw = (c) => {
+      const key = (Math.round(c[0]) << 16) | (Math.round(c[1]) << 8) | Math.round(c[2]);
+      let r = lawCache.get(key);
+      if (r === undefined) {
+        r = onLawRaw([Math.round(c[0]), Math.round(c[1]), Math.round(c[2])]);
+        lawCache.set(key, r);
+      }
+      return r;
+    };
+    const onLawRaw = (c) => {
       // min over the two segments of the max-channel distance to the closest sampled point
       let best = Infinity;
       for (const [p0, p1] of [[[255, 255, 255], WINE], [WINE, [0, 0, 0]]]) {
@@ -210,6 +221,7 @@ async function auditPage(page, tol, scope) {
     // raster ornaments: every pixel with alpha >= 64 must itself be a polyline tone
     const rasterResults = [];
     for (const src of rasters) {
+      if (SKIP.includes(src)) continue; // already verified on an earlier page
       try {
         const img = new Image();
         img.decoding = 'async';
@@ -240,7 +252,7 @@ async function auditPage(page, tol, scope) {
       }
     }
     return { violations, rasterResults, checks };
-  }, { TOL: tol, SCOPE: scope || null });
+  }, { TOL: tol, SCOPE: scope || null, SKIP: skipRasters });
 }
 
 async function auditFocus(page, tol) {
@@ -287,6 +299,7 @@ if (args.shots) mkdirSync(args.shots, { recursive: true });
 const targets = await loadTargets(args, api, readFileSync);
 const browser = await chromium.launch();
 const report = [];
+const rasterOk = new Set(); // raster URLs that passed once need no second pixel walk
 let total = 0;
 try {
   for (const target of targets) {
@@ -311,7 +324,8 @@ try {
         if (args.shots) {
           await page.screenshot({ path: join(args.shots, `${targetSlug(target)}-${theme}-${width}.png`), fullPage: !steps.length });
         }
-        const { violations, rasterResults, checks } = await auditPage(page, TOL, args.scope);
+        const { violations, rasterResults, checks } = await auditPage(page, TOL, args.scope, [...rasterOk]);
+        for (const r of rasterResults) if (!r.error && !(r.pixels > 0 && r.off / r.pixels > RASTER_MAX_OFF)) rasterOk.add(r.src);
         // with a modal/menu open, keep focus inside it (Tab cycles there) — still audits the rings
         const focus = await auditFocus(page, TOL);
         const rasterViolations = rasterResults
