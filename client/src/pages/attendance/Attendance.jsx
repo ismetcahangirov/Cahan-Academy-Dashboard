@@ -149,6 +149,7 @@ const Attendance = () => {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder={t('attendance.topicPlaceholder')}
+                aria-label={t('attendance.lessonTopic')}
                 rows={3}
               />
             </Card>

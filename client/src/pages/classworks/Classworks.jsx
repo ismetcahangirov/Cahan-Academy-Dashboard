@@ -257,7 +257,7 @@ const Classworks = () => {
                 <div className="mb-4 flex items-start justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-3">
                     <BookOpen size={20} className="shrink-0 text-accent-text" aria-hidden="true" />
-                    <h3 className="line-clamp-1 text-[1.2rem] font-semibold text-ink">{cw.title}</h3>
+                    <h3 className="line-clamp-2 break-words text-[1.2rem] font-semibold leading-snug text-ink" title={cw.title}>{cw.title}</h3>
                   </div>
                   {isAdminOrTeacher && (
                     <div className="flex items-center gap-1 transition-opacity focus-within:opacity-100 group-hover:opacity-100 pointer-fine:opacity-0">
@@ -444,6 +444,7 @@ const Classworks = () => {
                         value={link}
                         onChange={(e) => updateLink(i, e.target.value)}
                         placeholder="https://drive.google.com/..."
+                        aria-label={`${t('classworks.uploadFiles')} ${i + 1}`}
                       />
                       {submitLinks.length > 1 && (
                         <Button type="button" variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => removeLink(i)} aria-label={t('common.delete')} />

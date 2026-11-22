@@ -62,7 +62,7 @@ function App() {
   return (
     <ThemeProvider>
       <MotionConfig reducedMotion="user">
-      <Toaster position="top-right" reverseOrder={false} toastOptions={toastOptions} />
+      <Toaster position="top-right" reverseOrder={false} toastOptions={toastOptions} containerClassName="orn-toaster" />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}

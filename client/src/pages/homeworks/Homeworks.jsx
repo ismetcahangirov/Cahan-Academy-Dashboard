@@ -252,7 +252,7 @@ const Homeworks = () => {
               <div className="mb-4 flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-3">
                   <FileText size={20} className="shrink-0 text-accent-text" aria-hidden="true" />
-                  <h3 className="line-clamp-1 text-[1.2rem] font-semibold text-ink">{hw.title}</h3>
+                  <h3 className="line-clamp-2 break-words text-[1.2rem] font-semibold leading-snug text-ink" title={hw.title}>{hw.title}</h3>
                 </div>
                 {isStaff && (
                   <div className="flex items-center gap-1 transition-opacity focus-within:opacity-100 group-hover:opacity-100 pointer-fine:opacity-0">
@@ -466,6 +466,7 @@ const Homeworks = () => {
                         value={link}
                         onChange={(e) => updateLink(i, e.target.value)}
                         placeholder="https://drive.google.com/..."
+                        aria-label={`${t('homeworks.uploadFiles')} ${i + 1}`}
                       />
                       {submitLinks.length > 1 && (
                         <Button type="button" variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => removeLink(i)} aria-label={t('common.delete')} />

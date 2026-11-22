@@ -93,6 +93,11 @@
     --stagger: 0ms;
     --rise: 0px;
   }
+  /* react-hot-toast draws its icons with looping/one-shot keyframes of its own */
+  .orn-toaster * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* ------------------------------------------------------------------ light theme */
