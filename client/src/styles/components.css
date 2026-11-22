@@ -15,6 +15,8 @@
 
 .sc {
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 600;
   letter-spacing: 0.12em;
   font-size-adjust: none;
@@ -117,6 +119,8 @@
   border-radius: 999px;
   border: 1px solid transparent;
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 700;
   font-size: 0.95rem;
   letter-spacing: 0.1em;
@@ -233,6 +237,8 @@
   border-radius: 999px;
   border: 1px solid transparent;
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: 0.07em;
@@ -314,6 +320,8 @@
   background-color: var(--surface-2);
   color: var(--ink-muted);
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 700;
   font-size: 0.86rem;
   letter-spacing: 0.07em;
@@ -347,6 +355,8 @@
   display: block;
   margin-bottom: 0.4rem;
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.1em;
@@ -483,6 +493,8 @@ select.field {
   padding: 0.85rem 1rem 0.75rem;
   text-align: left;
   font-family: var(--font-sc);
+  /* uppercase via lang so az "i" becomes "İ" (the SC font draws i as dotless) */
+  text-transform: uppercase;
   font-weight: 700;
   font-size: 0.88rem;
   letter-spacing: 0.11em;

@@ -110,7 +110,7 @@ radial wine gradient + grain.
 |---|---|---|---|
 | Script titles | **Great Vibes** | `font-script`, `.script-title`, `<ScriptTitle>` | page and section titles, empty-state line, auth hero line. **Never** for data, buttons, inputs, tables, nav. |
 | Body + data | **EB Garamond** (400/500/600/700 + italic) | `font-serif` (default body) | everything readable. `.num` = lining tabular figures for tables/stats. `.time-italic` for times. |
-| Small caps | **Cormorant SC** (500/600/700) | `font-sc`, `.sc` | labels, table headers, buttons, badges, subtitles, eyebrow, nav meta. Letter-spacing ~.1em is built in. |
+| Small caps | **Cormorant SC** (500/600/700) | `font-sc`, `.sc` | labels, table headers, buttons, badges, subtitles, eyebrow, nav meta. Letter-spacing ~.1em is built in. Always rendered `text-transform: uppercase` with `<html lang>` synced to the UI language: Cormorant SC draws lowercase `i` as a dotless small cap, which reads as Azerbaijani "ı" — uppercase + `lang="az"` gives the correct "İ". Never remove the uppercase from SC styles. |
 
 All three cover Azerbaijani (`əƏğĞıİşŞçÇöÖüÜ`) and Cyrillic. Proof: `python client/scripts/font-coverage.py` (uses
 fontTools on the shipped woff2 files and their `unicode-range`). Fonts are self-hosted via `@fontsource`
