@@ -121,6 +121,13 @@ Sizes: page title 2.6–3.1rem script, section 2.1–2.4rem, card title `text-[1
 dense UI `text-[0.95rem]`, small caps labels 0.8–0.9rem. Keep the script short (2–4 words). It is a heading, not a
 sentence.
 
+**Script = fixed phrase, never data.** Page, section, modal and empty-state titles in script are short fixed strings
+("İmtahan nəticələri", "Yeni qrup", "Bildiriş yoxdur"). The name of an exam, quiz, course, group or person goes into
+the serif `entity` line under the script (`<Modal title={t('exams.resultsModalTitle')} entity={exam.title}>`,
+`<ScriptTitle … entity={…}>`). Only a detail page may use its own entity's name as the page title (a person or
+course name on `/students/:id`, `/courses/:id`). Empty states: script 2–4 words, the sentence goes to `description`
+and never refers to a position on screen ("on the left"): layouts move on mobile.
+
 ---
 
 ## 4. Motif and ornament rules
@@ -217,7 +224,9 @@ Raw classes: `.field`, `.field-icon`, `.field-label`, `.field-hint`, `.field-err
   <form id="group-form" onSubmit={handleSubmit(onSave)}>…</form>
 </Modal>
 ```
-Framed panel + script title + divider; Escape/backdrop close; bottom sheet below 640px.
+Framed panel + script title (+ serif `entity` line) + divider; Escape/backdrop close; bottom sheet below 640px.
+Keyboard: focus moves into the panel, Tab/Shift+Tab stay inside it, focus returns to the opener on close. `Select`
+and `Dropdown` menus inside a modal own Escape while they are open.
 
 ### Empty state, loading
 ```jsx
@@ -378,11 +387,26 @@ npm run build && npx vitest run && npx eslint <touched files>
 Also open interactive states the screenshots miss (modal open, menu open, toast, error state, empty state) in
 both themes, and check keyboard focus is visible. `/_kit` shows every component for comparison.
 
+Interactive states are scriptable: `--actions "click=role=button[name=/Yeni Qrup/i]"` (+ `--name create`) on
+`screenshots.mjs` / `color-audit.mjs` / `a11y-scan.mjs`, or `--plan scripts/qa-plan.json [--only "teacher:/exams"]`
+for the full QA plan (every route per role + every dialog, menu, drawer, tab and toast). Step syntax and path
+templates (`{exam}`, `{student}` …) are documented in `scripts/lib/session.mjs`. Add a plan entry when you add a dialog.
+```bash
+E2E_PASSWORD='<same>' node scripts/color-audit.mjs --plan scripts/qa-plan.json --out ../shots/qa/audit --shots ../shots/qa
+E2E_PASSWORD='<same>' node scripts/a11y-scan.mjs --plan scripts/qa-plan.json --widths 1440 --out ../shots/qa/a11y
+```
+Run the full plan against `npm run build && npx vite preview` (dev mode is ~5x slower per page).
+
 Tooling reference:
 - `scripts/color-audit.mjs` — runtime audit (computed colours composited over their backdrop, pseudo-elements,
   placeholder, selection, scrollbar, focus rings, raster ornament pixels; user photos exempt). JSON + text report.
 - `scripts/color-lint.mjs` — static literal/class check; `scripts/color-lint-pending.txt` = files not migrated yet.
 - `scripts/screenshots.mjs`, `scripts/perf-probe.mjs`, `scripts/lib/session.mjs` — Playwright helpers (localhost only).
+  `perf-probe.mjs --scenarios "login,dashboard:teacher,list:admin,route:student:/exams,take-exam"` covers roles,
+  any route and the exam page, and reports whether the three.js chunk loaded (it must only on auth pages).
+- `scripts/a11y-scan.mjs` — accessible names, field labels, focus rings, dialog focus trap, reduced motion.
+- `scripts/qa-plan.json` — the QA target list (routes × roles + interactive states). Seed: `server/scripts/e2e-local.mjs`
+  (`E2E_BULK=40` adds long lists for perf).
 - `scripts/font-coverage.py` — fontTools proof of az + Cyrillic coverage.
 - `scripts/ornament-tone.py` — raster art → colour-law tones + dark variants + lossless WebP. Prompts: `docs/design/ornament-prompts.md`.
 - `scripts/build-brand.py` + `scripts/build-icons.mjs` — brand geometry, favicon, app icons, manifest from `src/assets/brand/logo-full.svg`.
