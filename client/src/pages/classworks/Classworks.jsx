@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import { PageShell, Card, Button, StatusPill, Modal, FormField, Input, Textarea, EmptyState } from '../../components/ui';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
+import { useProgressiveList } from '../../lib/useProgressiveList';
 import { formatDate, toDateTimeInputValue, fromDateTimeInputValue } from '../../utils/formatDate';
 
 const dateLocales = {
@@ -68,6 +69,7 @@ const Classworks = () => {
     cw.title?.toLowerCase().includes(search.toLowerCase()) ||
     cw.description?.toLowerCase().includes(search.toLowerCase())
   );
+  const visibleClassworks = useProgressiveList(filtered);
 
   const handleCreateClasswork = async (e) => {
     e.preventDefault();
@@ -247,7 +249,7 @@ const Classworks = () => {
         </Card>
       ) : (
         <div className="orn-stagger grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((cw) => {
+          {visibleClassworks.map((cw) => {
             const total = cw.group?.students?.length || 0;
             const allIn = cw.submissions?.length === total && total > 0;
             return (

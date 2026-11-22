@@ -20,6 +20,7 @@ import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
 import { PageShell, Card, Button, Badge, StatusPill, Modal, FormField, Input, Textarea, EmptyState } from '../../components/ui';
 import toast from 'react-hot-toast';
+import { useProgressiveList } from '../../lib/useProgressiveList';
 import { formatDate, toDateTimeInputValue, fromDateTimeInputValue } from '../../utils/formatDate';
 
 const Homeworks = () => {
@@ -46,6 +47,7 @@ const Homeworks = () => {
   const [gradeHomework, { isLoading: isGrading }] = useGradeHomeworkMutation();
 
   const homeworks = homeworksResponse || [];
+  const visibleHomeworks = useProgressiveList(homeworks);
   const groups = groupsResponse?.data || [];
   // The grade modal follows the list, so a saved grade shows up without reopening it
   const gradingHomework = homeworks.find((hw) => hw._id === activeHomework?._id) || activeHomework;
@@ -245,7 +247,7 @@ const Homeworks = () => {
         </div>
       ) : (
         <div className="orn-stagger grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {homeworks.map((hw) => (
+          {visibleHomeworks.map((hw) => (
             <Card key={hw._id} hover className="group relative flex flex-col p-6">
               <div className="mb-4 flex items-start justify-between gap-2">
                 <div className="flex min-w-0 items-center gap-3">
