@@ -110,7 +110,7 @@ const TeacherDetail = () => {
             <p className="truncate text-lg text-ink-muted">{teacher.email}</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <StatusPill status={USER_STATUS[teacher.status] || 'neutral'}>
-                {teacher.status === 'active' ? t('students.active') : t('students.inactive')}
+                {teacher.status === 'active' ? t('students.active') : teacher.status === 'pending' ? t('users.pending') : t('students.inactive')}
               </StatusPill>
               <Badge className="inline-flex items-center gap-1">
                 <BookOpen size={12} aria-hidden="true" />

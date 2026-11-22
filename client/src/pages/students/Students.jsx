@@ -124,7 +124,7 @@ const Students = () => {
   const students = data?.data || [];
   const loading = isLoading || isFetching;
   const statusPill = (s) => (
-    <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : t('students.inactive')}</StatusPill>
+    <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : s === 'pending' ? t('users.pending') : t('students.inactive')}</StatusPill>
   );
   const groupBadge = (student) => (
     <Badge tone="accent" className="inline-flex items-center gap-1.5">
@@ -217,7 +217,7 @@ const Students = () => {
                       <td className="text-ink-muted">{student.email}</td>
                       <td>{groupBadge(student)}</td>
                       <td>{statusPill(student.status)}</td>
-                      <td className="num text-ink-muted">{formatDate(student.createdAt, 'd MMM yyyy')}</td>
+                      <td className="text-ink-muted">{formatDate(student.createdAt, 'd MMM yyyy')}</td>
                       <td className="text-right">{actionsMenu(student)}</td>
                     </tr>
                   ))}

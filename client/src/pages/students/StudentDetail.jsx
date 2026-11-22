@@ -131,7 +131,7 @@ const StudentDetail = () => {
             <p className="truncate text-lg text-ink-muted">{student.email}</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
               <StatusPill status={USER_STATUS[student.status] || 'neutral'}>
-                {student.status === 'active' ? t('students.active') : t('students.inactive')}
+                {student.status === 'active' ? t('students.active') : student.status === 'pending' ? t('users.pending') : t('students.inactive')}
               </StatusPill>
               <Badge className="inline-flex items-center gap-1">
                 <Users size={12} aria-hidden="true" />

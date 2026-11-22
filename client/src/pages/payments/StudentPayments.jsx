@@ -200,12 +200,12 @@ const HistoryRow = ({ entry, planId, lang }) => {
 
   return (
     <tr>
-      <td className="num">{fmtDate(entry.dueDate, lang)}</td>
+      <td>{fmtDate(entry.dueDate, lang)}</td>
       <td className="num font-semibold">{entry.amount} AZN</td>
       <td>
         <StatusPill status={PAYMENT_STATUS[entry.status] || 'neutral'}>{t(`payments.status.${entry.status}`)}</StatusPill>
       </td>
-      <td className="num text-ink-muted">
+      <td className="text-ink-muted">
         {entry.status === 'paid' && entry.paidDate ? fmtDate(entry.paidDate, lang) : '—'}
       </td>
       <td className="text-right">
@@ -300,7 +300,7 @@ const PlanCard = ({ plan, studentId }) => {
             <thead>
               <tr>
                 <th>{t('payments.dueDate')}</th>
-                <th>{t('payments.amount')}</th>
+                <th className="num">{t('payments.amount')}</th>
                 <th>{t('payments.statusLabel')}</th>
                 <th>{t('payments.paidDate')}</th>
                 <th className="text-right">{t('students.tableActions')}</th>

@@ -78,7 +78,7 @@ const Teachers = () => {
   const teachers = data?.data || [];
   const loading = isLoading || isFetching;
   const statusPill = (s) => (
-    <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : t('students.inactive')}</StatusPill>
+    <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : s === 'pending' ? t('users.pending') : t('students.inactive')}</StatusPill>
   );
   const actionsMenu = (teacher) => (
     <Dropdown
