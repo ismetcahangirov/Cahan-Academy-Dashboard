@@ -8,8 +8,6 @@ import { cn } from '../../lib/utils';
  * Lives in the users folder because it belongs to the people-pages redesign; not part of the shared kit.
  */
 
-// user.status -> StatusPill status
-export const USER_STATUS = { active: 'success', inactive: 'neutral', pending: 'pending' };
 
 export const RoleBadge = ({ role }) => {
   const { t } = useTranslation();

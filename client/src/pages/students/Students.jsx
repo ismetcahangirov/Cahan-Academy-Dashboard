@@ -30,7 +30,8 @@ import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { formatDate } from '../../utils/formatDate';
 import { Badge, Button, Card, EmptyState, Input, PageShell, Skeleton, StatCard, StatusPill, Table } from '../../components/ui';
-import { Pagination, USER_STATUS } from '../users/PeopleBits';
+import { Pagination } from '../users/PeopleBits';
+import { USER_STATUS } from '../users/peopleStatus';
 
 const PAGE_SIZE = 10;
 

@@ -7,7 +7,8 @@ import Spinner from '../../components/common/Spinner';
 import { formatDate } from '../../utils/formatDate';
 import { Button, EmptyState, PageShell, Section, StatusPill } from '../../components/ui';
 import OrnateFrame from '../../components/ornament/OrnateFrame';
-import { RoleBadge, USER_STATUS } from './PeopleBits';
+import { RoleBadge } from './PeopleBits';
+import { USER_STATUS } from './peopleStatus';
 
 const InfoRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 border-b border-line-hair py-3 last:border-0">

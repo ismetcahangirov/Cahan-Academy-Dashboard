@@ -13,7 +13,8 @@ import toast from 'react-hot-toast';
 import UserModal from './UserModal';
 import Dropdown from '../../components/common/Dropdown';
 import { Button, Card, EmptyState, Input, PageShell, Skeleton, StatusPill, Table } from '../../components/ui';
-import { FilterChips, Pagination, RoleBadge, USER_STATUS } from './PeopleBits';
+import { FilterChips, Pagination, RoleBadge } from './PeopleBits';
+import { USER_STATUS } from './peopleStatus';
 
 const PAGE_SIZE = 10;
 

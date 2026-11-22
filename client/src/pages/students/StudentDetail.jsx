@@ -10,7 +10,7 @@ import { Badge, Button, Card, EmptyState, PageShell, Section, StatusPill } from 
 import { StatusDot } from '../../components/ui';
 import OrnateFrame from '../../components/ornament/OrnateFrame';
 import CornerFlourish from '../../components/ornament/CornerFlourish';
-import { USER_STATUS } from '../users/PeopleBits';
+import { USER_STATUS } from '../users/peopleStatus';
 
 const InfoRow = ({ icon: Icon, label, value }) => (
   <div className="flex items-start gap-3 border-b border-line-hair py-3 last:border-0">
