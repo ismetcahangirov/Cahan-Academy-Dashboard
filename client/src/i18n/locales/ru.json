@@ -124,7 +124,14 @@
     "minutesAgo": "{{count}} минут назад",
     "hoursAgo": "{{count}} часов назад",
     "daysAgo": "{{count}} дней назад",
-    "vsLastMonth": "новых в этом месяце к прошлому"
+    "vsLastMonth": "новых в этом месяце к прошлому",
+    "greeting": "Добро пожаловать, {{name}}",
+    "today": "Сегодня",
+    "viewAll": "Все",
+    "moreLessons_one": "Ещё {{count}} урок",
+    "moreLessons_few": "Ещё {{count}} урока",
+    "moreLessons_many": "Ещё {{count}} уроков",
+    "moreLessons_other": "Ещё {{count}} урока"
   },
   "sidebar": {
     "dashboard": "Дашборд",
@@ -671,6 +678,11 @@
     "deleteError": "Ошибка при удалении уведомления",
     "noNotifications": "У вас пока нет уведомлений.",
     "markAsReadBtn": "Отметить как прочитанное",
+    "emptyTitle": "Уведомлений нет",
+    "unreadCount_one": "{{count}} непрочитанное",
+    "unreadCount_few": "{{count}} непрочитанных",
+    "unreadCount_many": "{{count}} непрочитанных",
+    "unreadCount_other": "{{count}} непрочитанных",
     "deleteBtn": "Удалить",
     "messages": {
       "homeworkCreated": {

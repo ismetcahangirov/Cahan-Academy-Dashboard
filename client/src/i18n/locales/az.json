@@ -124,7 +124,11 @@
     "minutesAgo": "{{count}} dəqiqə əvvəl",
     "hoursAgo": "{{count}} saat əvvəl",
     "daysAgo": "{{count}} gün əvvəl",
-    "vsLastMonth": "yeni əlavələr, keçən aya nisbətən"
+    "vsLastMonth": "yeni əlavələr, keçən aya nisbətən",
+    "greeting": "Xoş gəldiniz, {{name}}",
+    "today": "Bu gün",
+    "viewAll": "Hamısı",
+    "moreLessons": "Daha {{count}} dərs"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -662,6 +666,8 @@
     "deleteError": "Bildiriş silinərkən xəta baş verdi",
     "noNotifications": "Hələ ki, heç bir bildirişiniz yoxdur.",
     "markAsReadBtn": "Oxunmuş işarələ",
+    "emptyTitle": "Bildiriş yoxdur",
+    "unreadCount": "{{count}} oxunmamış",
     "deleteBtn": "Sil",
     "messages": {
       "homeworkCreated": {

@@ -1,19 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-  User,
-  Lock,
-  AlertCircle,
-  ChevronRight,
-  ShieldCheck
-} from 'lucide-react';
+import { User, AlertOctagon, ArrowLeft } from 'lucide-react';
 import { useLazyVerifyInvitationQuery } from '../../features/invitations/invitationsApi';
 import { PASSWORD_REGEX, useRegisterViaInvitationMutation } from '../../features/auth/authApi';
 import { toast } from 'react-hot-toast';
 import { useTranslation, Trans } from 'react-i18next';
 import Spinner from '../../components/common/Spinner';
-import PasswordInput from '../../components/common/PasswordInput';
+import { Button, FormField, Input } from '../../components/ui';
+import { ScriptTitle, OrnamentDivider } from '../../components/ornament';
+import AuthLayout from '../auth/AuthLayout';
+import AuthPasswordField from '../auth/AuthPasswordField';
 
 const AcceptInvitation = () => {
   const { t } = useTranslation();
@@ -60,135 +56,92 @@ const AcceptInvitation = () => {
 
   if ((isUninitialized && token) || isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-        <div className="flex flex-col items-center gap-4">
-          <Spinner />
-          <p className="text-[var(--foreground)]/60">{t('acceptInvitation.verifying')}</p>
+      <AuthLayout>
+        <div className="flex flex-col items-center gap-4 py-16 text-center" role="status">
+          <Spinner size="lg" />
+          <p className="sc text-[0.9rem] text-ink-muted">{t('acceptInvitation.verifying')}</p>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   if (isError || !verifyData?.success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-[var(--card)] border border-[var(--border)] p-8 rounded-3xl max-w-md w-full text-center space-y-6"
-        >
-          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-500">
-            <AlertCircle size={40} />
-          </div>
-          <h2 className="text-2xl font-bold text-[var(--foreground)]">{t('acceptInvitation.errorTitle')}</h2>
-          <p className="text-[var(--foreground)]/60">
-            {t('acceptInvitation.errorMessage')}
-          </p>
-          <Link 
-            to="/login"
-            className="block w-full py-3 bg-[var(--muted)] hover:bg-[var(--border)] text-[var(--foreground)] rounded-xl transition-all"
-          >
+      <AuthLayout>
+        <div className="orn-rise flex flex-col items-center gap-4 text-center" role="alert">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full border-[1.5px] border-accent-text bg-accent-soft text-accent-text">
+            <AlertOctagon size={28} strokeWidth={1.6} aria-hidden="true" />
+          </span>
+          <h1 className="text-[1.5rem] font-semibold leading-snug text-ink">{t('acceptInvitation.errorTitle')}</h1>
+          <OrnamentDivider draw={false} />
+          <p className="max-w-sm text-[1rem] text-ink-muted">{t('acceptInvitation.errorMessage')}</p>
+          <Button as={Link} to="/login" variant="outline" icon={ArrowLeft} className="mt-2">
             {t('acceptInvitation.backToLogin')}
-          </Link>
-        </motion.div>
-      </div>
+          </Button>
+        </div>
+      </AuthLayout>
     );
   }
 
+  const role = verifyData.data.role === 'teacher' ? t('common.teacher') : t('common.student');
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="w-20 h-20 bg-bordo rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-bordo/20"
-          >
-            <ShieldCheck size={40} className="text-white" />
-          </motion.div>
-          <h2 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('acceptInvitation.welcomeTitle')}</h2>
-          <p className="text-[var(--foreground)]/60">
-            <Trans 
-              i18nKey="acceptInvitation.invitationText" 
-              values={{ role: verifyData.data.role === 'teacher' ? t('common.teacher').toLowerCase() : t('common.student').toLowerCase() }}
-              components={[<span key="role" className="text-[var(--foreground)] font-bold" />]}
-            />
-          </p>
-          <p className="text-sm text-[var(--muted-foreground)]/40 mt-1">{verifyData.data.email}</p>
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-[var(--card)] border border-[var(--border)] p-8 rounded-3xl backdrop-blur-xl"
-        >
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--foreground)]/70 ml-1">{t('acceptInvitation.fullNameLabel')}</label>
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
-                <input
-                  required
-                  type="text"
-                  placeholder={t('acceptInvitation.fullNamePlaceholder')}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] outline-none focus:border-bordo/50 focus:ring-4 focus:ring-bordo/10 transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--foreground)]/70 ml-1">{t('acceptInvitation.passwordLabel')}</label>
-              <div className="relative group">
-                <Lock className="z-10 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
-                <PasswordInput
-                  required
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] outline-none focus:border-bordo/50 focus:ring-4 focus:ring-bordo/10 transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[var(--foreground)]/70 ml-1">{t('acceptInvitation.confirmPasswordLabel')}</label>
-              <div className="relative group">
-                <Lock className="z-10 pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40 group-focus-within:text-bordo transition-colors" size={20} />
-                <PasswordInput
-                  required
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-2xl py-3.5 pl-12 pr-4 text-[var(--foreground)] outline-none focus:border-bordo/50 focus:ring-4 focus:ring-bordo/10 transition-all"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-bordo hover:bg-red-700 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-bordo/20 flex items-center justify-center gap-2 group disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Spinner size="sm" color="white" />
-              ) : (
-                <>
-                  <span>{t('acceptInvitation.completeBtn')}</span>
-                  <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
-        </motion.div>
-
-        <p className="text-center text-[var(--muted-foreground)]/40 text-sm">
-          Cahan Academy &copy; {new Date().getFullYear()}
+    <AuthLayout>
+      <ScriptTitle align="center" size="page" title={t('acceptInvitation.welcomeTitle')} />
+      <div className="orn-rise mt-4 text-center">
+        <p className="text-[1.02rem] text-ink-muted">
+          <Trans
+            i18nKey="acceptInvitation.invitationText"
+            values={{ role: role.toLowerCase() }}
+            components={[<span key="role" className="font-semibold text-ink" />]}
+          />
         </p>
+        <p className="mt-1 text-[0.98rem] italic text-ink-muted">{verifyData.data.email}</p>
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit} className="orn-rise mt-8 space-y-5">
+        <FormField label={t('acceptInvitation.fullNameLabel')} required>
+          {(id, describedBy) => (
+            <Input
+              id={id}
+              required
+              type="text"
+              autoComplete="name"
+              icon={User}
+              aria-describedby={describedBy}
+              placeholder={t('acceptInvitation.fullNamePlaceholder')}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          )}
+        </FormField>
+
+        <AuthPasswordField
+          label={t('acceptInvitation.passwordLabel')}
+          required
+          autoComplete="new-password"
+          placeholder="••••••••"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+        />
+        <AuthPasswordField
+          label={t('acceptInvitation.confirmPasswordLabel')}
+          required
+          autoComplete="new-password"
+          placeholder="••••••••"
+          value={formData.confirmPassword}
+          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+        />
+
+        <div className="pt-2">
+          <Button type="submit" size="lg" block loading={isSubmitting} motif>
+            {t('acceptInvitation.completeBtn')}
+          </Button>
+        </div>
+      </form>
+
+      <p className="mt-8 text-center text-[0.9rem] text-ink-subtle">Cahan Academy &copy; {new Date().getFullYear()}</p>
+    </AuthLayout>
   );
 };
 

@@ -124,7 +124,12 @@
     "minutesAgo": "{{count}} minutes ago",
     "hoursAgo": "{{count}} hours ago",
     "daysAgo": "{{count}} days ago",
-    "vsLastMonth": "new this month vs last month"
+    "vsLastMonth": "new this month vs last month",
+    "greeting": "Welcome, {{name}}",
+    "today": "Today",
+    "viewAll": "View all",
+    "moreLessons_one": "{{count}} more lesson",
+    "moreLessons_other": "{{count}} more lessons"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -665,6 +670,9 @@
     "deleteError": "Error deleting notification",
     "noNotifications": "You have no notifications yet.",
     "markAsReadBtn": "Mark as read",
+    "emptyTitle": "All quiet",
+    "unreadCount_one": "{{count}} unread",
+    "unreadCount_other": "{{count}} unread",
     "deleteBtn": "Delete",
     "messages": {
       "homeworkCreated": {
