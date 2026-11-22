@@ -5,18 +5,11 @@ src/pages/Dashboard.jsx
 src/pages/ForgotPassword.jsx
 src/pages/Register.jsx
 src/pages/ResetPassword.jsx
-src/pages/attendance/Attendance.jsx
-src/pages/classworks/Classworks.jsx
-src/pages/courses/CourseDetail.jsx
-src/pages/courses/Courses.jsx
-src/pages/groups/Groups.jsx
-src/pages/homeworks/Homeworks.jsx
 src/pages/invitations/AcceptInvitation.jsx
 src/pages/invitations/Invitations.jsx
 src/pages/notifications/Notifications.jsx
 src/pages/payments/StudentPayments.jsx
 src/pages/profile/Profile.jsx
-src/pages/schedule/Schedule.jsx
 src/pages/settings/Settings.jsx
 src/pages/students/StudentDetail.jsx
 src/pages/students/Students.jsx
@@ -25,4 +18,3 @@ src/pages/teachers/Teachers.jsx
 src/pages/users/UserDetail.jsx
 src/pages/users/UserModal.jsx
 src/pages/users/Users.jsx
-src/components/schedule/JoinClassButton.jsx
