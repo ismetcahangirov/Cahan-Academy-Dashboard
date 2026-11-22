@@ -18,7 +18,6 @@ src/pages/homeworks/Homeworks.jsx
 src/pages/invitations/AcceptInvitation.jsx
 src/pages/meeting/MeetingRoom.jsx
 src/pages/notifications/Notifications.jsx
-src/pages/payments/StudentPayments.jsx
 src/pages/profile/Profile.jsx
 src/pages/quizzes/QuizModal.jsx
 src/pages/quizzes/QuizResultsModal.jsx

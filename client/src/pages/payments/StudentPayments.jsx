@@ -1,25 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ArrowLeft,
-  Plus,
-  Check,
-  X,
-  Banknote,
-  Calendar,
-  ChevronDown,
-  ChevronUp,
-  Edit2,
-  Trash2,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-} from 'lucide-react';
+import { ArrowLeft, Plus, Check, Banknote, ChevronDown, ChevronUp, Edit2, Trash2, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
 import { formatDate, toDateInputValue } from '../../utils/formatDate';
 import {
@@ -30,19 +13,23 @@ import {
   useApprovePaymentMutation,
   useUnapprovePaymentMutation,
 } from '../../features/payments/paymentsApi';
+import {
+  Button,
+  Card,
+  EmptyState,
+  FormField,
+  Input,
+  Modal,
+  NativeSelect,
+  PageShell,
+  Skeleton,
+  StatusPill,
+  Table,
+} from '../../components/ui';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
-const STATUS_STYLE = {
-  paid: 'bg-[var(--muted)] text-[color:var(--foreground)] border-[var(--border)]',
-  pending: 'bg-bordo/10 text-bordo border-bordo/30',
-  overdue: 'bg-[var(--destructive)]/10 text-[var(--destructive)] border-[var(--destructive)]/30',
-};
-
-const STATUS_ICON = {
-  paid: <CheckCircle2 size={13} />,
-  pending: <Clock size={13} />,
-  overdue: <AlertCircle size={13} />,
-};
+// paid = filled + check, pending = outline + circle, overdue = heavy alert + octagon (no green/red)
+const PAYMENT_STATUS = { paid: 'success', pending: 'pending', overdue: 'error' };
 
 const TYPE_PERIODS = ['once', 'weekly', 'monthly', 'semi-annually', 'annually'];
 
@@ -56,8 +43,8 @@ const initialForm = (existing) => ({
   description: existing?.description ?? '',
 });
 
-// ─── Plan Form ───────────────────────────────────────────────────────────────
-const PlanForm =({ studentId, existing, onClose }) => {
+// ─── Plan modal (create / edit) ──────────────────────────────────────────────
+const PlanModal = ({ studentId, existing, onClose }) => {
   const { t } = useTranslation();
   const [createPlan, { isLoading: creating }] = useCreatePaymentPlanMutation();
   const [updatePlan, { isLoading: updating }] = useUpdatePaymentPlanMutation();
@@ -104,99 +91,86 @@ const PlanForm =({ studentId, existing, onClose }) => {
     }
   };
 
-  const labelCls = 'block text-xs font-medium text-[var(--muted-foreground)] mb-1';
-  const inputCls =
-    'w-full bg-[var(--input)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors';
+  const busy = creating || updating;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Amount */}
-      <div>
-        <label className={labelCls}>{t('payments.amount')}</label>
-        <input
-          type="number"
-          min="1"
-          value={form.amount}
-          onChange={(e) => set('amount', e.target.value)}
-          placeholder="100"
-          className={inputCls}
-          required
-        />
-      </div>
+    <Modal
+      open
+      onClose={onClose}
+      title={existing ? t('common.edit') : t('payments.createPlan')}
+      subtitle={t('payments.title')}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button type="submit" form="plan-form" loading={busy}>
+            {existing ? t('common.save') : t('payments.createPlan')}
+          </Button>
+        </>
+      }
+    >
+      <form id="plan-form" onSubmit={handleSubmit} className="space-y-4">
+        <FormField label={t('payments.amount')} required>
+          {(id) => (
+            <Input
+              id={id}
+              type="number"
+              min="1"
+              value={form.amount}
+              onChange={(e) => set('amount', e.target.value)}
+              placeholder="100"
+              required
+            />
+          )}
+        </FormField>
 
-      {/* Type */}
-      <div>
-        <label className={labelCls}>{t('payments.paymentType')}</label>
-        <select
-          value={form.type}
-          onChange={(e) => set('type', e.target.value)}
-          className={inputCls}
-        >
-          {TYPE_PERIODS.map((tp) => (
-            <option key={tp} value={tp}>
-              {t(`payments.types.${tp}`)}
-            </option>
-          ))}
-        </select>
-      </div>
+        <FormField label={t('payments.paymentType')}>
+          {(id) => (
+            <NativeSelect id={id} value={form.type} onChange={(e) => set('type', e.target.value)}>
+              {TYPE_PERIODS.map((tp) => (
+                <option key={tp} value={tp}>
+                  {t(`payments.types.${tp}`)}
+                </option>
+              ))}
+            </NativeSelect>
+          )}
+        </FormField>
 
-      {/* Start date */}
-      <div>
-        <label className={labelCls}>{t('payments.startDate')}</label>
-        <input
-          type="date"
-          value={form.startDate}
-          onChange={(e) => set('startDate', e.target.value)}
-          className={inputCls}
-          required
-        />
-      </div>
+        <FormField label={t('payments.startDate')} required>
+          {(id) => (
+            <Input id={id} type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} required />
+          )}
+        </FormField>
 
-      {/* End date (only for recurring) */}
-      {form.type !== 'once' && (
-        <div>
-          <label className={labelCls}>{t('payments.endDate')}</label>
-          <input
-            type="date"
-            value={form.endDate}
-            onChange={(e) => set('endDate', e.target.value)}
-            className={inputCls}
-          />
-          <p className="text-xs text-[var(--muted-foreground)]/60 mt-1">
-            {t('payments.endDateHint')}
-          </p>
-        </div>
-      )}
+        {/* End date (only for recurring) */}
+        {form.type !== 'once' && (
+          <FormField label={t('payments.endDate')} hint={t('payments.endDateHint')}>
+            {(id, describedBy) => (
+              <Input
+                id={id}
+                aria-describedby={describedBy}
+                type="date"
+                value={form.endDate}
+                onChange={(e) => set('endDate', e.target.value)}
+              />
+            )}
+          </FormField>
+        )}
 
-      {/* Description */}
-      <div>
-        <label className={labelCls}>{t('payments.description')}</label>
-        <input
-          type="text"
-          value={form.description}
-          onChange={(e) => set('description', e.target.value)}
-          placeholder={t('payments.descriptionPlaceholder')}
-          className={inputCls}
-        />
-      </div>
-
-      <div className="flex gap-2 pt-2">
-        <button
-          type="submit"
-          disabled={creating || updating}
-          className="flex-1 bg-bordo hover:bg-bordo/90 text-white py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-        >
-          {creating || updating ? t('common.loading') : existing ? t('common.save') : t('payments.createPlan')}
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-all"
-        >
-          {t('common.cancel')}
-        </button>
-      </div>
-    </form>
+        <FormField label={t('payments.description')}>
+          {(id) => (
+            <Input
+              id={id}
+              type="text"
+              value={form.description}
+              onChange={(e) => set('description', e.target.value)}
+              placeholder={t('payments.descriptionPlaceholder')}
+            />
+          )}
+        </FormField>
+      </form>
+    </Modal>
   );
 };
 
@@ -225,48 +199,24 @@ const HistoryRow = ({ entry, planId, lang }) => {
   };
 
   return (
-    <tr className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--muted)]/20 transition-colors">
-      <td className="px-4 py-3 text-sm text-[var(--foreground)]">
-        {fmtDate(entry.dueDate, lang)}
+    <tr>
+      <td className="num">{fmtDate(entry.dueDate, lang)}</td>
+      <td className="num font-semibold">{entry.amount} AZN</td>
+      <td>
+        <StatusPill status={PAYMENT_STATUS[entry.status] || 'neutral'}>{t(`payments.status.${entry.status}`)}</StatusPill>
       </td>
-      <td className="px-4 py-3 text-sm font-semibold text-[var(--foreground)]">
-        {entry.amount} AZN
+      <td className="num text-ink-muted">
+        {entry.status === 'paid' && entry.paidDate ? fmtDate(entry.paidDate, lang) : '—'}
       </td>
-      <td className="px-4 py-3">
-        <span
-          className={cn(
-            'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border',
-            STATUS_STYLE[entry.status]
-          )}
-        >
-          {STATUS_ICON[entry.status]}
-          {t(`payments.status.${entry.status}`)}
-        </span>
-      </td>
-      <td className="px-4 py-3 text-xs text-[var(--muted-foreground)]/60">
-        {entry.status === 'paid' && entry.paidDate
-          ? fmtDate(entry.paidDate, lang)
-          : '—'}
-      </td>
-      <td className="px-4 py-3 text-right">
+      <td className="text-right">
         {entry.status !== 'paid' ? (
-          <button
-            onClick={handleApprove}
-            disabled={approving}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-bordo/10 text-bordo border border-bordo/20 text-xs font-medium hover:bg-bordo hover:text-white transition-all disabled:opacity-50"
-          >
-            <Check size={12} />
+          <Button variant="outline" size="sm" motif={false} icon={Check} onClick={handleApprove} loading={approving}>
             {t('payments.approve')}
-          </button>
+          </Button>
         ) : (
-          <button
-            onClick={handleUnapprove}
-            disabled={unapproving}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)] text-xs font-medium hover:bg-[var(--border)] transition-all disabled:opacity-50"
-          >
-            <RefreshCw size={12} />
+          <Button variant="ghost" size="sm" icon={RefreshCw} onClick={handleUnapprove} loading={unapproving}>
             {t('payments.unapprove')}
-          </button>
+          </Button>
         )}
       </td>
     </tr>
@@ -295,123 +245,78 @@ const PlanCard = ({ plan, studentId }) => {
   const overdue = plan.history.filter((h) => h.status === 'overdue').length;
 
   return (
-    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden">
-      {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] bg-[var(--muted)]/10">
+    <Card variant="ornate" className="overflow-hidden">
+      <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-bordo/10">
-            <Banknote size={18} className="text-bordo" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-[var(--foreground)]">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
+            <Banknote size={20} strokeWidth={1.5} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <p className="num text-[1.2rem] font-semibold text-ink">
               {plan.amount} AZN — {t(`payments.types.${plan.type}`)}
             </p>
-            <p className="text-xs text-[var(--muted-foreground)]/60 mt-0.5">
+            <p className="num text-sm text-ink-muted">
               {fmtDate(plan.startDate, i18n.language)}
               {plan.endDate && ` → ${fmtDate(plan.endDate, i18n.language)}`}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-[var(--muted-foreground)]/60">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="num text-sm text-ink-muted">
             {paid}/{total} {t('payments.paid')}
-            {overdue > 0 && (
-              <span className="ml-2 text-[var(--destructive)]">
-                · {overdue} {t('payments.overdue')}
-              </span>
-            )}
           </span>
-          <button
-            onClick={() => setEditing(true)}
-            aria-label={t('common.edit')}
-            title={t('common.edit')}
-            className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
-          >
-            <Edit2 size={14} />
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
+          {overdue > 0 && (
+            <StatusPill status="error">
+              <span className="num">{overdue}</span> {t('payments.overdue')}
+            </StatusPill>
+          )}
+          <Button variant="ghost" iconOnly size="sm" icon={Edit2} aria-label={t('common.edit')} title={t('common.edit')} onClick={() => setEditing(true)} />
+          <Button
+            variant="ghost"
+            iconOnly
+            size="sm"
+            icon={Trash2}
             aria-label={t('common.delete')}
             title={t('common.delete')}
-            className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-bordo hover:bg-bordo/10 transition-all"
-          >
-            <Trash2 size={14} />
-          </button>
-          <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={handleDelete}
+            disabled={deleting}
+          />
+          <Button
+            variant="ghost"
+            iconOnly
+            size="sm"
+            icon={expanded ? ChevronUp : ChevronDown}
+            aria-label={expanded ? t('common.close') : t('payments.dueDate')}
             aria-expanded={expanded}
-            className="p-1.5 rounded-lg text-[var(--muted-foreground)]/50 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
-          >
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
+            onClick={() => setExpanded((v) => !v)}
+          />
         </div>
       </div>
 
-      {/* Edit form inline */}
-      <AnimatePresence>
-        {editing && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-5 py-4 border-b border-[var(--border)] bg-[var(--muted)]/5"
-          >
-            <PlanForm studentId={studentId} existing={plan} onClose={() => setEditing(false)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {expanded && (
+        <div className="border-t border-line-hair px-5 pb-5 pt-3">
+          {plan.description && <p className="mb-3 italic text-ink-muted">{plan.description}</p>}
+          <Table caption={t('payments.title')}>
+            <thead>
+              <tr>
+                <th>{t('payments.dueDate')}</th>
+                <th>{t('payments.amount')}</th>
+                <th>{t('payments.statusLabel')}</th>
+                <th>{t('payments.paidDate')}</th>
+                <th className="text-right">{t('students.tableActions')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plan.history.map((entry) => (
+                <HistoryRow key={entry._id} entry={entry} planId={plan._id} lang={i18n.language} />
+              ))}
+            </tbody>
+          </Table>
+        </div>
+      )}
 
-      {/* History table */}
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            {plan.description && (
-              <p className="px-5 pt-3 text-xs text-[var(--muted-foreground)]/60 italic">
-                {plan.description}
-              </p>
-            )}
-            <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-[var(--border)] bg-[var(--muted)]/20">
-                    <th className="px-4 py-2.5 text-xs font-semibold text-[var(--muted-foreground)]/50 uppercase tracking-wider">
-                      {t('payments.dueDate')}
-                    </th>
-                    <th className="px-4 py-2.5 text-xs font-semibold text-[var(--muted-foreground)]/50 uppercase tracking-wider">
-                      {t('payments.amount')}
-                    </th>
-                    <th className="px-4 py-2.5 text-xs font-semibold text-[var(--muted-foreground)]/50 uppercase tracking-wider">
-                      {t('payments.statusLabel')}
-                    </th>
-                    <th className="px-4 py-2.5 text-xs font-semibold text-[var(--muted-foreground)]/50 uppercase tracking-wider">
-                      {t('payments.paidDate')}
-                    </th>
-                    <th className="px-4 py-2.5 text-xs font-semibold text-[var(--muted-foreground)]/50 uppercase tracking-wider text-right">
-                      {t('students.tableActions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {plan.history.map((entry) => (
-                    <HistoryRow
-                      key={entry._id}
-                      entry={entry}
-                      planId={plan._id}
-                      lang={i18n.language}
-                    />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {editing && <PlanModal studentId={studentId} existing={plan} onClose={() => setEditing(false)} />}
+    </Card>
   );
 };
 
@@ -428,74 +333,45 @@ const StudentPayments = () => {
   const payments = data?.data?.payments ?? [];
 
   return (
-    <div className="space-y-6">
-      {/* Back header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => navigate('/students')}
-          className="p-2 rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
-        >
-          <ArrowLeft size={18} />
-        </button>
+    <PageShell
+      title={student?.name || t('common.loading')}
+      subtitle={t('payments.title')}
+      actions={
+        <>
+          <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate('/students')}>
+            {t('detail.back')}
+          </Button>
+          <Button icon={Plus} onClick={() => setShowForm(true)}>
+            {t('payments.newPlan')}
+          </Button>
+        </>
+      }
+    >
+      {student && (
         <div className="flex items-center gap-3">
-          {student && (
-            <Avatar
-              src={student.avatar}
-              name={student.name}
-              className="w-9 h-9 rounded-full border border-[var(--border)]"
-              textSize="sm"
-            />
-          )}
-          <div>
-            <h1 className="text-xl font-bold text-[var(--foreground)]">
-              {student?.name || t('common.loading')}
-            </h1>
-            <p className="text-xs text-[var(--muted-foreground)]/60">{t('payments.title')}</p>
-          </div>
+          <Avatar src={student.avatar} name={student.name} className="h-12 w-12" textSize="base" />
+          {student.email && <p className="text-ink-muted">{student.email}</p>}
         </div>
-      </div>
+      )}
 
-      {/* Add plan button */}
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-bordo/20"
-        >
-          {showForm ? <X size={16} /> : <Plus size={16} />}
-          {showForm ? t('common.cancel') : t('payments.newPlan')}
-        </button>
-      </div>
-
-      {/* New plan form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5"
-          >
-            <h2 className="text-sm font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
-              <Calendar size={16} className="text-bordo" />
-              {t('payments.createPlan')}
-            </h2>
-            <PlanForm studentId={id} onClose={() => setShowForm(false)} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Plans list */}
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-3" aria-busy="true">
           {[1, 2].map((i) => (
-            <div key={i} className="h-24 bg-[var(--muted)] animate-pulse rounded-2xl" />
+            <Skeleton key={i} className="h-24 w-full" />
           ))}
         </div>
       ) : payments.length === 0 ? (
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-12 text-center">
-          <Banknote size={40} className="mx-auto mb-3 text-[var(--muted-foreground)]/20" />
-          <p className="text-[var(--muted-foreground)]/50 text-sm">{t('payments.noPlans')}</p>
-        </div>
+        <Card>
+          <EmptyState
+            sketch="inkwell"
+            title={t('payments.noPlans')}
+            action={
+              <Button variant="outline" icon={Plus} onClick={() => setShowForm(true)}>
+                {t('payments.newPlan')}
+              </Button>
+            }
+          />
+        </Card>
       ) : (
         <div className="space-y-4">
           {payments.map((plan) => (
@@ -503,7 +379,9 @@ const StudentPayments = () => {
           ))}
         </div>
       )}
-    </div>
+
+      {showForm && <PlanModal studentId={id} onClose={() => setShowForm(false)} />}
+    </PageShell>
   );
 };
 
