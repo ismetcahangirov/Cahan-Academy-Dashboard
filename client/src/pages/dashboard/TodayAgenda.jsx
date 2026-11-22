@@ -42,7 +42,7 @@ const TodayAgenda = ({ role, className }) => {
           </div>
         ) : lessons.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-2 pb-2 pt-1 text-center">
-            <p className="font-script text-[1.9rem] leading-tight text-ink">{t('schedule.noLessons')}</p>
+            <p className="font-script text-[1.4rem] leading-tight text-ink">{t('schedule.noLessons')}</p>
             <Button as={Link} to="/schedule" variant="ghost" size="sm">
               {t('schedule.title')}
               <ArrowRight aria-hidden="true" />

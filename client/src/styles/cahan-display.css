@@ -1,0 +1,4 @@
+/* Cahan Display — the academy's own title typeface (SIL OFL 1.1). Source + OTF: docs/brand/font/cahan-display/ */
+@font-face { font-family: "Cahan Display"; src: url("/fonts/cahan-display/CahanDisplay-Light.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cahan Display"; src: url("/fonts/cahan-display/CahanDisplay-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Cahan Display"; src: url("/fonts/cahan-display/CahanDisplay-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }

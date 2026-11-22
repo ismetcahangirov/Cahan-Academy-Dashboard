@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Login from './Login.jsx';
+import { ThemeProvider } from '../context/ThemeContext.jsx';
 
 // Mock dependencies
 vi.mock('react-router-dom', () => ({
@@ -37,7 +38,7 @@ vi.mock('../features/auth/authApi', () => ({
 
 describe('Login Component', () => {
   it('renders login form correctly', () => {
-    render(<Login />);
+    render(<ThemeProvider><Login /></ThemeProvider>);
     
     // Test that the email and password fields are rendered
     expect(screen.getByPlaceholderText('nümunə@cahan.az')).toBeTruthy();

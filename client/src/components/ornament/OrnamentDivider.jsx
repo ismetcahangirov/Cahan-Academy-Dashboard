@@ -2,7 +2,7 @@ import { cn } from '../../lib/utils';
 import { EdelweissGlyph } from './Edelweiss';
 
 /**
- * OrnamentDivider — hairline with curled flourishes and an edelweiss in the middle.
+ * OrnamentDivider — edelweiss in the middle, plain strokes tapering from thick (centre) to thin (ends).
  * Goes under every ScriptTitle, above tables, between form sections, inside modals.
  *
  * <OrnamentDivider />                       centred (default)
@@ -37,19 +37,41 @@ const Motif = ({ motif }) => {
   return <EdelweissGlyph className="h-4 w-4 shrink-0 text-current" />;
 };
 
-const OrnamentDivider = ({ align = 'center', motif = 'edelweiss', draw = true, className }) => (
-  <div
-    role="presentation"
-    className={cn(
-      'flex items-center gap-1.5 text-ornament',
-      align === 'center' ? 'justify-center' : 'justify-start',
-      className
-    )}
+/** Plain tapered stroke: thickest next to the motif, thinning to a point at the outer end. */
+const Taper = ({ flip, className }) => (
+  <svg
+    viewBox="0 0 120 4"
+    aria-hidden="true"
+    focusable="false"
+    preserveAspectRatio="none"
+    className={cn('h-1', className)}
+    style={flip ? { transform: 'scaleX(-1)' } : undefined}
   >
-    {align === 'center' && <Flourish draw={draw} className="w-24 sm:w-32" />}
-    <Motif motif={motif} />
-    <Flourish flip draw={draw} className={align === 'center' ? 'w-24 sm:w-32' : 'w-40 sm:w-56'} />
-  </div>
+    <path d="M0 2L118 1Q120 2 118 3Z" fill="currentColor" />
+  </svg>
 );
+
+/** line: 'taper' (default, plain stroke thick at the centre → thin at the ends) | 'flourish' (curled hairline). */
+const OrnamentDivider = ({ align = 'center', motif = 'edelweiss', line = 'taper', draw = true, className }) => {
+  const centerW = 'w-24 sm:w-32';
+  const sideW = align === 'center' ? centerW : 'w-40 sm:w-56';
+  const side = (flip, cls) =>
+    line === 'taper' ? <Taper flip={flip} className={cls} /> : <Flourish flip={flip} draw={draw} className={cls} />;
+  return (
+    <div
+      role="presentation"
+      className={cn(
+        'flex items-center text-ornament',
+        line === 'taper' ? 'gap-2.5' : 'gap-1.5',
+        align === 'center' ? 'justify-center' : 'justify-start',
+        className
+      )}
+    >
+      {align === 'center' && side(false, centerW)}
+      <Motif motif={motif} />
+      {side(true, sideW)}
+    </div>
+  );
+};
 
 export default OrnamentDivider;
