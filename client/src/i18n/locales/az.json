@@ -1,5 +1,9 @@
 {
   "common": {
+    "openMenu": "Menyunu aç",
+    "expandMenu": "Menyunu genişləndir",
+    "collapseMenu": "Menyunu daralt",
+    "profile": "Profil",
     "showPassword": "Şifrəni göstər",
     "hidePassword": "Şifrəni gizlət",
     "welcome": "Cahan Academy-ya xoş gəlmisiniz",
@@ -33,6 +37,10 @@
     "goBack": "Geri qayıt"
   },
   "auth": {
+    "welcomeScript": "Xoş gəlmisiniz",
+    "googleContinue": "Google ilə davam et",
+    "heroLine": "Elm yolunda birlikdə",
+    "heroSub": "Dərslər · Tapşırıqlar · İmtahanlar",
     "loginTitle": "Cahan Academy",
     "loginSubtitle": "Giriş edərək dərslərinizə davam edin",
     "email": "Email",

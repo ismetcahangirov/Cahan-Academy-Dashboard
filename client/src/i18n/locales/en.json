@@ -1,5 +1,9 @@
 {
   "common": {
+    "openMenu": "Open menu",
+    "expandMenu": "Expand menu",
+    "collapseMenu": "Collapse menu",
+    "profile": "Profile",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "welcome": "Welcome to Cahan Academy",
@@ -33,6 +37,10 @@
     "goBack": "Go back"
   },
   "auth": {
+    "welcomeScript": "Welcome back",
+    "googleContinue": "Continue with Google",
+    "heroLine": "Learning, together",
+    "heroSub": "Lessons · Assignments · Exams",
     "loginTitle": "Cahan Academy",
     "loginSubtitle": "Continue your lessons by logging in",
     "email": "Email",

@@ -8,9 +8,16 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "color:lint": "node scripts/color-lint.mjs",
+    "color:audit": "node scripts/color-audit.mjs",
+    "shots": "node scripts/screenshots.mjs",
+    "perf": "node scripts/perf-probe.mjs"
   },
   "dependencies": {
+    "@fontsource/cormorant-sc": "^5.3.0",
+    "@fontsource/eb-garamond": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
     "@hookform/resolvers": "^5.2.2",
     "@react-oauth/google": "^0.13.5",
     "@reduxjs/toolkit": "^2.11.2",
@@ -33,6 +40,7 @@
     "react-router-dom": "^7.14.2",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.4",
+    "three": "^0.187.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -46,6 +54,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.65.1",
     "vite": "^8.0.10",
     "vitest": "^4.1.5"
   }

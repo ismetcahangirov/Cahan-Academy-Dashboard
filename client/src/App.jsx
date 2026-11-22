@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { MotionConfig } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 // Layout and Route Guards (Keep these synchronous to prevent UI flashes)
@@ -10,6 +11,7 @@ import PublicRoute from './components/PublicRoute';
 import RoleRoute from './components/RoleRoute';
 import { ThemeProvider } from './context/ThemeContext';
 import Spinner from './components/common/Spinner';
+import { toastOptions } from './components/ui/toast';
 
 // Lazy-loaded Pages
 const Login = lazy(() => import('./pages/Login'));
@@ -40,15 +42,17 @@ const TeacherDetail = lazy(() => import('./pages/teachers/TeacherDetail'));
 const TakeExam = lazy(() => import('./pages/exams/TakeExam'));
 const StudentPayments = lazy(() => import('./pages/payments/StudentPayments'));
 const MeetingRoom = lazy(() => import('./pages/meeting/MeetingRoom'));
+// Dev-only component gallery (docs/DESIGN.md). Dropped from production builds.
+const KitPreview = import.meta.env.DEV ? lazy(() => import('./pages/dev/KitPreview')) : null;
 
 // Fallback Loading Component
 const PageLoader = () => {
   const { t } = useTranslation();
   return (
-    <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+    <div className="flex h-screen items-center justify-center bg-page">
       <div className="flex flex-col items-center gap-4">
-        <Spinner />
-        <p className="text-[var(--muted-foreground)] text-sm font-medium animate-pulse">{t('common.loading')}</p>
+        <Spinner label={t('common.loading')} />
+        <p className="sc text-sm text-ink-muted">{t('common.loading')}</p>
       </div>
     </div>
   );
@@ -57,17 +61,8 @@ const PageLoader = () => {
 function App() {
   return (
     <ThemeProvider>
-      <Toaster 
-        position="top-right" 
-        reverseOrder={false}
-        toastOptions={{
-          style: {
-            background: 'var(--card)',
-            color: 'var(--foreground)',
-            border: '1px solid var(--border)',
-          },
-        }}
-      />
+      <MotionConfig reducedMotion="user">
+      <Toaster position="top-right" reverseOrder={false} toastOptions={toastOptions} />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
@@ -116,10 +111,12 @@ function App() {
               <Route path="/courses/:id" element={<CourseDetail />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+              {KitPreview && <Route path="/_kit" element={<KitPreview />} />}
             </Route>
           </Route>
         </Routes>
       </Suspense>
+      </MotionConfig>
     </ThemeProvider>
   );
 }
