@@ -85,7 +85,13 @@ const AuthLayout = ({ children, className }) => (
     {/* ---------------------------------------------------------------- centred form card */}
     <div className="relative w-full max-w-[30rem]">
       <WaxSeal size={76} className="relative z-10 mx-auto -mb-9 block" />
-      <OrnateFrame paper className="relative bg-transparent bg-none px-5 pb-9 pt-12 shadow-none sm:px-9">
+      {/* oval frame (owner): elliptical radii, no corner flourishes (they would sit outside the curve) */}
+      <OrnateFrame
+        paper
+        corners="none"
+        className="relative bg-transparent bg-none px-7 pb-16 pt-16 shadow-none sm:px-14"
+        style={{ borderRadius: '50% / 16%' }}
+      >
         <div className={cn('mx-auto w-full max-w-[26rem]', className)}>{children}</div>
       </OrnateFrame>
     </div>
