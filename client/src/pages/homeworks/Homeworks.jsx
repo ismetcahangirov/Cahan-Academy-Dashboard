@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, Search, Calendar, 
-  Users, FileText, X, Trash2, Link, Pen
+import {
+  Plus, Search, Calendar,
+  Users, FileText, Trash2, Link, Pen
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { 
@@ -19,6 +18,7 @@ import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import Select from '../../components/common/Select';
 import Spinner from '../../components/common/Spinner';
+import { PageShell, Card, Button, Badge, StatusPill, Modal, FormField, Input, Textarea, EmptyState } from '../../components/ui';
 import toast from 'react-hot-toast';
 import { formatDate, toDateTimeInputValue, fromDateTimeInputValue } from '../../utils/formatDate';
 
@@ -196,50 +196,35 @@ const Homeworks = () => {
   const removeLink = (i) => setSubmitLinks(prev => prev.filter((_, idx) => idx !== i));
   const updateLink = (i, val) => setSubmitLinks(prev => prev.map((l, idx) => idx === i ? val : l));
 
+  const isStaff = ['admin', 'teacher'].includes(user.role);
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
-            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
-              <FileText size={20} />
-            </div>
-            {t('homeworks.title')}
-          </h1>
-          <p className="text-[var(--muted-foreground)] mt-1">
-            {user.role === 'student' 
-              ? t('homeworks.studentSubtitle') 
-              : t('homeworks.teacherSubtitle')}
-          </p>
-        </div>
-
-        {['admin', 'teacher'].includes(user.role) && (
-          <button
-            onClick={() => {
-              setActiveHomework(null);
-              setCreateData({ title: '', description: '', group: '', dueDate: '' });
-              setIsCreateModalOpen(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
-          >
-            <Plus size={20} />
-            <span>{t('homeworks.addNew')}</span>
-          </button>
-        )}
-      </div>
-
+    <PageShell
+      title={t('homeworks.title')}
+      subtitle={user.role === 'student' ? t('homeworks.studentSubtitle') : t('homeworks.teacherSubtitle')}
+      actions={isStaff && (
+        <Button
+          icon={Plus}
+          onClick={() => {
+            setActiveHomework(null);
+            setCreateData({ title: '', description: '', group: '', dueDate: '' });
+            setIsCreateModalOpen(true);
+          }}
+        >
+          {t('homeworks.addNew')}
+        </Button>
+      )}
+    >
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={20} />
-          <input
-            type="text"
-            placeholder={t('homeworks.searchPlaceholder')}
-            className="w-full pl-10 pr-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:outline-none focus:border-bordo transition-colors"
-          />
-        </div>
-        
-        {['admin', 'teacher'].includes(user.role) && (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Input
+          icon={Search}
+          type="text"
+          aria-label={t('homeworks.searchPlaceholder')}
+          placeholder={t('homeworks.searchPlaceholder')}
+        />
+
+        {isStaff && (
           <div className="w-full">
             <Select
               value={selectedGroup}
@@ -259,80 +244,55 @@ const Homeworks = () => {
           <Spinner />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="orn-stagger grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {homeworks.map((hw) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              key={hw._id}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 hover:bg-[var(--muted)]/50 transition-all group relative flex flex-col"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
-                    <FileText size={18} />
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">{hw.title}</h3>
+            <Card key={hw._id} hover className="group relative flex flex-col p-6">
+              <div className="mb-4 flex items-start justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-3">
+                  <FileText size={20} className="shrink-0 text-accent-text" aria-hidden="true" />
+                  <h3 className="line-clamp-1 text-[1.2rem] font-semibold text-ink">{hw.title}</h3>
                 </div>
-                {['admin', 'teacher'].includes(user.role) && (
-                  <div className="flex items-center gap-1 pointer-fine:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openEditModal(hw)}
-                      aria-label={t('common.edit')}
-                      title={t('common.edit')}
-                      className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all"
-                    >
-                      <Pen size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteHomework(hw._id)}
-                      aria-label={t('common.delete')}
-                      title={t('common.delete')}
-                      className="p-1.5 rounded-lg text-[var(--muted-foreground)]/40 hover:text-red-500 hover:bg-red-500/10 transition-all"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                {isStaff && (
+                  <div className="flex items-center gap-1 transition-opacity focus-within:opacity-100 group-hover:opacity-100 pointer-fine:opacity-0">
+                    <Button variant="ghost" size="sm" iconOnly icon={Pen} onClick={() => openEditModal(hw)} aria-label={t('common.edit')} title={t('common.edit')} />
+                    <Button variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => handleDeleteHomework(hw._id)} aria-label={t('common.delete')} title={t('common.delete')} />
                   </div>
                 )}
               </div>
-              
-              <p className="text-[var(--muted-foreground)] mb-6 line-clamp-2 text-sm flex-grow">{hw.description}</p>
-              
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <Users size={16} className="text-bordo" />
+
+              <p className="mb-6 line-clamp-2 flex-grow text-[0.95rem] text-ink-muted">{hw.description}</p>
+
+              <div className="mb-6 space-y-3 text-[0.95rem] text-ink-muted">
+                <div className="flex items-center gap-3">
+                  <Users size={16} className="text-accent-text" aria-hidden="true" />
                   <span>{t('common.group')}: {hw.group?.name || t('common.unknown')}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <Calendar size={16} className="text-bordo" />
-                  <span>{t('homeworks.dueDateLabel')}: {formatDate(hw.dueDate, 'dd MMM yyyy, HH:mm') || '-'}</span>
+                <div className="flex items-center gap-3">
+                  <Calendar size={16} className="text-accent-text" aria-hidden="true" />
+                  <span>{t('homeworks.dueDateLabel')}: <span className="num">{formatDate(hw.dueDate, 'dd MMM yyyy, HH:mm') || '-'}</span></span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <FileText size={16} className="text-bordo" />
+                <div className="flex items-center gap-3">
+                  <FileText size={16} className="text-accent-text" aria-hidden="true" />
                   <span>{t('homeworks.attachmentCount', { count: hw.files?.length || 0 })}</span>
                 </div>
               </div>
 
               {/* Action Area based on role */}
-              <div className="pt-4 border-t border-[var(--border)] flex flex-col justify-end mt-auto w-full">
+              <div className="mt-auto flex w-full flex-col justify-end border-t border-line-hair pt-4">
                 {user.role === 'student' ? (
                   (() => {
                     const mySub = hw.submissions?.find(s => s.student?._id === user._id || s.student === user._id);
                     const isGraded = mySub?.status === 'graded';
-                    
+
                     if (isGraded) {
                       return (
-                        <div className="w-full flex flex-col gap-2">
-                          <div className="flex items-center justify-between border border-bordo/20 rounded-lg p-3" style={{ backgroundColor: 'var(--primary)' }}>
-                            <span className="text-sm font-medium text-white">
-                              {t('homeworks.graded') || 'Qiymətləndirilib'}
-                            </span>
-                            <span className="text-sm font-bold text-white">
-                              {mySub.grade} / 100
-                            </span>
+                        <div className="flex w-full flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <StatusPill status="success">{t('homeworks.graded') || 'Qiymətləndirilib'}</StatusPill>
+                            <span className="num font-semibold text-ink">{mySub.grade} / 100</span>
                           </div>
                           {mySub.feedback && (
-                            <div className="text-xs text-[var(--muted-foreground)] bg-[var(--muted)]/50 p-3 rounded-lg border border-[var(--border)] italic">
+                            <div className="rounded-[var(--radius-sm)] border border-line-hair bg-surface-2 p-3 text-sm italic text-ink-muted">
                               "{mySub.feedback}"
                             </div>
                           )}
@@ -342,389 +302,267 @@ const Homeworks = () => {
 
                     const isPastDeadline = hw.dueDate ? new Date() > new Date(hw.dueDate) : false;
                     const hasSubmitted = !!mySub;
-                    
+
                     if (isPastDeadline && !hasSubmitted) {
                       return (
-                        <div className="w-full text-center py-2 text-xs text-[var(--muted-foreground)] font-medium bg-[var(--muted)]/50 rounded-lg">
-                          {t('classworks.deadlinePassed') || 'Deadline bitib'}
+                        <div className="flex w-full justify-center">
+                          <StatusPill status="error">{t('classworks.deadlinePassed') || 'Deadline bitib'}</StatusPill>
                         </div>
                       );
                     }
 
                     return hasSubmitted ? (
-                      <div className="flex gap-2 w-full">
-                        <button 
-                          onClick={() => openSubmitModal(hw)}
-                          className="flex-1 py-2 bg-bordo/10 hover:bg-bordo/20 text-bordo rounded-lg transition-colors text-sm font-medium"
-                        >
+                      <div className="flex w-full gap-2">
+                        <Button variant="outline" className="flex-1" motif={false} onClick={() => openSubmitModal(hw)}>
                           {t('common.edit') || 'Redaktə et'}
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteSubmission(hw._id)}
-                          disabled={isRemoving}
-                          className="flex-1 py-2 bg-[var(--input)] border border-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
-                        >
+                        </Button>
+                        <Button variant="ghost" className="flex-1" onClick={() => handleDeleteSubmission(hw._id)} disabled={isRemoving}>
                           {t('common.delete') || 'Sil'}
-                        </button>
+                        </Button>
                       </div>
                     ) : (
-                      <button 
-                        onClick={() => openSubmitModal(hw)}
-                        className="w-full py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
-                      >
+                      <Button variant="outline" block onClick={() => openSubmitModal(hw)}>
                         {t('homeworks.submitHomework')}
-                      </button>
+                      </Button>
                     );
                   })()
                 ) : (
-                  <div className="flex items-center justify-between w-full">
-                    <div className="text-sm" style={{ color: 'var(--foreground)' }}>
-                      <span className="font-medium">{t('homeworks.submissionsCount', { count: hw.submissions?.length || 0 })}</span>
-                    </div>
-                    <button 
-                      onClick={() => openGradeModal(hw)}
-                      className="px-4 py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
-                    >
+                  <div className="flex w-full items-center justify-between gap-2">
+                    <Badge>{t('homeworks.submissionsCount', { count: hw.submissions?.length || 0 })}</Badge>
+                    <Button variant="outline" size="sm" onClick={() => openGradeModal(hw)}>
                       {t('homeworks.checkBtn')}
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
-            </motion.div>
+            </Card>
           ))}
-          
+
           {homeworks.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-12 text-[var(--muted-foreground)]/40">
-              <FileText size={48} className="mb-4 opacity-50" />
-              <p>{t('homeworks.noHomeworks')}</p>
-            </div>
+            <Card className="col-span-full">
+              <EmptyState sketch="inkwell" title={t('homeworks.noHomeworks')} />
+            </Card>
           )}
         </div>
       )}
 
       {/* CREATE MODAL */}
-      <AnimatePresence>
-        {isCreateModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-md shadow-xl"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-[var(--foreground)]">
-                  {createData._id ? t('common.edit') || 'Redaktə et' : t('homeworks.newHomework')}
-                </h3>
-                <button onClick={() => setIsCreateModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-                  <X size={20} />
-                </button>
-              </div>
+      <Modal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title={createData._id ? t('common.edit') || 'Redaktə et' : t('homeworks.newHomework')}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)}>{t('common.cancel')}</Button>
+            <Button type="submit" form="homework-form" loading={isCreating || isUpdating}>
+              {createData._id
+                ? (isUpdating ? t('common.updating') || 'Yenilənir...' : t('common.update') || 'Yenilə')
+                : (isCreating ? t('homeworks.creatingBtn') : t('homeworks.createBtn'))}
+            </Button>
+          </>
+        }
+      >
+        <form id="homework-form" onSubmit={handleCreateHomework} className="space-y-4">
+          <FormField label={t('homeworks.titleLabel')}>
+            <Input
+              required
+              type="text"
+              value={createData.title}
+              onChange={(e) => setCreateData({ ...createData, title: e.target.value })}
+              placeholder={t('homeworks.placeholderTitle')}
+            />
+          </FormField>
 
-              <form onSubmit={handleCreateHomework} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
-                    {t('homeworks.titleLabel')}
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={createData.title}
-                    onChange={(e) => setCreateData({ ...createData, title: e.target.value })}
-                    className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
-                    placeholder={t('homeworks.placeholderTitle')}
-                  />
-                </div>
+          <FormField label={t('homeworks.descLabel')}>
+            <Textarea
+              required
+              rows={4}
+              value={createData.description}
+              onChange={(e) => setCreateData({ ...createData, description: e.target.value })}
+              placeholder={t('homeworks.placeholderDesc')}
+            />
+          </FormField>
 
-                <div>
-                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
-                    {t('homeworks.descLabel')}
-                  </label>
-                  <textarea
-                    required
-                    value={createData.description}
-                    onChange={(e) => setCreateData({ ...createData, description: e.target.value })}
-                    className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo min-h-[100px]"
-                    placeholder={t('homeworks.placeholderDesc')}
-                  />
-                </div>
+          <div>
+            <span className="field-label">{t('homeworks.groupLabel')}</span>
+            <Select
+              value={createData.group}
+              onChange={(val) => setCreateData({ ...createData, group: val })}
+              options={[
+                { label: t('homeworks.placeholderGroup'), value: '' },
+                ...groups.map(g => ({ label: g.name, value: g._id }))
+              ]}
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
-                    {t('homeworks.groupLabel')}
-                  </label>
-                  <Select
-                    value={createData.group}
-                    onChange={(val) => setCreateData({ ...createData, group: val })}
-                    options={[
-                      { label: t('homeworks.placeholderGroup'), value: '' },
-                      ...groups.map(g => ({ label: g.name, value: g._id }))
-                    ]}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
-                    {t('homeworks.dueDateLabel')}
-                  </label>
-                  <input
-                    required
-                    type="datetime-local"
-                    value={createData.dueDate}
-                    onChange={(e) => setCreateData({ ...createData, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
-                  />
-                </div>
-
-                <div className="pt-4 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsCreateModalOpen(false)}
-                    className="px-4 py-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isCreating || isUpdating}
-                    className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50"
-                  >
-                    {createData._id 
-                      ? (isUpdating ? t('common.updating') || 'Yenilənir...' : t('common.update') || 'Yenilə')
-                      : (isCreating ? t('homeworks.creatingBtn') : t('homeworks.createBtn'))}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          <FormField label={t('homeworks.dueDateLabel')}>
+            <Input
+              required
+              type="datetime-local"
+              value={createData.dueDate}
+              onChange={(e) => setCreateData({ ...createData, dueDate: e.target.value })}
+            />
+          </FormField>
+        </form>
+      </Modal>
 
       {/* SUBMIT MODAL (STUDENT) */}
-      <AnimatePresence>
-        {isSubmitModalOpen && activeHomework && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-[var(--foreground)]">{t('homeworks.submitHomework')}</h3>
-                <button onClick={() => setIsSubmitModalOpen(false)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-                  <X size={20} />
-                </button>
+      <Modal
+        open={Boolean(isSubmitModalOpen && activeHomework)}
+        onClose={() => setIsSubmitModalOpen(false)}
+        title={t('homeworks.submitHomework')}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsSubmitModalOpen(false)}>{t('common.cancel')}</Button>
+            <Button type="submit" form="submit-form" loading={isSubmitting}>
+              {isSubmitting ? t('homeworks.submittingBtn') : t('homeworks.submitBtn')}
+            </Button>
+          </>
+        }
+      >
+        {activeHomework && (
+          <>
+            {/* Task info */}
+            <div className="mb-5 rounded-[var(--radius-md)] border border-line bg-surface-2 p-4">
+              <h4 className="mb-1 font-semibold text-ink">{activeHomework.title}</h4>
+              <p className="text-[0.95rem] text-ink-muted">{activeHomework.description}</p>
+              <div className="mt-2 flex items-center gap-1 text-sm text-ink-muted">
+                <Calendar size={13} aria-hidden="true" />
+                {t('homeworks.dueDateLabel')}: <span className="num">{formatDate(activeHomework.dueDate, 'dd MMM yyyy, HH:mm') || '-'}</span>
               </div>
+            </div>
 
-              {/* Task info */}
-              <div className="mb-5 p-4 bg-[var(--muted)]/50 rounded-lg border border-[var(--border)]">
-                <h4 className="font-semibold text-[var(--foreground)] mb-1">{activeHomework.title}</h4>
-                <p className="text-sm text-[var(--muted-foreground)]">{activeHomework.description}</p>
-                <div className="mt-2 text-xs text-[var(--muted-foreground)]/70 flex items-center gap-1">
-                  <Calendar size={12} />
-                  {t('homeworks.dueDateLabel')}: {formatDate(activeHomework.dueDate, 'dd MMM yyyy, HH:mm') || '-'}
-                </div>
-              </div>
+            <form id="submit-form" onSubmit={handleSubmitHomework} className="space-y-4">
+              {/* Note / Comment */}
+              <FormField label={t('homeworks.noteLabel') || 'Qeyd / Şərh'}>
+                <Textarea
+                  value={submitNote}
+                  onChange={(e) => setSubmitNote(e.target.value)}
+                  rows={3}
+                  placeholder={t('homeworks.notePlaceholder') || 'Müəllimə qeyd bıraxın...'}
+                />
+              </FormField>
 
-              <form onSubmit={handleSubmitHomework} className="space-y-4">
-                {/* Note / Comment */}
-                <div>
-                  <label className="block text-sm font-medium text-[var(--muted-foreground)] mb-1">
-                    {t('homeworks.noteLabel') || 'Qeyd / Şərh'}
-                  </label>
-                  <textarea
-                    value={submitNote}
-                    onChange={(e) => setSubmitNote(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo resize-none"
-                    placeholder={t('homeworks.notePlaceholder') || 'Müəllimə qeyd bıraxın...'}
-                  />
+              {/* File / Link list */}
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="field-label !mb-0">
+                    {t('homeworks.uploadFiles')} ({t('homeworks.linkOrFile') || 'link və ya fayl URL'})
+                  </span>
+                  <Button type="button" variant="ghost" size="sm" icon={Plus} onClick={addLink}>
+                    {t('homeworks.addLink') || 'Link əlavə et'}
+                  </Button>
                 </div>
 
-                {/* File / Link list */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">
-                      {t('homeworks.uploadFiles')} ({t('homeworks.linkOrFile') || 'link və ya fayl URL'})
-                    </label>
-                    <button
-                      type="button"
-                      onClick={addLink}
-                      className="flex items-center gap-1 text-xs text-bordo hover:underline"
-                    >
-                      <Plus size={12} /> {t('homeworks.addLink') || 'Link əlavə et'}
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {submitLinks.map((link, i) => (
-                      <div key={i} className="flex gap-2 items-center">
-                        <Link size={14} className="text-[var(--muted-foreground)]/50 shrink-0" />
-                        <input
-                          type="text"
-                          value={link}
-                          onChange={(e) => updateLink(i, e.target.value)}
-                          className="flex-1 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo text-sm"
-                          placeholder="https://drive.google.com/..."
-                        />
-                        {submitLinks.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeLink(i)}
-                            className="text-[var(--muted-foreground)]/40 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-2 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsSubmitModalOpen(false)}
-                    className="px-4 py-2 text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    {t('common.cancel')}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50"
-                  >
-                    {isSubmitting ? t('homeworks.submittingBtn') : t('homeworks.submitBtn')}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* GRADE MODAL (TEACHER) */}
-      <AnimatePresence>
-        {isGradeModalOpen && gradingHomework && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 w-full max-w-2xl shadow-xl max-h-[90vh] overflow-y-auto custom-scrollbar"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-xl font-bold text-[var(--foreground)]">{gradingHomework.title} - {t('homeworks.submissions')}</h3>
-                  <p className="text-sm text-[var(--muted-foreground)] mt-1">{t('common.group')}: {gradingHomework.group?.name}</p>
-                </div>
-                <button onClick={() => setIsGradeModalOpen(false)} aria-label={t('common.close')} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-                  <X size={20} />
-                </button>
-              </div>
-
-              {!gradingHomework.submissions?.length ? (
-                <div className="py-8 text-center text-[var(--muted-foreground)]">
-                  <p>{t('homeworks.noSubmissions')}</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {gradingHomework.submissions.map((sub) => (
-                    <div key={sub._id} className="p-4 border border-[var(--border)] rounded-lg bg-[var(--muted)]/20">
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
-                        <div>
-                          <div className="font-medium text-[var(--foreground)]">{sub.student?.name} {sub.student?.surname}</div>
-                          <div className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                            {formatDate(sub.submittedAt || sub.createdAt || new Date(), 'dd MMM yyyy, HH:mm')}
-                            {sub.status === 'late' && (
-                              <span className="ml-2 text-red-400">• {t('homeworks.late') || 'Gecikmiş'}</span>
-                            )}
-                            {sub.status === 'graded' && (
-                              <span className="ml-2 text-bordo">• {t('homeworks.graded') || 'Qiymətləndirilib'} ({sub.grade}/100)</span>
-                            )}
-                          </div>
-                          {/* Student note */}
-                          {sub.note && (
-                            <div className="mt-2 text-sm text-[var(--muted-foreground)] italic border-l-2 border-bordo/40 pl-2">
-                              "{sub.note}"
-                            </div>
-                          )}
-                        </div>
-                        {/* Submitted links */}
-                        {sub.files && sub.files.length > 0 && (
-                          <div className="flex flex-col gap-1">
-                            {sub.files.map((f, fi) => (
-                              <a 
-                                key={fi}
-                                href={f} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm text-bordo hover:underline flex items-center gap-1"
-                              >
-                                <FileText size={13} /> {t('homeworks.viewFile') || `Fayl ${fi + 1}`}
-                              </a>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <form onSubmit={(e) => handleGradeSubmission(e, sub.student?._id)} className="flex flex-col sm:flex-row gap-3 mt-3 pt-3 border-t border-[var(--border)]">
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            placeholder={t('homeworks.grade') || 'Xal (0-100)'}
-                            value={gradeData[sub.student?._id]?.grade ?? ''}
-                            onChange={(e) => setGradeData(prev => ({
-                              ...prev,
-                              [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
-                            }))}
-                            className="w-full sm:w-28 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
-                          />
-                        <input
-                          type="text"
-                          placeholder={t('homeworks.feedback')}
-                          value={gradeData[sub.student?._id]?.feedback || ''}
-                          onChange={(e) => setGradeData(prev => ({
-                            ...prev,
-                            [sub.student?._id]: { ...prev[sub.student?._id], feedback: e.target.value }
-                          }))}
-                          className="flex-1 px-3 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo"
-                        />
-                        <button
-                          type="submit"
-                          disabled={isGrading}
-                          className="px-4 py-2 bg-bordo text-white rounded-lg hover:bg-bordo/90 transition-colors disabled:opacity-50 whitespace-nowrap"
-                        >
-                          {t('homeworks.gradeBtn')}
-                        </button>
-                      </form>
+                <div className="space-y-2">
+                  {submitLinks.map((link, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        icon={Link}
+                        className="flex-1"
+                        type="text"
+                        value={link}
+                        onChange={(e) => updateLink(i, e.target.value)}
+                        placeholder="https://drive.google.com/..."
+                      />
+                      {submitLinks.length > 1 && (
+                        <Button type="button" variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => removeLink(i)} aria-label={t('common.delete')} />
+                      )}
                     </div>
                   ))}
                 </div>
-              )}
-            </motion.div>
-          </motion.div>
+              </div>
+            </form>
+          </>
         )}
-      </AnimatePresence>
+      </Modal>
 
-    </div>
+      {/* GRADE MODAL (TEACHER) */}
+      <Modal
+        open={Boolean(isGradeModalOpen && gradingHomework)}
+        onClose={() => setIsGradeModalOpen(false)}
+        size="lg"
+        title={gradingHomework ? `${gradingHomework.title} - ${t('homeworks.submissions')}` : ''}
+        subtitle={gradingHomework ? `${t('common.group')}: ${gradingHomework.group?.name ?? ''}` : undefined}
+      >
+        {gradingHomework && (!gradingHomework.submissions?.length ? (
+          <EmptyState compact sketch="inkwell" title={t('homeworks.noSubmissions')} />
+        ) : (
+          <div className="space-y-4">
+            {gradingHomework.submissions.map((sub) => (
+              <div key={sub._id} className="rounded-[var(--radius-md)] border border-line p-4">
+                <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                  <div>
+                    <div className="font-medium text-ink">{sub.student?.name} {sub.student?.surname}</div>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+                      <span className="num">{formatDate(sub.submittedAt || sub.createdAt || new Date(), 'dd MMM yyyy, HH:mm')}</span>
+                      {sub.status === 'late' && (
+                        <StatusPill status="late">{t('homeworks.late') || 'Gecikmiş'}</StatusPill>
+                      )}
+                      {sub.status === 'graded' && (
+                        <StatusPill status="success">{t('homeworks.graded') || 'Qiymətləndirilib'} ({sub.grade}/100)</StatusPill>
+                      )}
+                    </div>
+                    {/* Student note */}
+                    {sub.note && (
+                      <div className="mt-2 border-l-2 border-line-strong pl-2 text-[0.95rem] italic text-ink-muted">
+                        "{sub.note}"
+                      </div>
+                    )}
+                  </div>
+                  {/* Submitted links */}
+                  {sub.files && sub.files.length > 0 && (
+                    <div className="flex flex-col gap-1">
+                      {sub.files.map((f, fi) => (
+                        <a
+                          key={fi}
+                          href={f}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-accent-text underline-offset-2 hover:underline"
+                        >
+                          <FileText size={14} aria-hidden="true" /> {t('homeworks.viewFile') || `Fayl ${fi + 1}`}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <form onSubmit={(e) => handleGradeSubmission(e, sub.student?._id)} className="mt-3 flex flex-col gap-3 border-t border-line-hair pt-3 sm:flex-row">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    className="sm:w-28"
+                    aria-label={t('homeworks.grade') || 'Xal (0-100)'}
+                    placeholder={t('homeworks.grade') || 'Xal (0-100)'}
+                    value={gradeData[sub.student?._id]?.grade ?? ''}
+                    onChange={(e) => setGradeData(prev => ({
+                      ...prev,
+                      [sub.student?._id]: { ...prev[sub.student?._id], grade: e.target.value }
+                    }))}
+                  />
+                  <Input
+                    type="text"
+                    className="flex-1"
+                    aria-label={t('homeworks.feedback')}
+                    placeholder={t('homeworks.feedback')}
+                    value={gradeData[sub.student?._id]?.feedback || ''}
+                    onChange={(e) => setGradeData(prev => ({
+                      ...prev,
+                      [sub.student?._id]: { ...prev[sub.student?._id], feedback: e.target.value }
+                    }))}
+                  />
+                  <Button type="submit" loading={isGrading}>
+                    {t('homeworks.gradeBtn')}
+                  </Button>
+                </form>
+              </div>
+            ))}
+          </div>
+        ))}
+      </Modal>
+    </PageShell>
   );
 };
 

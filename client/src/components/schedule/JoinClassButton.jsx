@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Video } from 'lucide-react';
+import { Button } from '../ui';
 import { joinWindowState } from '../../utils/academyTime';
 
 export default function JoinClassButton({ entry }) {
@@ -24,12 +25,8 @@ export default function JoinClassButton({ entry }) {
   };
 
   return (
-    <button
-      onClick={handleJoin}
-      className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white text-[11px] rounded-md font-medium transition-colors"
-    >
-      <Video size={12} />
+    <Button size="sm" className="mt-2" icon={Video} onClick={handleJoin}>
       {t('schedule.join')}
-    </button>
+    </Button>
   );
 }
