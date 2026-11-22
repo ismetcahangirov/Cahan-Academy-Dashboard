@@ -9,7 +9,8 @@
 /* ------------------------------------------------------------------ typography */
 .font-script {
   font-size-adjust: none;
-  font-weight: 400;
+  font-style: italic;
+  font-weight: 600;
   letter-spacing: 0;
 }
 
@@ -25,7 +26,8 @@
 .script-title {
   font-family: var(--font-script);
   font-size-adjust: none;
-  font-weight: 400;
+  font-style: italic;
+  font-weight: 600;
   line-height: 1.05;
   color: var(--accent-text);
 }
