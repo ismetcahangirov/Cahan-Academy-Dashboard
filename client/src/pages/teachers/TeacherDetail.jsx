@@ -1,43 +1,28 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import {
-  ArrowLeft, User as UserIcon, Mail, BookOpen,
-  Calendar, Clock, AlertCircle, Users, Wifi, WifiOff,
-} from 'lucide-react';
+import { ArrowLeft, User as UserIcon, Mail, BookOpen, Calendar, Clock, Users, Wifi, WifiOff } from 'lucide-react';
 import { useGetTeacherByIdQuery } from '../../features/teachers/teachersApi';
-import { cn } from '../../lib/utils';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
 import { formatDays } from '../../utils/days';
 import { formatDate } from '../../utils/formatDate';
-
-const StatusBadge = ({ status }) => {
-  const { t } = useTranslation();
-  const isActive = status === 'active';
-  return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border',
-      isActive ? 'bg-bordo/10 text-bordo border-bordo/30'
-               : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
-    )}>
-      <span className={cn('w-2 h-2 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]')} />
-      {isActive ? t('students.active') : t('students.inactive')}
-    </span>
-  );
-};
+import { Badge, Button, Card, EmptyState, PageShell, Section, StatCard, StatusPill } from '../../components/ui';
+import OrnateFrame from '../../components/ornament/OrnateFrame';
+import { USER_STATUS } from '../users/peopleStatus';
 
 const InfoRow = ({ icon: Icon, label, value }) => (
-  <div className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0">
-    <div className="p-2 rounded-lg bg-bordo/10 shrink-0 mt-0.5">
-      <Icon size={15} className="text-bordo" />
-    </div>
-    <div>
-      <p className="text-xs text-[var(--muted-foreground)]/60 font-medium uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-sm text-[var(--foreground)] font-medium">{value ?? '—'}</p>
+  <div className="flex items-start gap-3 border-b border-line-hair py-3 last:border-0">
+    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
+      <Icon size={16} strokeWidth={1.5} aria-hidden="true" />
+    </span>
+    <div className="min-w-0">
+      <p className="sc text-[0.8rem] text-ink-muted">{label}</p>
+      <p className="break-words font-medium text-ink">{value ?? '—'}</p>
     </div>
   </div>
 );
+
+const GROUP_STATUS = { active: 'success', completed: 'neutral' };
 
 const GroupCard = ({ group }) => {
   const { t } = useTranslation();
@@ -48,48 +33,34 @@ const GroupCard = ({ group }) => {
   const isOnline = group?.schedule?.type === 'online';
 
   return (
-    <div className="flex items-start gap-4 p-4 rounded-xl bg-[var(--muted)]/30 border border-[var(--border)] hover:bg-bordo/5 transition-all">
-      <div className="p-2.5 rounded-xl bg-bordo/10 shrink-0">
-        <BookOpen size={18} className="text-bordo" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-[var(--foreground)] text-sm truncate">{group.name}</span>
-          {group.status && (
-            <span className={cn(
-              'text-xs px-2 py-0.5 rounded-full border font-medium',
-              group.status === 'active'
-                ? 'bg-bordo/10 text-bordo border-bordo/30'
-                : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
-            )}>{group.status}</span>
-          )}
+    <Card className="flex items-start gap-4 p-4">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
+        <BookOpen size={18} strokeWidth={1.5} aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate font-semibold text-ink">{group.name}</span>
+          {group.status && <StatusPill status={GROUP_STATUS[group.status] || 'neutral'}>{group.status}</StatusPill>}
           {group?.schedule?.type && (
-            <span className="text-xs px-2 py-0.5 rounded-full border font-medium inline-flex items-center gap-1 bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]">
-              {isOnline ? <Wifi size={10} /> : <WifiOff size={10} />}
+            <Badge className="inline-flex items-center gap-1">
+              {isOnline ? <Wifi size={11} aria-hidden="true" /> : <WifiOff size={11} aria-hidden="true" />}
               {isOnline ? t('groups.online') : t('groups.offline')}
-            </span>
+            </Badge>
           )}
         </div>
-        {group.course && <p className="text-xs text-[var(--muted-foreground)]/60 mt-0.5">{group.course}</p>}
-        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1.5">
-          {days && <p className="text-xs text-[var(--muted-foreground)]/50">{days}</p>}
-          {time && <p className="text-xs text-[var(--muted-foreground)]/50">{time}</p>}
+        {group.course && <p className="mt-0.5 text-sm text-ink-muted">{group.course}</p>}
+        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+          {days && <p>{days}</p>}
+          {time && <p className="time-italic">{time}</p>}
         </div>
       </div>
-      <div className="flex items-center gap-1 shrink-0 text-[var(--muted-foreground)]/60 text-xs">
-        <Users size={12} />
+      <div className="num flex shrink-0 items-center gap-1 text-sm text-ink-muted">
+        <Users size={14} aria-hidden="true" />
         {group?.students?.length ?? 0}
       </div>
-    </div>
+    </Card>
   );
 };
-
-const MiniStat = ({ label, value, accent }) => (
-  <div className="flex flex-col items-center gap-1 flex-1 py-1">
-    <span className={cn('text-2xl font-bold', accent ? 'text-bordo' : 'text-[var(--foreground)]')}>{value}</span>
-    <span className="text-xs text-[var(--muted-foreground)]/60 text-center">{label}</span>
-  </div>
-);
 
 const TeacherDetail = () => {
   const { id } = useParams();
@@ -101,83 +72,86 @@ const TeacherDetail = () => {
   const fmt = (date) => formatDate(date, 'dd MMMM yyyy') || '—';
 
   const groups = teacher?.groups || [];
-  const active    = groups.filter(g => g.status === 'active').length;
-  const completed = groups.filter(g => g.status === 'completed').length;
-  const students  = groups.reduce((s, g) => s + (g.students?.length ?? 0), 0);
+  const active = groups.filter((g) => g.status === 'active').length;
+  const completed = groups.filter((g) => g.status === 'completed').length;
+  const students = groups.reduce((s, g) => s + (g.students?.length ?? 0), 0);
+
+  const back = (
+    <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={() => navigate(-1)}>
+      {t('detail.back')}
+    </Button>
+  );
+
+  if (isLoading) {
+    return (
+      <PageShell width="narrow">
+        {back}
+        <div className="flex items-center justify-center py-24">
+          <Spinner />
+        </div>
+      </PageShell>
+    );
+  }
+  if (isError || !teacher) {
+    return (
+      <PageShell width="narrow">
+        {back}
+        <EmptyState sketch="notebook" title={t('detail.notFound')} />
+      </PageShell>
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      <button onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-[var(--muted-foreground)] hover:text-bordo transition-colors text-sm font-medium">
-        <ArrowLeft size={16} />{t('detail.back')}
-      </button>
+    <PageShell width="narrow" title={teacher.name} subtitle={t('common.teacher')} actions={back}>
+      <OrnateFrame className="p-6" corners="diagonal">
+        <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+          <Avatar src={teacher.avatar} name={teacher.name} className="h-24 w-24 shrink-0" textSize="2xl" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-lg text-ink-muted">{teacher.email}</p>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+              <StatusPill status={USER_STATUS[teacher.status] || 'neutral'}>
+                {teacher.status === 'active' ? t('students.active') : teacher.status === 'pending' ? t('users.pending') : t('students.inactive')}
+              </StatusPill>
+              <Badge className="inline-flex items-center gap-1">
+                <BookOpen size={12} aria-hidden="true" />
+                <span className="num">{groups.length}</span> {t('teachers.tableGroups')}
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </OrnateFrame>
 
-      {isLoading && <div className="flex items-center justify-center py-24"><Spinner /></div>}
-
-      {isError && (
-        <div className="flex flex-col items-center justify-center py-24 gap-3 text-[var(--muted-foreground)]/60">
-          <AlertCircle size={40} className="text-bordo opacity-40" />
-          <p>{t('detail.notFound')}</p>
+      {groups.length > 0 && (
+        <div className="orn-stagger grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard label={t('detail.totalGroups')} value={groups.length} />
+          <StatCard label={t('detail.activeGroups')} value={active} />
+          <StatCard label={t('detail.completedGroups')} value={completed} />
+          <StatCard label={t('detail.totalStudents')} value={students} />
         </div>
       )}
 
-      {!isLoading && !isError && teacher && (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-          {/* Header */}
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <Avatar
-              src={teacher.avatar}
-              name={teacher.name}
-              className="w-20 h-20 rounded-2xl border-2 border-bordo/30 shadow-lg"
-              textSize="2xl"
-            />
-            <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-[var(--foreground)] truncate">{teacher.name}</h1>
-              <p className="text-[var(--muted-foreground)]/60 text-sm mt-0.5 truncate">{teacher.email}</p>
-              <div className="flex flex-wrap items-center gap-2 mt-3">
-                <StatusBadge status={teacher.status} />
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]">
-                  <BookOpen size={12} />{groups.length} {t('teachers.tableGroups')}
-                </span>
-              </div>
-            </div>
+      <Section title={`${t('detail.groups')} (${groups.length})`}>
+        {groups.length === 0 ? (
+          <Card>
+            <EmptyState compact sketch="books" title={t('detail.noGroups')} />
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {groups.map((g) => (
+              <GroupCard key={g._id} group={g} />
+            ))}
           </div>
+        )}
+      </Section>
 
-          {/* Stats */}
-          {groups.length > 0 && (
-            <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
-              <div className="flex divide-x divide-[var(--border)]">
-                <MiniStat label={t('detail.totalGroups')}     value={groups.length} />
-                <MiniStat label={t('detail.activeGroups')}    value={active}        accent />
-                <MiniStat label={t('detail.completedGroups')} value={completed} />
-                <MiniStat label={t('detail.totalStudents')}   value={students}      accent />
-              </div>
-            </div>
-          )}
-
-          {/* Groups */}
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-[var(--foreground)] uppercase tracking-wider mb-4">
-              {t('detail.groups')} ({groups.length})
-            </h2>
-            {groups.length === 0
-              ? <p className="text-sm text-[var(--muted-foreground)]/50 py-4 text-center">{t('detail.noGroups')}</p>
-              : <div className="space-y-3">{groups.map(g => <GroupCard key={g._id} group={g} />)}</div>
-            }
-          </div>
-
-          {/* Info */}
-          <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-[var(--foreground)] uppercase tracking-wider mb-4">{t('detail.info')}</h2>
-            <InfoRow icon={UserIcon} label={t('detail.name')}          value={teacher.name} />
-            <InfoRow icon={Mail}     label={t('detail.email')}         value={teacher.email} />
-            <InfoRow icon={Users}    label={t('teachers.tableGroups')} value={String(groups.length)} />
-            <InfoRow icon={Calendar} label={t('detail.createdAt')}     value={fmt(teacher.createdAt)} />
-            <InfoRow icon={Clock}    label={t('detail.updatedAt')}     value={fmt(teacher.updatedAt)} />
-          </div>
-        </motion.div>
-      )}
-    </div>
+      <Section title={t('detail.info')} variant="paper">
+        <InfoRow icon={UserIcon} label={t('detail.name')} value={teacher.name} />
+        <InfoRow icon={Mail} label={t('detail.email')} value={teacher.email} />
+        <InfoRow icon={Users} label={t('teachers.tableGroups')} value={String(groups.length)} />
+        <InfoRow icon={Calendar} label={t('detail.createdAt')} value={fmt(teacher.createdAt)} />
+        <InfoRow icon={Clock} label={t('detail.updatedAt')} value={fmt(teacher.updatedAt)} />
+      </Section>
+    </PageShell>
   );
 };
 
