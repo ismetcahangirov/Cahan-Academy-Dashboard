@@ -1,15 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Check } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import { ChevronDown } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { EdelweissGlyph } from '../ornament/Edelweiss';
 
 /**
  * A reusable, premium select component with standardized design.
- * 
+ *
  * @param {Object} props
  * @param {Array} props.options - Array of option objects { label, value }
  * @param {any} props.value - Current selected value
@@ -95,48 +92,33 @@ const Select = ({
   const selectedOption = options.find(opt => opt.value === value);
 
   const menu = (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+        <div
           style={menuStyle}
-          className={cn(
-            'bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden py-2 backdrop-blur-2xl overflow-y-auto custom-scrollbar',
-            menuClassName
-          )}
+          role="listbox"
+          className={cn('menu-panel orn-pop origin-top overflow-y-auto custom-scrollbar', menuClassName)}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {options.map((option, index) => (
             <button
               key={index}
               type="button"
+              role="option"
+              aria-selected={value === option.value}
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);
               }}
-              className={cn(
-                'flex items-center gap-3 w-full px-5 py-3 text-sm transition-all text-left',
-                value === option.value
-                  ? 'font-semibold'
-                  : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]'
-              )}
-              style={{ 
-                color: value === option.value ? 'var(--bordo-contrast)' : undefined,
-                backgroundColor: value === option.value ? 'var(--bordo-muted)' : undefined 
-              }}
+              className="menu-item"
             >
               <span className="flex-1 truncate">{option.label}</span>
-              {value === option.value && (
-                <Check size={14} className="text-bordo" />
-              )}
+              {value === option.value && <EdelweissGlyph className="h-3.5 w-3.5 text-current" />}
             </button>
           ))}
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 
   return (
@@ -147,22 +129,23 @@ const Select = ({
           if (!isOpen) calculatePosition();
           setIsOpen(!isOpen);
         }}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-invalid={error || undefined}
         className={cn(
-          'flex items-center justify-between w-full px-4 py-3 rounded-xl bg-[var(--card)] backdrop-blur-md border transition-all shadow-sm group',
-          error ? 'border-red-500/50' : 'border-[var(--border)] focus:border-bordo focus:ring-2 focus:ring-bordo/20',
+          'field flex items-center justify-between gap-2 text-left group',
+          error && 'is-invalid',
           buttonClassName
         )}
       >
-        <span className={cn(
-          'text-sm truncate',
-          selectedOption ? 'text-[var(--foreground)] font-medium' : 'text-[var(--muted-foreground)]/40'
-        )}>
+        <span className={cn('truncate', selectedOption ? 'text-ink' : 'text-ink-subtle')}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
           size={16}
+          strokeWidth={1.6}
           className={cn(
-            'text-[var(--muted-foreground)]/40 transition-transform duration-300 group-hover:text-[var(--foreground)]',
+            'shrink-0 text-accent-text transition-transform duration-[var(--dur-2)]',
             isOpen ? 'rotate-180' : ''
           )}
         />
