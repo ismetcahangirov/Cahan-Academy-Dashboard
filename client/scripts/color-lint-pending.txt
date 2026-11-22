@@ -31,8 +31,5 @@ src/pages/students/StudentDetail.jsx
 src/pages/students/Students.jsx
 src/pages/teachers/TeacherDetail.jsx
 src/pages/teachers/Teachers.jsx
-src/pages/users/UserDetail.jsx
-src/pages/users/UserModal.jsx
-src/pages/users/Users.jsx
 src/components/grading/AnswerReviewModal.jsx
 src/components/schedule/JoinClassButton.jsx
