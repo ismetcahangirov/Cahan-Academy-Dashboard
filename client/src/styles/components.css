@@ -636,6 +636,11 @@ select.field {
 .orn-pop {
   animation: orn-pop var(--dur-2) var(--ease-silk) both;
 }
+/* AppLayout route change: fill `backwards` so no transform stays on the page wrapper afterwards
+   (a lingering transform would become the containing block of fixed/sticky descendants) */
+.route-enter {
+  animation: orn-rise var(--dur-3) var(--ease-silk) backwards;
+}
 .orn-draw path,
 .orn-draw line,
 .orn-draw circle.orn-stroke {
@@ -673,6 +678,23 @@ select.field {
   background-color: #5C000E;
   border: 1px solid #742632;
   box-shadow: var(--shadow-md);
+}
+/* full-height column behind the sticky sidebar panel (long pages, full-page screenshots) */
+@media (min-width: 1024px) {
+  .sidebar-column {
+    background-color: #250006;
+  }
+}
+/* positioned by Sidebar from cached link geometry; only the transform transitions */
+.sidebar-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 10px;
+  pointer-events: none;
+}
+.sidebar-marker.is-ready {
+  transition: transform var(--dur-2) var(--ease-silk);
 }
 .sidebar-ribbon {
   position: absolute;

@@ -308,14 +308,14 @@ Primitives:
 
 | need | use |
 |---|---|
-| route transition | built into `AppLayout` (fade + 8px rise, framer, once per pathname) |
+| route transition | built into `AppLayout` (`.route-enter`: CSS fade + 8px rise, once per pathname) |
 | list/card entrance | `className="orn-stagger"` on the parent (CSS, first 8 children stagger, rest arrive together) or framer `listContainer`/`listItem` + `staggerDelay(i)` |
 | one element entrance | `.orn-rise` (fade + rise) / `.orn-reveal` (fade) / `.orn-pop` (scale .98→1) |
 | modal | `<Modal>` (scale .98→1 + fade, framer `modalVariants`) |
 | dropdown / select menu | CSS `.orn-pop` (no JS animation) |
 | toast | react-hot-toast built-in (transform/opacity) |
 | hover lift | `.card-hover` / `<Card hover>` (translateY -2px, transform only) |
-| active nav item | framer `layoutId` ribbon slide (Sidebar) |
+| active nav item | one marker moved by `transform` from cached link geometry (Sidebar, CSS transition) |
 | ornament reveal | `OrnamentDivider` / `CornerFlourish draw` (stroke-dashoffset, ONCE), lace `.orn-reveal` |
 | button press | `.btn:active` scale .97 |
 | skeleton shimmer | `.skeleton` (translateX gradient on `::after`) |

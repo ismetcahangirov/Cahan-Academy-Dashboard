@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { LaceCorner } from '../ornament';
-import { pageVariants } from '../../lib/motion';
 
 const AppLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -23,10 +21,11 @@ const AppLayout = () => {
         </div>
 
         <main className="relative z-[1] flex-1 overflow-x-hidden px-4 pb-12 pt-6 sm:px-6 lg:px-10 lg:pt-8">
-          {/* route transition: fade + 8px rise, compositor-only, once per navigation */}
-          <motion.div key={location.pathname} variants={pageVariants} initial="initial" animate="animate">
+          {/* route transition: fade + 8px rise as a CSS animation (compositor only, no JS frame loop),
+              once per navigation; `backwards` fill leaves no transform behind afterwards */}
+          <div key={location.pathname} className="route-enter">
             <Outlet />
-          </motion.div>
+          </div>
         </main>
       </div>
     </div>
