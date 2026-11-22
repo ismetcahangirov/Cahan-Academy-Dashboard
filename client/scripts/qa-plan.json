@@ -172,6 +172,7 @@
     "name": "teacher-select",
     "actions": [
       "click=role=button[name=/Yeni Qrup/i]",
+      "wait=800",
       "click=[role=dialog] [aria-haspopup=listbox]"
     ]
   },
