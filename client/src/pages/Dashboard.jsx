@@ -1,310 +1,141 @@
+import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../features/auth/authSlice';
-import { motion } from 'framer-motion';
-import { Users, GraduationCap, BookOpen, Clock, TrendingUp, TrendingDown, Banknote, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Users, GraduationCap, BookOpen, Clock, TrendingUp, Banknote, ArrowRight } from 'lucide-react';
 import { useGetStatsQuery, useGetActivitiesQuery } from '../features/dashboard/dashboardApi';
 import { useGetMyPaymentsQuery } from '../features/payments/paymentsApi';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
 import { formatDate } from '../utils/formatDate';
 import { notificationText } from '../features/notifications/notificationText';
-
-const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(() =>
-    document.documentElement.classList.contains('dark')
-  );
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains('dark'));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-  return isDark;
-};
-
-const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-
-const getActivityData = (stats) => {
-  if (stats?.monthlyActivity?.length > 0) {
-    return stats.monthlyActivity.map(({ month, value }) => ({ month, value }));
-  }
-  // Məlumat yoxdursa son 7 ay üçün boş qrafik
-  const currentMonth = new Date().getMonth();
-  return Array.from({ length: 7 }, (_, index) => ({
-    month: MONTH_KEYS[(currentMonth - 6 + index + 12) % 12],
-    value: 0,
-  }));
-};
+import { Badge, Button, Card, CardHeader, EmptyState, Skeleton, StatCard, StatusPill } from '../components/ui';
+import { LaceEdge, ScriptTitle, Timeline, TimelineItem, WaveEdge } from '../components/ornament';
+import ActivityChart from './dashboard/ActivityChart';
+import TodayAgenda from './dashboard/TodayAgenda';
 
 const formatHours = (hours, t, language) =>
   t('dashboard.hoursValue', {
     value: new Intl.NumberFormat(language || undefined, { maximumFractionDigits: 1 }).format(hours || 0),
   });
 
-const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
-  const { t } = useTranslation();
-  const isDark = useDarkMode();
-  const [hoveredPoint, setHoveredPoint] = useState(null);
+const trendProps = (trend, label) => {
+  if (typeof trend !== 'number') return {};
+  return {
+    trend: trend > 0 ? 'up' : trend < 0 ? 'down' : 'flat',
+    trendLabel: `${trend > 0 ? '+' : ''}${trend}%`,
+    hint: label,
+  };
+};
 
-  // Dark modda rənglər əks olunur: ağ ↔ bordo
-  const C_LINE = isDark ? '#FFFFFF' : '#7B001C';
-  const C_DOT = isDark ? '#7B001C' : '#FFFFFF';
-  const GRAD_OP0 = isDark ? '0.30' : '0.35';
-  const GRAD_OP1 = isDark ? '0.04' : '0.05';
-  const data = getActivityData(stats);
-  const maxValue = Math.max(...data.map((item) => item.value), 1);
-  const points = data.map((item, index) => {
-    const x = 24 + index * 52;
-    const y = 152 - (item.value / maxValue) * 104;
-    return { ...item, x, y };
-  });
-  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
-  const areaPath = `${linePath} L ${points[points.length - 1].x} 168 L ${points[0].x} 168 Z`;
-
-  return (
-    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 h-[400px] text-[var(--foreground)] overflow-hidden">
-      {isLoading ? (
-        <div className="h-full animate-pulse flex flex-col">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <div className="h-5 bg-bordo/20 rounded w-40"></div>
-              <div className="h-3 bg-bordo/10 rounded w-56"></div>
-            </div>
-            <div className="h-8 bg-bordo/20 rounded-full w-24"></div>
-          </div>
-          <div className="flex-1 grid grid-cols-7 gap-3 items-end pt-10">
-            {[58, 72, 64, 84, 76, 92, 100].map((height, index) => (
-              <div key={index} className="bg-bordo/20 rounded-t-xl" style={{ height: `${height}%` }}></div>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex items-start justify-between gap-4 mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-[var(--foreground)]">{title || t('dashboard.activityChart')}</h3>
-              <p className="text-[var(--muted-foreground)] text-sm mt-1">{subtitle || t('dashboard.activityChartSubtitle')}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold leading-none text-bordo">{points[points.length - 1].value}</p>
-              <p className="text-[var(--muted-foreground)] text-xs mt-1">{t('dashboard.thisMonth')}</p>
-            </div>
-          </div>
-
-          <div className="relative flex-1 min-h-0">
-            {/* Tooltip */}
-            {hoveredPoint && (
-              <div
-                className="pointer-events-none absolute z-10 transition-all duration-150"
-                style={{
-                  left: `calc(${(hoveredPoint.x / 360) * 100}% - 48px)`,
-                  top: `calc(${(hoveredPoint.y / 210) * 100}% - 64px)`,
-                }}
-              >
-                <div
-                  className="rounded-xl px-3 py-2 text-center shadow-xl min-w-[96px]"
-                  style={{
-                    background: isDark ? '#7B001C' : '#7B001C',
-                    color: '#FFFFFF',
-                    border: '1.5px solid rgba(255,255,255,0.18)',
-                  }}
-                >
-                  <p className="text-[10px] font-semibold uppercase tracking-widest opacity-80">
-                    {t(`dashboard.months.${hoveredPoint.month}`)}
-                  </p>
-                  <p className="text-xl font-bold leading-tight">{hoveredPoint.value}</p>
-                  <p className="text-[10px] opacity-70">{title || t('dashboard.activityChart')}</p>
-                  {/* Arrow */}
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 w-2 h-2 rotate-45"
-                    style={{
-                      bottom: '-5px',
-                      background: '#7B001C',
-                      borderRight: '1.5px solid rgba(255,255,255,0.18)',
-                      borderBottom: '1.5px solid rgba(255,255,255,0.18)',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 360 210"
-              role="img"
-              aria-label={title || t('dashboard.activityChart')}
-              onMouseLeave={() => setHoveredPoint(null)}
-            >
-              <defs>
-                <linearGradient id="activityArea" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={C_LINE} stopOpacity={GRAD_OP0} />
-                  <stop offset="100%" stopColor={C_LINE} stopOpacity={GRAD_OP1} />
-                </linearGradient>
-              </defs>
-
-              {[48, 88, 128, 168].map((y) => (
-                <line key={y} x1="24" x2="336" y1={y} y2={y} stroke={C_LINE} strokeOpacity="0.18" strokeWidth="1" strokeDasharray="4 4" />
-              ))}
-
-              {points.map((point) => {
-                const barHeight = 168 - point.y;
-                return (
-                  <rect
-                    key={point.month}
-                    x={point.x - 12}
-                    y={point.y}
-                    width="24"
-                    height={barHeight}
-                    rx="8"
-                    fill={C_LINE}
-                    opacity={hoveredPoint?.month === point.month ? '0.28' : '0.14'}
-                    style={{ transition: 'opacity 0.15s' }}
-                  />
-                );
-              })}
-
-              <path d={areaPath} fill="url(#activityArea)" />
-              <path d={linePath} fill="none" stroke={C_LINE} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-
-              {points.map((point) => (
-                <g key={`${point.month}-point`}>
-                  <circle
-                    cx={point.x}
-                    cy={point.y}
-                    r={hoveredPoint?.month === point.month ? '8' : '6'}
-                    fill={C_DOT}
-                    stroke={C_LINE}
-                    strokeWidth="3"
-                    style={{ transition: 'r 0.15s' }}
-                  />
-                  <text x={point.x} y="196" textAnchor="middle" fill={C_LINE} opacity="0.9" fontSize="11" fontWeight="600">
-                    {t(`dashboard.months.${point.month}`)}
-                  </text>
-                  {/* Invisible large hover target */}
-                  <rect
-                    x={point.x - 22}
-                    y="0"
-                    width="44"
-                    height="210"
-                    fill="transparent"
-                    style={{ cursor: 'crosshair' }}
-                    onMouseEnter={() => setHoveredPoint(point)}
-                  />
-                </g>
-              ))}
-            </svg>
-          </div>
-        </div>
-      )}
+const StatSkeleton = () => (
+  <div className="card-ornate p-5 sm:p-6" aria-hidden="true">
+    <div className="flex items-start gap-4">
+      <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+      <div className="flex-1 space-y-2.5">
+        <Skeleton className="h-3.5 w-24" />
+        <Skeleton className="h-8 w-16" />
+        <Skeleton className="h-3.5 w-32" />
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
-const StatCard = ({ title, value, icon: Icon, trend, trendLabel, delay, isLoading }) => {
-  const { t } = useTranslation();
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="bg-bordo border border-bordo rounded-2xl p-6 text-white shadow-lg shadow-bordo/20 transition-all group relative overflow-hidden"
-    >
-      {isLoading ? (
-        <div className="animate-pulse space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <div className="h-4 bg-white/25 rounded w-20"></div>
-              <div className="h-8 bg-white/35 rounded w-16"></div>
-            </div>
-            <div className="w-12 h-12 bg-white/25 rounded-xl"></div>
-          </div>
-          <div className="h-4 bg-white/25 rounded w-32 mt-4"></div>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-white/75 text-sm mb-1">{title}</p>
-              <h3 className="text-2xl font-bold text-white">{value}</h3>
-            </div>
-            <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-bordo group-hover:scale-110 transition-transform">
-              <Icon size={24} />
-            </div>
-          </div>
-          {typeof trend === 'number' && (
-            <div className="mt-4 flex items-center gap-2">
-              <div className="flex items-center text-white text-xs font-medium">
-                {trend < 0 ? <TrendingDown size={14} className="mr-1" /> : <TrendingUp size={14} className="mr-1" />}
-                {trend > 0 ? `+${trend}` : trend}%
-              </div>
-              <span className="text-white/65 text-xs">{trendLabel || t('dashboard.vsLastMonth')}</span>
-            </div>
-          )}
-        </>
-      )}
-    </motion.div>
-  );
-};
-
-const ActivityItem = ({ activity }) => {
+// ─── Recent activity: newest notifications as a timeline ──────────────────────
+const ActivityFeed = ({ activities, isLoading }) => {
   const { t, i18n } = useTranslation();
-  const translated = activity.key ? notificationText(activity, t, i18n) : null;
-  const text = translated?.title ? `${translated.title} - ${translated.message}` : activity.message;
-  const getTimeAgo = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000 / 60); // minutes
+  const today = new Date();
 
-    if (diff < 60) return t('dashboard.minutesAgo', { count: diff });
-    if (diff < 1440) return t('dashboard.hoursAgo', { count: Math.floor(diff / 60) });
-    return t('dashboard.daysAgo', { count: Math.floor(diff / 1440) });
+  const stamp = (time) => {
+    const date = new Date(time);
+    return date.toDateString() === today.toDateString() ? formatDate(date, 'HH:mm') : formatDate(date, 'd MMM');
   };
 
   return (
-    <div className="flex gap-4 p-4 rounded-xl hover:bg-[var(--muted)]/50 transition-colors border-l-2 border-transparent hover:border-bordo">
-      <div className="w-2 h-2 rounded-full bg-bordo mt-2 shrink-0"></div>
-      <div>
-        <p className="text-[var(--foreground)] text-sm">{text}</p>
-        <p className="text-[var(--muted-foreground)]/60 text-xs mt-1">{getTimeAgo(activity.time)}</p>
+    <Card className="flex h-full flex-col p-5 sm:p-6">
+      <CardHeader
+        title={t('dashboard.recentActivity')}
+        actions={
+          activities.length > 0 && (
+            <Button as={Link} to="/notifications" variant="ghost" size="sm">
+              {t('dashboard.viewAll')}
+              <ArrowRight aria-hidden="true" />
+            </Button>
+          )
+        }
+      />
+
+      <div className="mt-5 flex-1">
+        {isLoading ? (
+          <div className="space-y-5" aria-busy="true">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="h-4 w-12" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : activities.length > 0 ? (
+          <Timeline className="-mb-6">
+            {activities.map((activity, index) => {
+              const translated = activity.key ? notificationText(activity, t, i18n) : null;
+              return (
+                <TimelineItem
+                  key={activity.id}
+                  time={stamp(activity.time)}
+                  title={translated?.title || activity.message}
+                  meta={translated?.title ? translated.message : undefined}
+                  state={index === 0 ? 'current' : 'done'}
+                />
+              );
+            })}
+          </Timeline>
+        ) : (
+          <EmptyState compact sketch="notebook" title={t('dashboard.noActivity')} />
+        )}
       </div>
-    </div>
+    </Card>
   );
 };
 
-// ─── Student Payment Widget ─────────────────────────────────────────────────
+// ─── Student payment widget ───────────────────────────────────────────────────
 const PaymentWidget = () => {
   const { t } = useTranslation();
   const { data, isLoading } = useGetMyPaymentsQuery();
   const payments = data?.data ?? [];
 
-  const fmtDate = (d) => formatDate(d, 'd MMMM yyyy');
+  const header = (
+    <CardHeader
+      title={
+        <span className="flex items-center gap-2.5">
+          <Banknote size={19} strokeWidth={1.5} aria-hidden="true" className="text-accent-text" />
+          {t('payments.title')}
+        </span>
+      }
+    />
+  );
 
   if (isLoading) {
     return (
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 animate-pulse">
-        <div className="h-4 bg-[var(--muted)] rounded w-32 mb-3" />
-        <div className="h-10 bg-[var(--muted)] rounded w-full" />
-      </div>
+      <Card className="space-y-3 p-5 sm:p-6" aria-busy="true">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-12 w-full rounded-[var(--radius-md)]" />
+      </Card>
     );
   }
 
   if (payments.length === 0) {
     return (
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Banknote size={16} className="text-bordo" />
-          <h3 className="text-sm font-semibold text-[var(--foreground)]">{t('payments.title')}</h3>
-        </div>
-        <p className="text-xs text-[var(--muted-foreground)]/60">{t('payments.noActivePayments')}</p>
-      </div>
+      <Card className="p-5 sm:p-6">
+        {header}
+        <p className="mt-3 text-[0.98rem] text-ink-muted">{t('payments.noActivePayments')}</p>
+      </Card>
     );
   }
 
-  // Find most relevant entries across all plans
-  const allEntries = payments.flatMap((plan) =>
-    plan.history.map((h) => ({ ...h, planAmount: plan.amount }))
-  );
+  // Most relevant entries across all plans
+  const allEntries = payments.flatMap((plan) => plan.history.map((h) => ({ ...h, planAmount: plan.amount })));
   const overdue = allEntries.filter((e) => e.status === 'overdue');
   const pending = allEntries
     .filter((e) => e.status === 'pending')
@@ -312,46 +143,59 @@ const PaymentWidget = () => {
   const nextDue = pending[0];
 
   return (
-    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-bordo text-white shadow-sm shadow-bordo/20">
-          <Banknote size={15} />
+    <Card className="p-5 sm:p-6">
+      {header}
+
+      <div className="mt-4 space-y-3">
+        {overdue.length > 0 && (
+          <StatusPill status="error">{t('payments.overdueAlert', { count: overdue.length })}</StatusPill>
+        )}
+
+        {nextDue ? (
+          <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-line bg-surface-2 px-4 py-3">
+            <div>
+              <p className="sc text-[0.75rem] text-ink-muted">{t('payments.nextPayment')}</p>
+              <p className="num mt-0.5 text-[1.25rem] font-semibold text-ink">{nextDue.planAmount} AZN</p>
+            </div>
+            <p className="time-italic text-right text-[1rem] text-accent-text">{formatDate(nextDue.dueDate, 'd MMMM yyyy')}</p>
+          </div>
+        ) : (
+          overdue.length === 0 && <StatusPill status="success">{t('payments.allPaid')}</StatusPill>
+        )}
+      </div>
+    </Card>
+  );
+};
+
+// ─── Hero: greeting + today's agenda on a wine band ──────────────────────────
+const DashboardHero = ({ user }) => {
+  const { t } = useTranslation();
+  const firstName = user?.name?.trim().split(/\s+/)[0] || '';
+
+  return (
+    <section className="theme-wine login-hero relative isolate overflow-hidden rounded-t-[var(--radius-xl)]">
+      <div className="relative grid gap-6 px-5 pb-24 pt-7 sm:px-8 sm:pt-9 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)] lg:items-center lg:gap-10 xl:px-10">
+        <div className="min-w-0">
+          <ScriptTitle
+            size="page"
+            eyebrow={formatDate(new Date(), 'EEEE, d MMMM')}
+            title={t('dashboard.greeting', { name: firstName })}
+            subtitle={t('dashboard.subtitle')}
+          />
+          {user?.role && (
+            <div className="orn-rise mt-4 flex flex-wrap items-center gap-2">
+              <Badge tone="accent">{t(`common.${user.role}`)}</Badge>
+              {user?.name && <span className="text-[1.02rem] text-ink-muted">{user.name}</span>}
+            </div>
+          )}
         </div>
-        <h3 className="text-sm font-semibold text-[var(--foreground)]">{t('payments.title')}</h3>
+        <TodayAgenda role={user?.role} className="orn-rise" />
       </div>
 
-      {/* Overdue alert */}
-      {overdue.length > 0 && (
-        <div className="flex items-start gap-2 bg-[var(--destructive)]/10 border border-[var(--destructive)]/20 rounded-xl p-3 mb-3">
-          <AlertCircle size={15} className="text-[var(--destructive)] shrink-0 mt-0.5" />
-          <p className="text-xs text-[var(--destructive)] font-medium">
-            {t('payments.overdueAlert', { count: overdue.length })}
-          </p>
-        </div>
-      )}
-
-      {/* Next payment */}
-      {nextDue ? (
-        <div className="flex items-center justify-between bg-bordo/5 border border-bordo/10 rounded-xl px-3 py-2.5">
-          <div>
-            <p className="text-xs text-[var(--muted-foreground)]/60">{t('payments.nextPayment')}</p>
-            <p className="text-sm font-semibold text-[var(--foreground)] mt-0.5">
-              {nextDue.planAmount} AZN
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-medium" style={{ color: 'var(--bordo-contrast)' }}>{fmtDate(nextDue.dueDate)}</p>
-          </div>
-        </div>
-      ) : (
-        overdue.length === 0 && (
-          <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]/60">
-            <CheckCircle2 size={14} className="text-bordo" />
-            {t('payments.allPaid')}
-          </div>
-        )
-      )}
-    </div>
+      {/* lace trim + wave into the page */}
+      <LaceEdge direction="up" size={22} className="absolute inset-x-0 bottom-9" />
+      <WaveEdge fill="var(--page-base)" className="absolute inset-x-0 -bottom-px" />
+    </section>
   );
 };
 
@@ -364,169 +208,59 @@ const Dashboard = () => {
   const stats = statsResponse?.data;
   const activities = activitiesResponse?.data || [];
   const learningHours = formatHours(stats?.learningHours?.total, t, i18n?.language);
+  const hoursTrend = trendProps(stats?.learningHours?.trend, t('dashboard.hoursVsLastMonth'));
+  const countTrend = (trend) => trendProps(trend, t('dashboard.vsLastMonth'));
+
+  let cards = [];
+  if (user?.role === 'admin') {
+    cards = [
+      { label: t('dashboard.totalUsers'), value: stats?.users?.total || 0, icon: Users, ...countTrend(stats?.users?.trend) },
+      { label: t('dashboard.activeCourses'), value: stats?.courses?.total || 0, icon: BookOpen, ...countTrend(stats?.courses?.trend) },
+      { label: t('dashboard.groups'), value: stats?.groups?.total || 0, icon: GraduationCap, ...countTrend(stats?.groups?.trend) },
+      { label: t('dashboard.learningHours'), value: learningHours, icon: Clock, ...hoursTrend },
+    ];
+  } else if (user?.role === 'teacher') {
+    cards = [
+      { label: t('dashboard.myGroups'), value: stats?.groups?.total || 0, icon: GraduationCap },
+      { label: t('dashboard.myStudents'), value: stats?.students?.total || 0, icon: Users },
+      { label: t('dashboard.avgAttendance'), value: `${stats?.avgAttendance?.total || 0}%`, icon: TrendingUp },
+      { label: t('dashboard.learningHours'), value: learningHours, icon: Clock, ...hoursTrend },
+    ];
+  } else if (user?.role === 'student') {
+    cards = [
+      { label: t('dashboard.enrolledGroups'), value: stats?.enrolledGroups?.total || 0, icon: GraduationCap },
+      { label: t('dashboard.myAttendance'), value: `${stats?.myAttendance?.total || 0}%`, icon: TrendingUp },
+      { label: t('dashboard.myLearningHours'), value: learningHours, icon: Clock, ...hoursTrend },
+    ];
+  }
+
+  const chartTitle =
+    user?.role === 'student' ? t('dashboard.myActivity') : user?.role === 'teacher' ? t('dashboard.groupActivity') : undefined;
+  const chartSubtitle =
+    user?.role === 'student'
+      ? t('dashboard.myActivitySubtitle')
+      : user?.role === 'teacher'
+        ? t('dashboard.groupActivitySubtitle')
+        : undefined;
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Header */}
-      <div>
-        <motion.h1
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="text-3xl font-bold text-[var(--foreground)] mb-2"
-        >
-          {t('dashboard.welcome', { name: user?.name })}
-        </motion.h1>
-        <p className="text-[var(--muted-foreground)]">{t('dashboard.subtitle')}</p>
+    <div className="mx-auto w-full max-w-7xl space-y-8">
+      <DashboardHero user={user} />
+
+      {/* stat cards — wrappers carry the staggered entrance so the cards keep their hover lift */}
+      <div className={`orn-stagger grid gap-5 sm:grid-cols-2 ${cards.length === 3 ? 'xl:grid-cols-3' : 'xl:grid-cols-4'}`}>
+        {cards.map((card) => (
+          <div key={card.label}>{statsLoading ? <StatSkeleton /> : <StatCard className="h-full" {...card} />}</div>
+        ))}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {user?.role === 'admin' && (
-          <>
-            <StatCard
-              title={t('dashboard.totalUsers')}
-              value={stats?.users?.total || 0}
-              icon={Users}
-              trend={stats?.users?.trend}
-              delay={0.1}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.activeCourses')}
-              value={stats?.courses?.total || 0}
-              icon={BookOpen}
-              trend={stats?.courses?.trend}
-              delay={0.2}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.groups')}
-              value={stats?.groups?.total || 0}
-              icon={GraduationCap}
-              trend={stats?.groups?.trend}
-              delay={0.3}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.learningHours')}
-              value={learningHours}
-              icon={Clock}
-              trend={stats?.learningHours?.trend}
-              trendLabel={t('dashboard.hoursVsLastMonth')}
-              delay={0.4}
-              isLoading={statsLoading}
-            />
-          </>
-        )}
-
-        {user?.role === 'teacher' && (
-          <>
-            <StatCard
-              title={t('dashboard.myGroups')}
-              value={stats?.groups?.total || 0}
-              icon={GraduationCap}
-              delay={0.1}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.myStudents')}
-              value={stats?.students?.total || 0}
-              icon={Users}
-              delay={0.2}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.avgAttendance')}
-              value={`${stats?.avgAttendance?.total || 0}%`}
-              icon={TrendingUp}
-              delay={0.3}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.learningHours')}
-              value={learningHours}
-              icon={Clock}
-              trend={stats?.learningHours?.trend}
-              trendLabel={t('dashboard.hoursVsLastMonth')}
-              delay={0.4}
-              isLoading={statsLoading}
-            />
-          </>
-        )}
-
-        {user?.role === 'student' && (
-          <>
-            <StatCard
-              title={t('dashboard.enrolledGroups')}
-              value={stats?.enrolledGroups?.total || 0}
-              icon={GraduationCap}
-              delay={0.1}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.myAttendance')}
-              value={`${stats?.myAttendance?.total || 0}%`}
-              icon={TrendingUp}
-              delay={0.2}
-              isLoading={statsLoading}
-            />
-            <StatCard
-              title={t('dashboard.myLearningHours')}
-              value={learningHours}
-              icon={Clock}
-              trend={stats?.learningHours?.trend}
-              trendLabel={t('dashboard.hoursVsLastMonth')}
-              delay={0.3}
-              isLoading={statsLoading}
-            />
-            <div className="hidden lg:block" />
-          </>
-        )}
-      </div>
-
-      {/* Activity and Content Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <ActivityChart
-            stats={stats}
-            isLoading={statsLoading}
-            title={user?.role === 'student' ? t('dashboard.myActivity') : user?.role === 'teacher' ? t('dashboard.groupActivity') : undefined}
-            subtitle={user?.role === 'student' ? t('dashboard.myActivitySubtitle') : user?.role === 'teacher' ? t('dashboard.groupActivitySubtitle') : undefined}
-          />
-          {/* Payment widget only for students */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="orn-rise space-y-6 lg:col-span-2 xl:col-span-3">
+          <ActivityChart stats={stats} isLoading={statsLoading} title={chartTitle} subtitle={chartSubtitle} />
           {user?.role === 'student' && <PaymentWidget />}
         </div>
-
-        {/* Recent Activity */}
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col h-[400px]">
-          <h3 className="text-lg font-bold text-[var(--foreground)] mb-4 flex items-center justify-between">
-            {t('dashboard.recentActivity')}
-            <span className="text-xs font-normal px-2 py-1 rounded-full bg-bordo text-white shadow-sm">{t('dashboard.new')}</span>
-          </h3>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-1">
-            {activitiesLoading ? (
-              // Activity Skeletons
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex gap-4 p-4 animate-pulse">
-                  <div className="w-2 h-2 rounded-full bg-[var(--muted)] mt-2 shrink-0"></div>
-                  <div className="space-y-2 flex-1">
-                    <div className="h-4 bg-[var(--muted)] rounded w-full"></div>
-                    <div className="h-3 bg-[var(--muted)] rounded w-20"></div>
-                  </div>
-                </div>
-              ))
-            ) : activities.length > 0 ? (
-              activities.map((activity) => (
-                <ActivityItem key={activity.id} activity={activity} />
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-[var(--muted-foreground)]/40">
-                <Clock size={32} className="mb-2 opacity-50" />
-                <p>{t('dashboard.noActivity')}</p>
-              </div>
-            )}
-          </div>
+        <div className="orn-rise [animation-delay:80ms] xl:col-span-2">
+          <ActivityFeed activities={activities} isLoading={activitiesLoading} />
         </div>
       </div>
     </div>

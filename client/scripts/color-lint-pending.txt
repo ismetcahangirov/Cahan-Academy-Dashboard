@@ -1,7 +1,6 @@
 # Files that still have to be migrated to the ornate design (docs/DESIGN.md).
 # color-lint.mjs skips them. When you migrate a file, DELETE its line here in the same PR.
 # Paths are relative to client/.
-src/pages/Dashboard.jsx
 src/pages/notifications/Notifications.jsx
 src/pages/profile/Profile.jsx
 src/pages/settings/Settings.jsx
