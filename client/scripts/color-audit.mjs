@@ -20,7 +20,7 @@
 import { chromium } from 'playwright';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiLogin, assertLocal, loadTargets, newContext, runActions, settle, targetSlug } from './lib/session.mjs';
+import { apiLogin, assertLocal, finishAnimations, loadTargets, newContext, runActions, settle, targetSlug } from './lib/session.mjs';
 
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, a, i, arr) => (a.startsWith('--') ? [...acc, [a.slice(2), arr[i + 1]]] : acc), [])
@@ -314,6 +314,9 @@ try {
           await page.goto(base + path, { waitUntil: 'domcontentloaded' });
           await settle(page);
           await runActions(page, steps, { log: console.log });
+          // a late redirect (e.g. /meeting -> /schedule) restarts the route fade: let it finish
+          await page.waitForLoadState('networkidle').catch(() => {});
+          await finishAnimations(page);
         } catch (e) {
           total += 1;
           report.push({ route: path, name: target.name, role, theme, width, checks: 0, rasters: 0, violations: [{ selector: '-', prop: 'action', value: e.message, rendered: '-', distance: -1 }] });

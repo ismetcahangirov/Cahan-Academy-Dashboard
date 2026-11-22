@@ -568,7 +568,11 @@
   },
   {
     "role": "student",
-    "path": "/meeting/{schedule}"
+    "path": "/meeting/{schedule}",
+    "name": "redirect",
+    "actions": [
+      "wait=3000"
+    ]
   },
   {
     "role": "student",

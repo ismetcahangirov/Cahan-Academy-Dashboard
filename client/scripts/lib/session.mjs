@@ -209,3 +209,21 @@ export async function loadTargets(args, apiUrl, readFile) {
 /** File-name slug for a target: role-path[-name] */
 export const targetSlug = (t) =>
   `${t.role}-${(t.rawPath || t.path).replace(/^\//, '').replace(/[{}]/g, '').replace(/[/:?=&]+/g, '_') || 'home'}${t.name ? `-${t.name}` : ''}`;
+
+/** Wait (max 3 s) until one-shot animations have finished, so audits never sample a mid-fade frame. */
+export async function finishAnimations(page) {
+  await page
+    .evaluate(
+      () =>
+        Promise.race([
+          Promise.all(
+            document
+              .getAnimations()
+              .filter((a) => a.effect?.getTiming?.().iterations !== Infinity)
+              .map((a) => a.finished.catch(() => {}))
+          ),
+          new Promise((r) => setTimeout(r, 3000)),
+        ])
+    )
+    .catch(() => {});
+}
