@@ -16,6 +16,9 @@ import { EdelweissGlyph } from '../ornament/Edelweiss';
  * @param {string} props.buttonClassName - Additional class names for the select button
  * @param {string} props.menuClassName - Additional class names for the dropdown menu
  * @param {boolean} props.error - Error state
+ * Other props (aria-label, id, aria-describedby …) go to the trigger button.
+ * Keyboard: opening focuses the selected (or first) option; ArrowUp/ArrowDown/Home/End move;
+ * Enter/Space pick; Escape closes (without closing a surrounding Modal); Tab closes and moves on.
  */
 const Select = ({
   options = [],
@@ -25,11 +28,33 @@ const Select = ({
   className = '',
   buttonClassName = '',
   menuClassName = '',
-  error = false
+  error = false,
+  ...buttonProps
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState({});
   const selectRef = useRef(null);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+
+  const onMenuKeyDown = (e) => {
+    const list = [...(menuRef.current?.querySelectorAll('[role="option"]') || [])];
+    const i = list.indexOf(document.activeElement);
+    const move = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (move !== undefined && list.length) {
+      e.preventDefault();
+      list[(move + list.length) % list.length].focus();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation(); // the Escape belongs to the listbox, not to a Modal around it
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    } else if (e.key === 'Tab') {
+      e.stopPropagation();
+      setIsOpen(false);
+      buttonRef.current?.focus();
+    }
+  };
 
   const calculatePosition = useCallback(() => {
     if (!selectRef.current) return;
@@ -80,11 +105,22 @@ const Select = ({
       setIsOpen(false);
     };
 
-    window.addEventListener('scroll', handleViewportChange, true);
+    const handleScroll = (e) => {
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      handleViewportChange();
+    };
+    window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleViewportChange);
+    // focus the selected option (ring only for keyboard users via :focus-visible)
+    const raf = requestAnimationFrame(() => {
+      const opts = menuRef.current?.querySelectorAll('[role="option"]');
+      const sel = menuRef.current?.querySelector('[aria-selected="true"]');
+      (sel || opts?.[0])?.focus({ preventScroll: false });
+    });
 
     return () => {
-      window.removeEventListener('scroll', handleViewportChange, true);
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleViewportChange);
     };
   }, [calculatePosition, isOpen]);
@@ -95,8 +131,10 @@ const Select = ({
     <>
       {isOpen && (
         <div
+          ref={menuRef}
           style={menuStyle}
           role="listbox"
+          onKeyDown={onMenuKeyDown}
           className={cn('menu-panel orn-pop origin-top overflow-y-auto custom-scrollbar', menuClassName)}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -109,6 +147,7 @@ const Select = ({
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);
+                buttonRef.current?.focus({ preventScroll: true });
               }}
               className="menu-item"
             >
@@ -124,6 +163,8 @@ const Select = ({
   return (
     <div className={cn('relative w-full', className)} ref={selectRef}>
       <button
+        {...buttonProps}
+        ref={buttonRef}
         type="button"
         onClick={() => {
           if (!isOpen) calculatePosition();

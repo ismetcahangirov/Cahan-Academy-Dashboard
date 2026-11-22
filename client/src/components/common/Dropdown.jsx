@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, cloneElement, isValidElement } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -17,6 +17,8 @@ import { EdelweissGlyph } from '../ornament/Edelweiss';
  * @param {string} props.buttonClassName - Additional class names for the trigger button
  * @param {string} props.menuClassName - Additional class names for the dropdown menu
  * @param {string} props.align - Alignment of the menu: 'left' or 'right'
+ * Keyboard: opening moves focus to the first item; ArrowUp/ArrowDown/Home/End move between items;
+ * Escape (or Tab) closes and returns focus to the trigger.
  */
 const Dropdown = ({
   trigger,
@@ -31,6 +33,22 @@ const Dropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState({});
   const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const focusTrigger = () => triggerRef.current?.querySelector('button, [tabindex]')?.focus();
+  const onMenuKeyDown = (e) => {
+    const list = [...(menuRef.current?.querySelectorAll('[role="menuitem"]') || [])];
+    const i = list.indexOf(document.activeElement);
+    const move = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (move !== undefined && list.length) {
+      e.preventDefault();
+      list[(move + list.length) % list.length].focus();
+    } else if (e.key === 'Escape' || e.key === 'Tab') {
+      if (e.key === 'Escape') e.preventDefault();
+      setIsOpen(false);
+      focusTrigger();
+    }
+  };
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -65,14 +83,27 @@ const Dropdown = ({
         setIsOpen(false);
       }
     };
-    const handleScroll = () => setIsOpen(false);
+    const handleScroll = (e) => {
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      setIsOpen(false);
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        focusTrigger();
+      }
+    };
+    // focus the first item (the ring only shows for keyboard users: :focus-visible)
+    requestAnimationFrame(() => menuRef.current?.querySelector('[role="menuitem"]')?.focus({ preventScroll: true }));
 
     document.addEventListener('mousedown', handleClose);
+    document.addEventListener('keydown', handleKey);
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleClose);
 
     return () => {
       document.removeEventListener('mousedown', handleClose);
+      document.removeEventListener('keydown', handleKey);
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleClose);
     };
@@ -89,7 +120,9 @@ const Dropdown = ({
             minWidth: menuStyle.minWidth,
             zIndex: 9999,
           }}
+          ref={menuRef}
           role="menu"
+          onKeyDown={onMenuKeyDown}
           className={cn('menu-panel orn-pop overflow-hidden origin-top', menuClassName)}
           onMouseDown={(e) => e.stopPropagation()}
         >
@@ -120,7 +153,7 @@ const Dropdown = ({
     <div className={cn('relative inline-block text-left', className)} ref={triggerRef}>
       {trigger ? (
         <div onClick={handleToggle} className="cursor-pointer">
-          {trigger}
+          {isValidElement(trigger) ? cloneElement(trigger, { 'aria-haspopup': 'menu', 'aria-expanded': isOpen }) : trigger}
         </div>
       ) : (
         <button
