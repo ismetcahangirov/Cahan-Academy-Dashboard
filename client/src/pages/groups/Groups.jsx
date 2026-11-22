@@ -303,9 +303,10 @@ const Groups = () => {
   const isAdmin = user?.role === 'admin';
 
   const { data: groupsData, isLoading } = useGetGroupsQuery();
-  // Only the admin form needs these lists (and only admins may fetch teachers)
-  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin });
-  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin });
+  // Only the admin form needs these lists (and only admins may fetch teachers). Fetched when the form
+  // opens, so entering the page does not wait on (and re-render for) two extra requests.
+  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin || !isCreateModalOpen });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin || !isCreateModalOpen });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
   const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();

@@ -233,6 +233,21 @@
     "actions": [
       "click=main button:has-text(\"E2E Frontend Group\")",
       "wait=600"
+    ],
+    "widths": [
+      1440
+    ]
+  },
+  {
+    "role": "admin",
+    "path": "/attendance",
+    "name": "group-mobile",
+    "actions": [
+      "select=main select|E2E Frontend Group",
+      "wait=600"
+    ],
+    "widths": [
+      390
     ]
   },
   {
@@ -481,6 +496,21 @@
     "actions": [
       "click=main button:has-text(\"E2E Frontend Group\")",
       "wait=600"
+    ],
+    "widths": [
+      1440
+    ]
+  },
+  {
+    "role": "teacher",
+    "path": "/attendance",
+    "name": "group-mobile",
+    "actions": [
+      "select=main select|E2E Frontend Group",
+      "wait=600"
+    ],
+    "widths": [
+      390
     ]
   },
   {
