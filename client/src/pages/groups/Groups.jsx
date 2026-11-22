@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -30,8 +30,11 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
+import Avatar from '../../components/common/Avatar';
+import { PageShell, Card, Button, Badge, StatusPill, Modal, FormField, Input, Textarea, EmptyState, Skeleton } from '../../components/ui';
 import { DAY_KEYS, DAY_NAMES, formatDays, toDayName } from '../../utils/days';
 import { formatDate } from '../../utils/formatDate';
+import { useProgressiveList } from '../../lib/useProgressiveList';
 
 // Days are stored as language-neutral English names; labels follow the UI language
 const getDays = (t) => DAY_NAMES.map((value, i) => ({ value, label: t(`schedule.days.${DAY_KEYS[i]}`) }));
@@ -68,174 +71,209 @@ const GroupDetailModal = ({ groupId, onClose, isAdmin }) => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="bg-[var(--card)] border border-[var(--border)] w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-      >
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between flex-shrink-0 bg-[var(--muted)]/30">
+    <Modal
+      open
+      onClose={onClose}
+      size="lg"
+      title={t('groups.detailsTitle')}
+      entity={isLoading ? t('common.loading') : group?.name}
+      subtitle={isLoading ? undefined : group?.course}
+    >
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array(4).fill(0).map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-[var(--radius-md)]" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {/* Info Cards */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Card variant="paper" className="flex items-center gap-3 p-4">
+              <GraduationCap size={20} className="text-accent-text" aria-hidden="true" />
+              <div>
+                <p className="sc text-[0.8rem] text-ink-muted">{t('groups.teacher')}</p>
+                <p className="font-semibold text-ink">{group?.teacher?.name || t('teachers.noTeachers')}</p>
+              </div>
+            </Card>
+            <Card variant="paper" className="flex items-center gap-3 p-4">
+              <Users size={20} className="text-accent-text" aria-hidden="true" />
+              <div>
+                <p className="sc text-[0.8rem] text-ink-muted">{t('groups.totalStudents')}</p>
+                <p className="font-semibold text-ink">{group?.students?.length || 0} {t('common.user').toLowerCase()}</p>
+              </div>
+            </Card>
+          </div>
+
+          {/* Schedule */}
+          {(group?.schedule?.days?.length > 0 || group?.schedule?.specificDate) && (
+            <div className="space-y-2 rounded-[var(--radius-md)] border border-line p-4">
+              <p className="sc flex items-center gap-1 text-[0.85rem] text-ink-muted">
+                <Calendar size={13} aria-hidden="true" /> {t('groups.schedule')} ({group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')})
+                <Badge className="ml-auto">
+                  {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
+                </Badge>
+              </p>
+              <p className="font-medium text-ink">
+                {group.schedule.repetitionType === 'weekly'
+                  ? formatDays(group.schedule.days, t)
+                  : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
+                {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
+              </p>
+              {group.schedule.note && (
+                <p className="mt-2 rounded-[var(--radius-sm)] border border-line-hair bg-surface-2 p-2 text-sm text-ink-muted">
+                  {t('groups.note')}: {group.schedule.note}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Students List */}
           <div>
-            {isLoading ? (
-              <div className="h-6 w-40 bg-[var(--muted)] rounded animate-pulse" />
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h4 className="sc text-[0.95rem] text-accent-text">{t('sidebar.students')}</h4>
+              {isAdmin && (
+                <Button size="sm" icon={UserPlus} onClick={() => setShowAddStudent(!showAddStudent)}>
+                  {t('groups.addStudent')}
+                </Button>
+              )}
+            </div>
+
+            {/* Add Student Panel (POST /groups/:id/students is admin only) */}
+            <AnimatePresence>
+              {isAdmin && showAddStudent && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="mb-3 overflow-hidden"
+                >
+                  <div className="space-y-3 rounded-[var(--radius-md)] border border-line bg-surface-2 p-4">
+                    <p className="field-label">{t('groups.selectStudent')}:</p>
+                    <Select
+                      value={selectedStudentId}
+                      onChange={setSelectedStudentId}
+                      options={[
+                        { label: t('common.select'), value: '' },
+                        ...availableStudents.map(s => ({ label: `${s.name} — ${s.email}`, value: s._id }))
+                      ]}
+                    />
+                    <div className="flex gap-2">
+                      <Button variant="ghost" className="flex-1" onClick={() => setShowAddStudent(false)}>{t('users.cancelBtn')}</Button>
+                      <Button className="flex-1" onClick={handleAddStudent} disabled={!selectedStudentId} loading={isAdding}>
+                        {isAdding ? t('groups.adding') : t('groups.addBtn')}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Search */}
+            <div className="mb-3">
+              <Input
+                icon={Search}
+                type="text"
+                placeholder={t('groups.searchStudents')}
+                aria-label={t('groups.searchStudents')}
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+              />
+            </div>
+
+            {filteredStudents?.length === 0 ? (
+              <EmptyState compact sketch="globe" title={t('groups.noStudentsGroup')} />
             ) : (
-              <>
-                <h3 className="text-xl font-bold text-[var(--foreground)]">{group?.name}</h3>
-                <p className="text-sm text-[var(--muted-foreground)]/60">{group?.course}</p>
-              </>
+              <ul className="divide-y divide-line-hair rounded-[var(--radius-md)] border border-line">
+                {filteredStudents?.map((student) => (
+                  <li key={student._id} className="flex items-center gap-3 p-3">
+                    <Avatar name={student.name} className="h-9 w-9 shrink-0 rounded-full" textSize="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-ink">{student.name}</p>
+                      <p className="truncate text-sm text-ink-muted">{student.email}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
-          <button onClick={onClose} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
-            <X size={20} />
-          </button>
         </div>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-5">
-          {isLoading ? (
-            <div className="space-y-3">
-              {Array(4).fill(0).map((_, i) => (
-                <div key={i} className="h-12 bg-[var(--muted)] rounded-xl animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <>
-              {/* Info Cards */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="p-2 bg-white border border-bordo/20 rounded-lg">
-                    <GraduationCap size={18} className="text-bordo" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.teacher')}</p>
-                    <p className="font-semibold text-[var(--foreground)] text-sm">{group?.teacher?.name || t('teachers.noTeachers')}</p>
-                  </div>
-                </div>
-                <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 flex items-center gap-3">
-                  <div className="p-2 bg-white border border-bordo/20 rounded-lg">
-                    <Users size={18} className="text-bordo" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[var(--muted-foreground)]/60">{t('groups.totalStudents')}</p>
-                    <p className="font-semibold text-[var(--foreground)] text-sm">{group?.students?.length || 0} {t('common.user').toLowerCase()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Schedule */}
-              {(group?.schedule?.days?.length > 0 || group?.schedule?.specificDate) && (
-                <div className="bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl p-4 space-y-2">
-                  <p className="text-xs text-[var(--muted-foreground)]/60 flex items-center gap-1 mb-1">
-                    <Calendar size={13} /> {t('groups.schedule')} ({group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')})
-                    <span className="ml-auto px-1.5 py-0.5 rounded bg-[var(--muted)] border border-[var(--border)] text-[10px]">
-                      {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
-                    </span>
-                  </p>
-                  <p className="text-sm font-medium text-[var(--foreground)]">
-                    {group.schedule.repetitionType === 'weekly'
-                      ? formatDays(group.schedule.days, t)
-                      : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
-                    {(group.schedule.startTime || group.schedule.endTime) && ` — ${group.schedule.startTime || ''} - ${group.schedule.endTime || ''}`}
-                  </p>
-                  {group.schedule.note && (
-                    <p className="text-xs text-[var(--muted-foreground)]/80 bg-[var(--input)] p-2 rounded-lg mt-2 border border-[var(--border)]">
-                      {t('groups.note')}: {group.schedule.note}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Students List */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-[var(--foreground)] text-sm">{t('sidebar.students')}</h4>
-                  {isAdmin && (
-                    <button
-                      onClick={() => setShowAddStudent(!showAddStudent)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-bordo hover:bg-bordo/90 text-white text-xs font-semibold rounded-lg transition-all"
-                    >
-                      <UserPlus size={13} />
-                      {t('groups.addStudent')}
-                    </button>
-                  )}
-                </div>
-
-                {/* Add Student Panel (POST /groups/:id/students is admin only) */}
-                <AnimatePresence>
-                  {isAdmin && showAddStudent && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden mb-3"
-                    >
-                      <div className="bg-bordo/10 border border-bordo/20 rounded-2xl p-4 space-y-3">
-                        <p className="text-xs font-medium text-[var(--muted-foreground)]">{t('groups.selectStudent')}:</p>
-                        <Select
-                          value={selectedStudentId}
-                          onChange={setSelectedStudentId}
-                          options={[
-                            { label: t('common.select'), value: '' },
-                            ...availableStudents.map(s => ({ label: `${s.name} — ${s.email}`, value: s._id }))
-                          ]}
-                        />
-                        <div className="flex gap-2">
-                          <button onClick={() => setShowAddStudent(false)} className="flex-1 py-2 border border-[var(--border)] text-[var(--muted-foreground)] rounded-xl text-sm hover:bg-[var(--muted)]">{t('users.cancelBtn')}</button>
-                          <button
-                            onClick={handleAddStudent}
-                            disabled={!selectedStudentId || isAdding}
-                            className="flex-1 py-2 bg-bordo text-white rounded-xl text-sm font-semibold hover:bg-bordo/90 disabled:opacity-50"
-                          >
-                            {isAdding ? t('groups.adding') : t('groups.addBtn')}
-                          </button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Search */}
-                <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={15} />
-                  <input
-                    type="text"
-                    placeholder={t('groups.searchStudents')}
-                    value={studentSearch}
-                    onChange={(e) => setStudentSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-[var(--muted)]/50 border border-[var(--border)] rounded-xl text-sm text-[var(--foreground)] outline-none focus:border-bordo/50 transition-all placeholder:text-[var(--muted-foreground)]/40"
-                  />
-                </div>
-
-                {filteredStudents?.length === 0 ? (
-                  <div className="text-center py-8 text-[var(--muted-foreground)]/40 text-sm">
-                    <Users size={32} className="mx-auto mb-2 opacity-30" />
-                    {t('groups.noStudentsGroup')}
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {filteredStudents?.map((student) => (
-                      <div key={student._id} className="flex items-center gap-3 p-3 bg-[var(--muted)]/30 border border-[var(--border)] rounded-xl hover:bg-[var(--muted)]/50 transition-all">
-                        <div className="w-8 h-8 rounded-full bg-bordo/20 flex items-center justify-center text-bordo font-bold text-sm flex-shrink-0">
-                          {student.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-[var(--foreground)] text-sm truncate">{student.name}</p>
-                          <p className="text-xs text-[var(--muted-foreground)]/60 truncate">{student.email}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      </motion.div>
-    </div>
+      )}
+    </Modal>
   );
 };
+
+// One card of the groups grid. Memoised: RTK Query state changes re-render the page several times
+// on mount (groups, teachers, students), and 40+ unchanged cards must not render again each time.
+const GroupCard = memo(function GroupCard({ group, featured, isAdmin, onEdit, onDelete, onDetails }) {
+  const { t } = useTranslation();
+  return (
+    <Card
+      variant={featured ? 'featured' : 'plain'}
+      hover
+      className={cn('space-y-4 p-5', featured && 'p-7')}
+    >
+      <div className="flex items-start justify-between">
+        <BookOpen size={22} className="text-accent-text" aria-hidden="true" />
+        {isAdmin && (
+          <div className={cn('flex gap-1', featured && 'mr-6')}>
+            <Button variant="ghost" size="sm" iconOnly icon={Edit2} onClick={() => onEdit(group)} aria-label={t('common.edit')} />
+            <Button variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => onDelete(group._id)} aria-label={t('common.delete')} />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-[1.2rem] font-semibold text-ink">{group.name}</h3>
+        <p className="text-ink-muted">{group.course}</p>
+      </div>
+
+      <div className="space-y-2 border-t border-line-hair pt-3">
+        <div className="flex items-center gap-2 text-ink-muted">
+          <User size={14} aria-hidden="true" />
+          <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
+        </div>
+        <div className="flex items-center gap-2 text-ink-muted">
+          <Users size={14} aria-hidden="true" />
+          <span>{group.students?.length || 0} {t('sidebar.students')}</span>
+        </div>
+        {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
+          <div className="flex flex-col gap-1 text-ink-muted">
+            <div className="flex items-center gap-2">
+              <Calendar size={14} aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                {group.schedule.repetitionType === 'weekly'
+                  ? formatDays(group.schedule.days, t)
+                  : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
+              </span>
+              <span className="sc ml-auto shrink-0 whitespace-nowrap text-[0.75rem]">
+                {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
+              </span>
+            </div>
+            {(group.schedule.startTime || group.schedule.endTime) && (
+              <div className="flex items-center gap-2 pl-5 text-sm">
+                <span className="num">{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
+                <Badge>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</Badge>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <StatusPill status={group.status === 'active' ? 'success' : 'neutral'}>
+          {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
+        </StatusPill>
+        <button
+          onClick={() => onDetails(group._id)}
+          className="sc flex min-h-10 items-center gap-1 text-[0.9rem] text-accent-text hover:underline"
+        >
+          {t('groups.details')} <ChevronRight size={15} aria-hidden="true" />
+        </button>
+      </div>
+    </Card>
+  );
+});
 
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
@@ -265,9 +303,10 @@ const Groups = () => {
   const isAdmin = user?.role === 'admin';
 
   const { data: groupsData, isLoading } = useGetGroupsQuery();
-  // Only the admin form needs these lists (and only admins may fetch teachers)
-  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin });
-  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin });
+  // Only the admin form needs these lists (and only admins may fetch teachers). Fetched when the form
+  // opens, so entering the page does not wait on (and re-render for) two extra requests.
+  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin || !isCreateModalOpen });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin || !isCreateModalOpen });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
   const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();
@@ -288,7 +327,7 @@ const Groups = () => {
     }
   };
 
-  const handleEditClick = (group) => {
+  const handleEditClick = useCallback((group) => {
     setEditingGroupId(group._id);
     setFormData({
       name: group.name,
@@ -307,7 +346,7 @@ const Groups = () => {
       },
     });
     setIsCreateModalOpen(true);
-  };
+  }, [setFormData]);
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
@@ -329,7 +368,7 @@ const Groups = () => {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm(t('groups.deleteConfirm'))) {
       try {
         await deleteGroup(id).unwrap();
@@ -338,7 +377,7 @@ const Groups = () => {
         toast.error(t('students.error'));
       }
     }
-  };
+  }, [deleteGroup, t]);
 
   const filteredGroups = groupsData?.data?.filter(
     (group) =>
@@ -348,341 +387,228 @@ const Groups = () => {
 
 
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('groups.title')}</h1>
-          <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('groups.subtitle')}</p>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-          >
-            <Plus size={18} />
-            {t('groups.newGroup')}
-          </button>
-        )}
-      </div>
+  const chip = (active) =>
+    cn(
+      'sc min-h-10 rounded-full border px-4 text-[0.9rem] transition-colors',
+      active
+        ? 'border-accent bg-accent text-accent-fg'
+        : 'border-line-strong bg-transparent text-accent-text hover:bg-surface-2'
+    );
 
+  const featuredId = filteredGroups?.find((g) => g.status === 'active')?._id;
+  const visibleGroups = useProgressiveList(filteredGroups);
+
+  return (
+    <PageShell
+      title={t('groups.title')}
+      subtitle={t('groups.subtitle')}
+      actions={isAdmin && (
+        <Button icon={Plus} onClick={() => setIsCreateModalOpen(true)}>
+          {t('groups.newGroup')}
+        </Button>
+      )}
+    >
       {/* Search */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
-          <input
-            type="text"
-            placeholder={t('groups.searchPlaceholder')}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
-          />
-        </div>
-      </div>
+      <Card className="p-4">
+        <Input
+          icon={Search}
+          type="text"
+          placeholder={t('groups.searchPlaceholder')}
+          aria-label={t('groups.searchPlaceholder')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </Card>
 
       {/* Groups Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="orn-stagger grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {isLoading
           ? Array(6).fill(0).map((_, idx) => (
-              <div key={idx} className="bg-[var(--card)] border border-[var(--border)] h-48 rounded-2xl animate-pulse" />
+              <Skeleton key={idx} className="h-48 rounded-[var(--radius-lg)]" />
             ))
-          : filteredGroups?.map((group) => (
-              <motion.div
+          : filteredGroups?.length === 0 ? (
+              <Card className="col-span-full">
+                <EmptyState sketch="globe" title={t('groups.noGroups')} />
+              </Card>
+            )
+          : visibleGroups?.map((group) => (
+              <GroupCard
                 key={group._id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 space-y-4 hover:border-bordo/30 transition-all"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="p-2.5 bg-bordo text-white rounded-xl shadow-sm shadow-bordo/20">
-                    <BookOpen size={20} />
-                  </div>
-                  {isAdmin && (
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => handleEditClick(group)}
-                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
-                      >
-                        <Edit2 size={15} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(group._id)}
-                        className="p-1.5 text-[var(--muted-foreground)]/30 hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-base font-bold text-[var(--foreground)]">{group.name}</h3>
-                  <p className="text-[var(--muted-foreground)]/60 text-sm">{group.course}</p>
-                </div>
-
-                  <div className="space-y-2 pt-3 border-t border-[var(--border)]">
-                    <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]/60">
-                      <User size={14} className="text-[var(--muted-foreground)]/30" />
-                      <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]/60">
-                      <Users size={14} className="text-[var(--muted-foreground)]/30" />
-                      <span>{group.students?.length || 0} {t('sidebar.students')}</span>
-                    </div>
-                  {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
-                    <div className="flex flex-col gap-1 text-sm text-[var(--muted-foreground)]/60">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-[var(--muted-foreground)]/30" />
-                        <span>
-                          {group.schedule.repetitionType === 'weekly'
-                            ? formatDays(group.schedule.days, t)
-                            : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
-                        </span>
-                        <span className="text-[10px] text-[var(--muted-foreground)]/40 ml-auto">
-                          {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
-                        </span>
-                      </div>
-                      {(group.schedule.startTime || group.schedule.endTime) && (
-                        <div className="flex items-center gap-2 pl-5 text-xs text-[var(--muted-foreground)]/60">
-                          <span>{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
-                          <span 
-                            className="px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border border-bordo/20"
-                            style={{ 
-                              backgroundColor: group.schedule.type === 'online' ? 'var(--bordo-muted)' : 'var(--background)',
-                              color: 'var(--bordo-contrast)'
-                            }}
-                          >{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <span className={cn(
-                    'px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border',
-                    group.status === 'active'
-                      ? 'bg-bordo text-white border-bordo'
-                      : 'bg-white text-bordo border-bordo/30'
-                  )}>
-                    {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
-                  </span>
-                  <button
-                    onClick={() => setSelectedGroupId(group._id)}
-                    className="flex items-center gap-1 text-bordo text-sm font-semibold hover:gap-2 transition-all"
-                  >
-                    {t('groups.details')} <ChevronRight size={15} />
-                  </button>
-                </div>
-              </motion.div>
+                group={group}
+                featured={group._id === featuredId}
+                isAdmin={isAdmin}
+                onEdit={handleEditClick}
+                onDelete={handleDelete}
+                onDetails={setSelectedGroupId}
+              />
             ))}
       </div>
 
       {/* Group Detail Modal */}
-      <AnimatePresence>
-        {selectedGroupId && (
-          <GroupDetailModal groupId={selectedGroupId} isAdmin={isAdmin} onClose={() => setSelectedGroupId(null)} />
-        )}
-      </AnimatePresence>
+      {selectedGroupId && (
+        <GroupDetailModal groupId={selectedGroupId} isAdmin={isAdmin} onClose={() => setSelectedGroupId(null)} />
+      )}
 
       {/* Create Group Modal */}
-      <AnimatePresence>
-        {isCreateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={handleCloseModal} className="fixed inset-0 bg-background/60 backdrop-blur-sm" />
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="relative bg-[var(--card)] border border-[var(--border)] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden z-10 max-h-[90vh] overflow-y-auto custom-scrollbar"
-            >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--muted)]/20">
-                <h3 className="text-xl font-semibold text-[var(--foreground)]">{editingGroupId ? t('groups.editGroup') : t('groups.newGroup')}</h3>
-                <button onClick={handleCloseModal} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><X size={20} /></button>
-              </div>
-
-              <form onSubmit={handleCreate} className="p-6 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.groupName')}</label>
-                    <input required type="text" placeholder={t('groups.groupNamePlaceholder')} value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.course')}</label>
-                    <input required type="text" placeholder={t('groups.coursePlaceholder')} value={formData.course}
-                      onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.selectTeacher')}</label>
-                  <Select
-                    value={formData.teacher}
-                    onChange={(val) => setFormData({ ...formData, teacher: val })}
-                    options={[
-                      { label: t('common.select'), value: '' },
-                      ...(teachersData?.data?.map(teacher => ({ label: teacher.name, value: teacher._id })) || [])
-                    ]}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('sidebar.students')}</label>
-                  <div className="space-y-3">
-                    <Select
-                      value=""
-                      onChange={(val) => {
-                        if (val && !formData.students.includes(val)) {
-                          setFormData({ ...formData, students: [...formData.students, val] });
-                        }
-                      }}
-                      options={[
-                        { label: t('groups.addStudentsDesc'), value: '' },
-                        ...(studentsData?.data?.filter(s => !formData.students.includes(s._id)).map(student => ({ label: student.name, value: student._id })) || [])
-                      ]}
-                    />
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {formData.students.map((studentId) => {
-                        const student = studentsData?.data?.find(s => s._id === studentId);
-                        return (
-                          <div key={studentId} className="flex items-center gap-2 px-3 py-1.5 bg-[var(--muted)] border border-[var(--border)] rounded-lg text-xs text-[var(--foreground)]">
-                            <span>{student?.name || t('common.loading')}</span>
-                            <button
-                              type="button"
-                              onClick={() => setFormData({ ...formData, students: formData.students.filter(id => id !== studentId) })}
-                              className="text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)]"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.repetitionType')}</label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'weekly' } })}
-                      className={cn(
-                        'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
-                        formData.schedule.repetitionType === 'weekly'
-                          ? 'bg-bordo border-bordo/50 text-white'
-                          : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
-                      )}
-                    >
-                      {t('groups.repetitionWeekly')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'once' } })}
-                      className={cn(
-                        'flex-1 py-2 rounded-xl text-xs font-medium transition-all border',
-                        formData.schedule.repetitionType === 'once'
-                          ? 'bg-bordo border-bordo/50 text-white'
-                          : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--border)]'
-                      )}
-                    >
-                      {t('groups.repetitionOnce')}
-                    </button>
-                  </div>
-                </div>
-
-                {formData.schedule.repetitionType === 'weekly' ? (
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.days')}</label>
-                    <div className="flex flex-wrap gap-2">
-                      {DAYS.map((day) => (
-                        <button
-                          key={day.value}
-                          type="button"
-                          aria-pressed={formData.schedule.days.includes(day.value)}
-                          onClick={() => {
-                            const days = formData.schedule.days.includes(day.value)
-                              ? formData.schedule.days.filter((d) => d !== day.value)
-                              : DAY_NAMES.filter((d) => d === day.value || formData.schedule.days.includes(d));
-                            setFormData({ ...formData, schedule: { ...formData.schedule, days } });
-                          }}
-                          className={cn(
-                            'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
-                            formData.schedule.days.includes(day.value)
-                              ? 'bg-bordo border-bordo/50 text-white'
-                              : 'bg-[var(--muted)] border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--border)]'
-                          )}
-                        >
-                          {day.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.specificDate')}</label>
-                    <input 
-                      type="date" 
-                      value={formData.schedule.specificDate}
-                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, specificDate: e.target.value } })}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" 
-                    />
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.startTime')}</label>
-                    <input type="time" value={formData.schedule.startTime}
-                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, startTime: e.target.value } })}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.endTime')}</label>
-                    <input type="time" value={formData.schedule.endTime}
-                      onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, endTime: e.target.value } })}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all" />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.format')}</label>
-                  <Select
-                    value={formData.schedule.type}
-                    onChange={(val) => setFormData({ ...formData, schedule: { ...formData.schedule, type: val } })}
-                    options={[
-                      { label: t('groups.formatOffline'), value: 'offline' },
-                      { label: t('groups.formatOnline'), value: 'online' },
-                    ]}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]">{t('groups.note')}</label>
-                  <textarea placeholder={t('groups.notePlaceholder')} value={formData.schedule.note}
-                    onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, note: e.target.value } })}
-                    className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 px-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all resize-none h-20" />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                  <button type="button" onClick={handleCloseModal} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('users.cancelBtn')}</button>
-                  <button type="submit" disabled={isCreating || isUpdating} className="bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    {isCreating || isUpdating ? (editingGroupId ? t('groups.updating') : t('groups.creating')) : (editingGroupId ? t('users.saveBtn') : t('groups.newGroup'))}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+      <Modal
+        open={isCreateModalOpen}
+        onClose={handleCloseModal}
+        title={editingGroupId ? t('groups.editGroup') : t('groups.newGroup')}
+        footer={
+          <>
+            <Button variant="ghost" onClick={handleCloseModal}>{t('users.cancelBtn')}</Button>
+            <Button type="submit" form="group-form" loading={isCreating || isUpdating}>
+              {isCreating || isUpdating ? (editingGroupId ? t('groups.updating') : t('groups.creating')) : (editingGroupId ? t('users.saveBtn') : t('groups.newGroup'))}
+            </Button>
+          </>
+        }
+      >
+        <form id="group-form" onSubmit={handleCreate} className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <FormField label={t('groups.groupName')}>
+              <Input required type="text" placeholder={t('groups.groupNamePlaceholder')} value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+            </FormField>
+            <FormField label={t('groups.course')}>
+              <Input required type="text" placeholder={t('groups.coursePlaceholder')} value={formData.course}
+                onChange={(e) => setFormData({ ...formData, course: e.target.value })} />
+            </FormField>
           </div>
-        )}
-      </AnimatePresence>
-    </div>
+
+          <div>
+            <span className="field-label">{t('groups.selectTeacher')}</span>
+            <Select
+              value={formData.teacher}
+              onChange={(val) => setFormData({ ...formData, teacher: val })}
+              options={[
+                { label: t('common.select'), value: '' },
+                ...(teachersData?.data?.map(teacher => ({ label: teacher.name, value: teacher._id })) || [])
+              ]}
+              required
+            />
+          </div>
+
+          <div>
+            <span className="field-label">{t('sidebar.students')}</span>
+            <div className="space-y-3">
+              <Select
+                value=""
+                onChange={(val) => {
+                  if (val && !formData.students.includes(val)) {
+                    setFormData({ ...formData, students: [...formData.students, val] });
+                  }
+                }}
+                options={[
+                  { label: t('groups.addStudentsDesc'), value: '' },
+                  ...(studentsData?.data?.filter(s => !formData.students.includes(s._id)).map(student => ({ label: student.name, value: student._id })) || [])
+                ]}
+              />
+
+              <div className="flex flex-wrap gap-2">
+                {formData.students.map((studentId) => {
+                  const student = studentsData?.data?.find(s => s._id === studentId);
+                  return (
+                    <div key={studentId} className="flex items-center gap-2 rounded-full border border-line-strong px-3 py-1 text-sm text-ink">
+                      <span>{student?.name || t('common.loading')}</span>
+                      <button
+                        type="button"
+                        aria-label={t('common.delete')}
+                        onClick={() => setFormData({ ...formData, students: formData.students.filter(id => id !== studentId) })}
+                        className="text-ink-muted hover:text-ink"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span className="field-label">{t('groups.repetitionType')}</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                aria-pressed={formData.schedule.repetitionType === 'weekly'}
+                onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'weekly' } })}
+                className={cn('flex-1', chip(formData.schedule.repetitionType === 'weekly'))}
+              >
+                {t('groups.repetitionWeekly')}
+              </button>
+              <button
+                type="button"
+                aria-pressed={formData.schedule.repetitionType === 'once'}
+                onClick={() => setFormData({ ...formData, schedule: { ...formData.schedule, repetitionType: 'once' } })}
+                className={cn('flex-1', chip(formData.schedule.repetitionType === 'once'))}
+              >
+                {t('groups.repetitionOnce')}
+              </button>
+            </div>
+          </div>
+
+          {formData.schedule.repetitionType === 'weekly' ? (
+            <div>
+              <span className="field-label">{t('groups.days')}</span>
+              <div className="flex flex-wrap gap-2">
+                {DAYS.map((day) => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    aria-pressed={formData.schedule.days.includes(day.value)}
+                    onClick={() => {
+                      const days = formData.schedule.days.includes(day.value)
+                        ? formData.schedule.days.filter((d) => d !== day.value)
+                        : DAY_NAMES.filter((d) => d === day.value || formData.schedule.days.includes(d));
+                      setFormData({ ...formData, schedule: { ...formData.schedule, days } });
+                    }}
+                    className={chip(formData.schedule.days.includes(day.value))}
+                  >
+                    {day.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <FormField label={t('groups.specificDate')}>
+              <Input
+                type="date"
+                value={formData.schedule.specificDate}
+                onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, specificDate: e.target.value } })}
+              />
+            </FormField>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label={t('groups.startTime')}>
+              <Input type="time" value={formData.schedule.startTime}
+                onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, startTime: e.target.value } })} />
+            </FormField>
+            <FormField label={t('groups.endTime')}>
+              <Input type="time" value={formData.schedule.endTime}
+                onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, endTime: e.target.value } })} />
+            </FormField>
+          </div>
+
+          <div>
+            <span className="field-label">{t('groups.format')}</span>
+            <Select
+              value={formData.schedule.type}
+              onChange={(val) => setFormData({ ...formData, schedule: { ...formData.schedule, type: val } })}
+              options={[
+                { label: t('groups.formatOffline'), value: 'offline' },
+                { label: t('groups.formatOnline'), value: 'online' },
+              ]}
+            />
+          </div>
+
+          <FormField label={t('groups.note')}>
+            <Textarea rows={3} placeholder={t('groups.notePlaceholder')} value={formData.schedule.note}
+              onChange={(e) => setFormData({ ...formData, schedule: { ...formData.schedule, note: e.target.value } })} />
+          </FormField>
+        </form>
+      </Modal>
+    </PageShell>
   );
 };
 

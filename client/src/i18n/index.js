@@ -32,4 +32,11 @@ i18n
     },
   });
 
+// Keep <html lang> in sync: CSS uppercase is language-aware (az "i" → "İ")
+const syncHtmlLang = (lng) => {
+  if (typeof document !== 'undefined') document.documentElement.lang = normalize(lng);
+};
+syncHtmlLang(i18n.resolvedLanguage || i18n.language);
+i18n.on('languageChanged', syncHtmlLang);
+
 export default i18n;

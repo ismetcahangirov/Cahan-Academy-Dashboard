@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Save, Eye } from 'lucide-react';
+import { Search, Save, Eye } from 'lucide-react';
 import { useAddExamResultsMutation, useGetExamByIdQuery } from '../../features/exams/examsApi';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
 import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
+import { Button, EmptyState, Input, Modal, StatusPill, Table } from '../../components/ui';
 
 const ExamResultsModal = ({ isOpen, onClose, exam }) => {
   const { t } = useTranslation();
@@ -98,7 +98,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
         id: exam._id,
         data: { results: formattedResults }
       }).unwrap();
-      
+
       toast.success(t('exams.resultsSavedSuccess'));
       onClose();
     } catch (error) {
@@ -106,180 +106,116 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
     }
   };
 
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = students.filter(student =>
     student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence>
-      <div key="results" className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-4xl bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh]"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-            <div>
-              <h2 className="text-xl font-bold text-[var(--foreground)] mb-1">
-                {t('exams.resultsModalTitle')}: {exam.title}
-              </h2>
-              <p className="text-sm text-[var(--muted-foreground)]">
-                {examDetails?.group?.name} • {t('exams.studentCount')}: {students.length}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
+    <>
+      <Modal
+        open={isOpen}
+        // the nested review dialog owns Escape while it is open
+        onClose={reviewStudentId ? () => {} : onClose}
+        size="xl"
+        title={t('exams.resultsModalTitle')}
+        entity={exam.title}
+        subtitle={`${examDetails?.group?.name || ''} • ${t('exams.studentCount')}: ${students.length}`}
+        footer={(
+          <>
+            <Button variant="ghost" onClick={onClose}>{t('exams.close')}</Button>
+            <Button icon={Save} onClick={handleSubmit} loading={isSubmitting} disabled={isLoadingExam}>
+              {t('common.save')}
+            </Button>
+          </>
+        )}
+      >
+        <div className="mb-4 max-w-md">
+          <Input
+            icon={Search}
+            type="text"
+            aria-label={t('exams.studentSearch')}
+            placeholder={t('exams.studentSearch')}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
 
-          {/* Search */}
-          <div className="p-4 border-b border-[var(--border)] bg-[var(--muted)]/20">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]" size={20} />
-              <input
-                type="text"
-                placeholder={t('exams.studentSearch')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors"
-              />
-            </div>
-          </div>
-
-          {/* Table Area */}
-          <div className="flex-1 overflow-auto custom-scrollbar p-6">
-            {isLoadingExam ? (
-              <div className="flex justify-center items-center h-full">
-                <Spinner />
-              </div>
-            ) : filteredStudents.length === 0 ? (
-              <div className="text-center text-[var(--muted-foreground)] py-12">
-                {t('exams.noStudentsFound')}
-              </div>
-            ) : (
-              <div className="bg-[var(--card)] rounded-xl border border-[var(--border)] overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[640px]">
-                  <thead>
-                    <tr className="bg-[var(--muted)]/10 text-[var(--muted-foreground)] text-sm border-b border-[var(--border)]">
-                      <th className="p-4 font-medium w-1/3">{t('exams.tableStudent')}</th>
-                      <th className="p-4 font-medium w-1/4">{t('exams.tableScore')}</th>
-                      <th className="p-4 font-medium">{t('exams.tableFeedback')}</th>
-                      <th className="p-4 font-medium">{t('exams.reviewTitle')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border)]">
-                    {filteredStudents.map(student => {
-                      const result = resultsData[student._id] || { score: '', feedback: '' };
-                      return (
-                        <tr key={student._id} className="hover:bg-[var(--muted)]/20 transition-colors">
-                          <td className="p-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar
-                                src={student.avatar}
-                                name={student.name}
-                                className="w-8 h-8 rounded-full border border-[var(--border)]"
-                                textSize="xs"
-                              />
-                              <div>
-                                <div className="text-[var(--foreground)] text-sm font-medium">{student.name}</div>
-                                <div className="text-[var(--muted-foreground)]/50 text-xs">{student.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-4">
-                            <input
-                              type="number"
-                              min="0"
-                              max="100"
-                              value={result.score}
-                              onChange={(e) => handleScoreChange(student._id, e.target.value)}
-                              placeholder="0"
-                              className="w-20 bg-[var(--input)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors text-center"
-                            />
-                          </td>
-                          <td className="p-4">
-                            <input
-                              type="text"
-                              value={result.feedback}
-                              onChange={(e) => handleFeedbackChange(student._id, e.target.value)}
-                              placeholder={t('exams.feedbackPlaceholder')}
-                              className="w-full bg-[var(--input)] border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--foreground)] focus:outline-none focus:border-bordo transition-colors text-sm"
-                            />
-                          </td>
-                          <td className="p-4">
-                            {answerInfo[student._id] ? (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => setReviewStudentId(student._id)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium whitespace-nowrap"
-                                >
-                                  <Eye size={14} />
-                                  {t('exams.viewAnswers')}
-                                </button>
-                                {answerInfo[student._id].pending > 0 && (
-                                  <div className="mt-1 text-xs text-amber-500">
-                                    {t('exams.pendingReview', { count: answerInfo[student._id].pending })}
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-xs text-[var(--muted-foreground)]">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Footer Action */}
-          <div className="p-6 border-t border-[var(--border)] bg-[var(--muted)]/20 flex justify-end gap-3">
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-xl transition-colors font-medium"
-            >
-              {t('exams.close')}
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || isLoadingExam}
-              className="px-6 py-2.5 bg-bordo hover:bg-bordo/90 text-white rounded-xl transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
-            >
-              {isSubmitting ? (
-                <Spinner size="sm" color="white" />
-              ) : (
-                <>
-                  <Save size={18} />
-                  <span>{t('common.save')}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </motion.div>
-      </div>
+        {isLoadingExam ? (
+          <div className="flex h-40 items-center justify-center"><Spinner /></div>
+        ) : filteredStudents.length === 0 ? (
+          <EmptyState compact sketch="globe" title={t('exams.noStudentsFound')} />
+        ) : (
+          <Table caption={t('exams.resultsModalTitle')} tableClassName="min-w-[640px]">
+            <thead>
+              <tr>
+                <th className="w-1/3">{t('exams.tableStudent')}</th>
+                <th className="w-1/4">{t('exams.tableScore')}</th>
+                <th>{t('exams.tableFeedback')}</th>
+                <th>{t('exams.reviewTitle')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStudents.map(student => {
+                const result = resultsData[student._id] || { score: '', feedback: '' };
+                return (
+                  <tr key={student._id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <Avatar src={student.avatar} name={student.name} className="h-8 w-8 shrink-0" textSize="xs" />
+                        <div className="min-w-0">
+                          <div className="font-medium text-ink">{student.name}</div>
+                          <div className="text-[0.85rem] text-ink-muted">{student.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        aria-label={`${t('exams.tableScore')}: ${student.name}`}
+                        value={result.score}
+                        onChange={(e) => handleScoreChange(student._id, e.target.value)}
+                        placeholder="0"
+                        className="num w-20 text-center"
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        type="text"
+                        aria-label={`${t('exams.tableFeedback')}: ${student.name}`}
+                        value={result.feedback}
+                        onChange={(e) => handleFeedbackChange(student._id, e.target.value)}
+                        placeholder={t('exams.feedbackPlaceholder')}
+                      />
+                    </td>
+                    <td>
+                      {answerInfo[student._id] ? (
+                        <div className="flex flex-col items-start gap-1.5">
+                          <Button variant="outline" motif={false} size="sm" icon={Eye}
+                            onClick={() => setReviewStudentId(student._id)}>
+                            {t('exams.viewAnswers')}
+                          </Button>
+                          {answerInfo[student._id].pending > 0 && (
+                            <StatusPill status="pending">
+                              {t('exams.pendingReview', { count: answerInfo[student._id].pending })}
+                            </StatusPill>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-ink-muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
+      </Modal>
       {reviewStudentId && (
         <AnswerReviewModal
-          key="review"
           kind="exam"
           id={exam._id}
           studentId={reviewStudentId}
@@ -287,7 +223,7 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
           onClose={() => setReviewStudentId(null)}
         />
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

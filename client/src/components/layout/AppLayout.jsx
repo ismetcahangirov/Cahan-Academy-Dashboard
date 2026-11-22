@@ -1,24 +1,31 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { LaceCorner } from '../ornament';
 
 const AppLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const location = useLocation();
 
   return (
-    <div className="flex min-h-screen bg-[var(--background)] text-[var(--foreground)] selection:bg-bordo selection:text-white">
-      {/* Background Orbs for overall layout */}
-      <div className="fixed top-[-20%] left-[-10%] w-[50%] h-[50%] bg-bordo rounded-full mix-blend-multiply filter blur-[120px] opacity-10 pointer-events-none"></div>
-      <div className="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-bordo rounded-full mix-blend-multiply filter blur-[120px] opacity-10 pointer-events-none"></div>
-
+    <div className="flex min-h-screen bg-page text-ink">
       <Sidebar isMobileOpen={isMobileOpen} setIsMobileOpen={setIsMobileOpen} />
-      
-      <div className="flex-1 flex flex-col min-w-0 relative z-10">
+
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <Header setIsMobileOpen={setIsMobileOpen} />
-        
-        <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
-          <Outlet />
+
+        {/* faint lace in the top-right corner of the workspace; behind content, desktop only */}
+        <div aria-hidden="true" className="pointer-events-none absolute right-0 top-16 hidden opacity-30 xl:block">
+          <LaceCorner corner="tr" className="w-44" />
+        </div>
+
+        <main className="relative z-[1] flex-1 overflow-x-hidden px-4 pb-12 pt-6 sm:px-6 lg:px-10 lg:pt-8">
+          {/* route transition: fade + 8px rise as a CSS animation (compositor only, no JS frame loop),
+              once per navigation; `backwards` fill leaves no transform behind afterwards */}
+          <div key={location.pathname} className="route-enter">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

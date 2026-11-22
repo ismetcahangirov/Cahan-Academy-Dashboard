@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { User, Mail, Camera, Shield, Edit2, Save, X } from 'lucide-react';
+import { User, Mail, Camera, Shield, Pencil, X } from 'lucide-react';
 import { useGetProfileQuery, useUpdateProfileMutation } from '../../features/profile/profileApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../features/auth/authSlice';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
-import Spinner from '../../components/common/Spinner';
+import { Badge, Button, FormField, Input, PageShell, Skeleton } from '../../components/ui';
+import { LaceEdge, OrnamentDivider, WaveEdge } from '../../components/ornament';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -63,151 +64,128 @@ const Profile = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-16">
-        <Spinner />
-      </div>
-    );
-  }
+  const roleLabel = form.role ? t(`common.${form.role}`) || form.role : '';
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <User className="text-bordo w-8 h-8" />
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('profile.title')}</h1>
-        </div>
-        {!isEditing ? (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-bordo text-white rounded-xl hover:bg-bordo/80 transition-colors text-sm font-medium"
-          >
-            <Edit2 size={16} />
-            {t('profile.editBtn') || 'Redaktə et'}
-          </button>
+    <PageShell
+      width="narrow"
+      title={t('profile.title')}
+      actions={
+        isLoading ? null : !isEditing ? (
+          <Button variant="outline" icon={Pencil} onClick={() => setIsEditing(true)}>
+            {t('profile.editBtn')}
+          </Button>
         ) : (
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] text-[var(--muted-foreground)] rounded-xl hover:bg-[var(--muted)] transition-colors text-sm"
-          >
-            <X size={16} />
+          <Button variant="ghost" icon={X} onClick={handleCancel}>
             {t('common.cancel')}
-          </button>
-        )}
-      </div>
+          </Button>
+        )
+      }
+    >
+      <section className="card-paper orn-rise overflow-hidden">
+        {/* wine band with lace, flowing into the parchment on a wave */}
+        <div className="theme-wine login-hero relative h-32 sm:h-36" aria-hidden="true">
+          <LaceEdge direction="up" size={20} className="absolute inset-x-0 bottom-8" />
+          <WaveEdge fill="var(--paper-base)" className="absolute inset-x-0 -bottom-px" />
+        </div>
 
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden">
-        {/* Banner */}
-        <div className="h-32 bg-gradient-to-r from-bordo/40 to-black relative" />
-
-        <form onSubmit={handleSubmit} className="px-6 pb-8 sm:px-10 sm:pb-10">
-          {/* Avatar Section */}
-          <div className="relative flex justify-center sm:justify-start -mt-12 mb-8">
-            <div className="relative">
-              <Avatar
-                src={form.avatar}
-                name={form.name}
-                className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-[var(--card)] bg-[var(--card)]"
-                textSize="3xl"
-              />
-              {isEditing && (
-                <div className="absolute bottom-0 right-0 bg-bordo p-2 rounded-full border-2 border-[var(--card)] text-white shadow-lg">
-                  <Camera size={16} />
+        {isLoading ? (
+          <div className="px-5 pb-8 sm:px-10" aria-busy="true">
+            <Skeleton className="relative -mt-14 h-28 w-28 rounded-full" />
+            <div className="mt-6 grid gap-6 md:grid-cols-2">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-3.5 w-28" />
+                  <Skeleton className="h-11 w-full rounded-[var(--radius-md)]" />
                 </div>
-              )}
+              ))}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
-            <div className="space-y-2">
-              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.fullName')}</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
-                <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className={`w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)] focus:outline-none transition-colors
-                    ${isEditing ? 'focus:border-bordo' : 'opacity-70 cursor-not-allowed'}`}
-                />
+        ) : (
+          <form onSubmit={handleSubmit} className="px-5 pb-8 sm:px-10 sm:pb-10">
+            {/* identity row: avatar overlapping the wave */}
+            <div className="relative -mt-16 flex flex-col items-center gap-4 text-center sm:-mt-14 sm:flex-row sm:items-end sm:text-left">
+              <div className="relative shrink-0">
+                <Avatar src={form.avatar} name={form.name} className="h-28 w-28 sm:h-32 sm:w-32" textSize="3xl" />
+                {isEditing && (
+                  <span className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--paper-base)] bg-accent text-accent-fg">
+                    <Camera size={16} strokeWidth={1.6} aria-hidden="true" />
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0 pb-1">
+                <p className="break-words text-[1.6rem] font-semibold leading-tight text-ink">{form.name}</p>
+                <div className="mt-1.5 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                  {roleLabel && <Badge tone="accent">{roleLabel}</Badge>}
+                  <span className="break-all text-[0.98rem] text-ink-muted">{form.email}</span>
+                </div>
               </div>
             </div>
 
-            {/* Email — always locked */}
-            <div className="space-y-2">
-              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.emailLocked')}</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
-                <input
-                  type="email"
-                  value={form.email}
-                  disabled
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)]/50 cursor-not-allowed"
-                />
-              </div>
+            <OrnamentDivider align="start" className="mb-6 mt-7" />
+
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2">
+              <FormField label={t('profile.fullName')}>
+                {(id, describedBy) => (
+                  <Input
+                    id={id}
+                    aria-describedby={describedBy}
+                    icon={User}
+                    type="text"
+                    name="name"
+                    autoComplete="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                  />
+                )}
+              </FormField>
+
+              {/* Email — always locked */}
+              <FormField label={t('profile.emailLocked')}>
+                {(id, describedBy) => (
+                  <Input id={id} aria-describedby={describedBy} icon={Mail} type="email" value={form.email} disabled />
+                )}
+              </FormField>
+
+              {/* Role — always locked */}
+              <FormField label={t('profile.roleLocked')}>
+                {(id, describedBy) => (
+                  <Input id={id} aria-describedby={describedBy} icon={Shield} type="text" value={roleLabel} disabled />
+                )}
+              </FormField>
+
+              <FormField label={t('profile.avatarUrl')}>
+                {(id, describedBy) => (
+                  <Input
+                    id={id}
+                    aria-describedby={describedBy}
+                    icon={Camera}
+                    type="text"
+                    name="avatar"
+                    value={form.avatar}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    placeholder="https://example.com/avatar.jpg"
+                  />
+                )}
+              </FormField>
             </div>
 
-            {/* Role — always locked */}
-            <div className="space-y-2">
-              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.roleLocked')}</label>
-              <div className="relative">
-                <Shield className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
-                <input
-                  type="text"
-                  value={t(`common.${form.role}`) || form.role}
-                  disabled
-                  className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)]/50 cursor-not-allowed"
-                />
+            {isEditing && (
+              <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <Button variant="ghost" onClick={handleCancel}>
+                  {t('common.cancel')}
+                </Button>
+                <Button type="submit" loading={isUpdating}>
+                  {t('profile.saveBtn')}
+                </Button>
               </div>
-            </div>
-
-            {/* Avatar URL — only when editing */}
-            <div className="space-y-2">
-              <label className="text-sm text-[var(--muted-foreground)]/70">{t('profile.avatarUrl')}</label>
-              <div className="relative">
-                <Camera className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/30" size={18} />
-                <input
-                  type="text"
-                  name="avatar"
-                  value={form.avatar}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  placeholder="https://example.com/avatar.jpg"
-                  className={`w-full bg-[var(--input)] border border-[var(--border)] rounded-xl pl-10 pr-4 py-3 text-[var(--foreground)] focus:outline-none transition-colors
-                    ${isEditing ? 'focus:border-bordo' : 'opacity-70 cursor-not-allowed'}`}
-                />
-              </div>
-            </div>
-          </div>
-
-          {isEditing && (
-            <div className="mt-8 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="flex items-center gap-2 px-5 py-2.5 border border-[var(--border)] text-[var(--muted-foreground)] rounded-xl hover:bg-[var(--muted)] transition-colors"
-              >
-                <X size={16} />
-                {t('common.cancel')}
-              </button>
-              <button
-                type="submit"
-                disabled={isUpdating}
-                className="flex items-center gap-2 bg-bordo hover:bg-bordo/80 text-white px-6 py-2.5 rounded-xl transition-colors font-medium disabled:opacity-50"
-              >
-                {isUpdating ? <Spinner size="sm" color="white" /> : <Save size={16} />}
-                {t('profile.saveBtn')}
-              </button>
-            </div>
-          )}
-        </form>
-      </div>
-    </div>
+            )}
+          </form>
+        )}
+      </section>
+    </PageShell>
   );
 };
 

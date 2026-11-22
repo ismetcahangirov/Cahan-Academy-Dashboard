@@ -1,122 +1,356 @@
 @import "tailwindcss";
+@import "./styles/components.css";
+
+/* `dark:` utilities follow the .dark class on <html> and also apply inside .theme-wine panels */
+@custom-variant dark (&:where(.dark, .dark *, .theme-wine, .theme-wine *));
+
+/*
+ * Cahan Academy · ornate theme tokens.  Read docs/DESIGN.md before changing anything here.
+ *
+ * COLOUR LAW: every rendered colour lies on the polyline  #FFFFFF -> #5C000E -> #000000
+ * (tolerance 4 per channel).  Tone notation used in comments:  s = 0 white, 1 #5C000E, 2 black.
+ *   white -> wine segment:  rgb(255-163s, 255-255s, 255-241s)
+ *   wine  -> black segment: rgb(92(2-s),   0,       14(2-s))
+ * Alpha rule: #5C000E with alpha is safe over ANY allowed colour.  rgba(0,0,0,a) is only safe over
+ * the wine->black segment (dark surfaces) and rgba(255,255,255,a) only over the white->wine segment.
+ * Neutral greys are violations - never use them.
+ */
 
 @theme {
-  --color-bordo: #7B001C;
+  --color-bordo: #5C000E;
+  --color-wine: #5C000E;
   --color-white: #FFFFFF;
-  --color-black: #0F0F0F;
+  --color-black: #000000;
 
-  --font-sans: "Times New Roman", Times, serif;
+  --font-script: "Great Vibes", "Segoe Script", cursive;
+  --font-serif: "EB Garamond", "Garamond", "Georgia", serif;
+  --font-sc: "Cormorant SC", "EB Garamond", "Georgia", serif;
+  --font-sans: "EB Garamond", "Garamond", "Georgia", serif;
+
+  --ease-silk: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
 }
 
+/* Semantic colours as Tailwind utilities: bg-surface, text-ink-muted, border-line ... */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-paper: var(--paper);
+  --color-field: var(--field);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-line-hair: var(--line-hair);
+  --color-ornament: var(--ornament);
+  --color-ornament-soft: var(--ornament-soft);
+  --color-ornament-strong: var(--ornament-strong);
+  --color-focus: var(--focus);
+}
+
+/* ------------------------------------------------------------------ theme-independent */
 :root {
-  --background: #f8fafc;
-  --foreground: #020617;
-  --card: #ffffff;
-  --card-foreground: #020617;
-  --border: rgba(0, 0, 0, 0.08);
-  --input: #ffffff;
-  --primary: #7B001C;
-  --primary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --bordo-contrast: #7B001C;
-  --bordo-muted: rgba(123, 0, 28, 0.1);
+  /* motion */
+  --dur-1: 150ms;
+  --dur-2: 250ms;
+  --dur-3: 400ms;
+  --dur-draw: 900ms;
+  --stagger: 40ms;
+  --rise: 8px;
+  --ease-silk: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  /* radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
+
+  /* raster ornaments (dark variants are swapped in below) */
+  --tex-paper: url("/ornaments/parchment.webp");
+  --tex-lace-edge: url("/ornaments/lace-edge.webp");
+  --tex-lace-edge-v: url("/ornaments/lace-edge-v.webp");
+  --tex-lace-corner: url("/ornaments/lace-corner.webp");
+  --tex-bookmark: url("/ornaments/bookmark-ribbon.webp");
+  --tex-ribbon: url("/ornaments/draped-ribbon.webp");
+  --tex-seal: url("/ornaments/wax-seal.webp");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 1ms;
+    --dur-2: 80ms;
+    --dur-3: 120ms;
+    --dur-draw: 1ms;
+    --stagger: 0ms;
+    --rise: 0px;
+  }
+  /* react-hot-toast draws its icons with looping/one-shot keyframes of its own */
+  .orn-toaster * {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ------------------------------------------------------------------ light theme */
+:root {
+  color-scheme: light;
+
+  --page: #FAF7F8;          /* s .03  faint parchment */
+  --surface: #FFFFFF;       /* cards */
+  --surface-2: #F5F0F1;     /* s .06  hover, muted fills, table stripe */
+  --surface-3: #EBE0E2;     /* s .12  pressed / selected */
+  --paper: #F8F4F4;         /* s .045 parchment panels (+ --tex-paper) */
+  --paper-base: #F8F4F4;    /* the theme's paper, NOT overridden inside .theme-wine (wave fills) */
+  --page-base: #FAF7F8;
+  --field: #FFFFFF;
+
+  --ink: #170004;           /* s 1.75 wine-black body text */
+  --ink-muted: #86424D;     /* s .74  secondary text, 6.9:1 on white */
+  --ink-subtle: #A5737A;    /* s .55  placeholder, disabled, 4.0:1 */
+
+  --accent: #5C000E;
+  --accent-hover: #4A000B;  /* s 1.2 */
+  --accent-fg: #FFFFFF;
+  --accent-text: #5C000E;   /* links, active labels */
+  --accent-soft: #F2EBEC;   /* s .08  soft badge fill */
+
+  --line: #E2D1D4;          /* s .18  default border */
+  --line-strong: #C6A6AB;   /* s .35  inputs, table header rule */
+  --line-hair: #F0E8E9;     /* s .09  row rules, inner frames */
+
+  --focus: #5C000E;
+  --focus-soft: rgba(92, 0, 14, 0.16);
+  --selection-bg: #5C000E;
+  --selection-fg: #FFFFFF;
+  --scrollbar: #D6BFC3;     /* s .25 */
+  --scrollbar-hover: #AE8086;
+  --overlay: rgba(92, 0, 14, 0.32);
+  --stripe: rgba(92, 0, 14, 0.16);
+
+  --ornament: #5C000E;
+  --ornament-soft: #C6A6AB;
+  --ornament-strong: #3C0009; /* s 1.35 */
+
+  --shadow-sm: 0 1px 2px rgba(92, 0, 14, 0.06), 0 1px 1px rgba(92, 0, 14, 0.04);
+  --shadow-md: 0 10px 28px -14px rgba(92, 0, 14, 0.28), 0 2px 6px -2px rgba(92, 0, 14, 0.08);
+  --shadow-lg: 0 28px 64px -24px rgba(92, 0, 14, 0.38), 0 6px 16px -6px rgba(92, 0, 14, 0.12);
+  --glow-inset: inset 0 0 0 1px rgba(92, 0, 14, 0.03), inset 0 0 32px rgba(92, 0, 14, 0.045);
+
+  /* legacy aliases used by pages that are not migrated yet */
+  --background: var(--page);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --border: var(--line);
+  --input: var(--field);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-muted);
+  --accent-foreground: var(--ink);
+  --bordo-contrast: #5C000E;
+  --bordo-muted: #F2EBEC;
+  --destructive: #5C000E;
+}
+
+/* ------------------------------------------------------------------ dark theme
+ * .theme-wine applies the dark token set to a single panel in either theme
+ * (sidebar, login hero), so ornaments and text inside it use the on-dark variants. */
+.dark,
+.theme-wine {
+  color-scheme: dark;
+
+  --page: #120003;          /* s 1.80 */
+  --surface: #1E0005;       /* s 1.67 (wine at .33 over black) */
+  --surface-2: #270006;     /* s 1.58 */
+  --surface-3: #370008;     /* s 1.40 */
+  --paper: #170004;         /* s 1.75 (+ dark parchment texture) */
+  --field: #170004;
+
+  --ink: #FFFFFF;
+  --ink-muted: #C19EA3;     /* s .38  8.3:1 on surface */
+  --ink-subtle: #A06B73;    /* s .58  4.6:1 */
+
+  --accent: #5C000E;
+  --accent-hover: #742632;  /* s .85 */
+  --accent-fg: #FFFFFF;
+  --accent-text: #E2D1D4;   /* s .18 */
+  --accent-soft: #2E0007;   /* s 1.5 */
+
+  --line: #4A000B;          /* s 1.2 */
+  --line-strong: #803843;   /* s .78 */
+  --line-hair: #2E0007;
+
+  --focus: #E2D1D4;
+  --focus-soft: rgba(92, 0, 14, 0.7);
+  --selection-bg: #803843;
+  --selection-fg: #FFFFFF;
+  --scrollbar: #4A000B;
+  --scrollbar-hover: #803843;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --stripe: rgba(92, 0, 14, 0.9);
+
+  --ornament: #B68C93;      /* s .45 rose */
+  --ornament-soft: #742632; /* s .85 */
+  --ornament-strong: #E2D1D4;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 30px -14px rgba(0, 0, 0, 0.85), 0 2px 6px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 30px 70px -24px rgba(0, 0, 0, 0.95), 0 8px 18px -8px rgba(0, 0, 0, 0.6);
+  --glow-inset: inset 0 0 0 1px rgba(92, 0, 14, 0.25), inset 0 0 40px rgba(92, 0, 14, 0.3);
+
+  --tex-paper: url("/ornaments/parchment-dark.webp");
+  --tex-lace-edge: url("/ornaments/lace-edge-dark.webp");
+  --tex-lace-edge-v: url("/ornaments/lace-edge-v-dark.webp");
+  --tex-lace-corner: url("/ornaments/lace-corner-dark.webp");
+  --tex-bookmark: url("/ornaments/bookmark-ribbon-dark.webp");
+  --tex-ribbon: url("/ornaments/draped-ribbon-dark.webp");
+  --tex-seal: url("/ornaments/wax-seal-dark.webp");
+
+  --background: var(--page);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --border: var(--line);
+  --input: var(--field);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-fg);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-muted);
+  --accent-foreground: var(--ink);
+  --bordo-contrast: #FFFFFF;
+  --bordo-muted: #2E0007;
+  --destructive: #E2D1D4;
 }
 
 .dark {
-  --background: #0F0F0F;
-  --foreground: #FFFFFF;
-  --card: #1A1A1A;
-  --card-foreground: #FFFFFF;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: #000000;
-  --primary: #7B001C;
-  --primary-foreground: #ffffff;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --bordo-contrast: #FFFFFF;
-  --bordo-muted: rgba(123, 0, 28, 0.2);
+  --paper-base: #170004;
+  --page-base: #120003;
+}
+
+/* A deeper, warmer wine panel (login hero, sidebar) - same in both themes */
+.theme-wine {
+  --page: #2E0007;          /* s 1.5 */
+  --surface: #3C0009;       /* s 1.35 */
+  --surface-2: #4A000B;     /* s 1.2 */
+  --surface-3: #5C000E;
+  --line: #742632;
+  --line-hair: #4A000B;
+  --accent: #FFFFFF;        /* inside wine panels the "solid" action is white */
+  --accent-hover: #F2EBEC;
+  --accent-fg: #5C000E;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ base */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-button,
-input,
-textarea,
-select {
-  font-family: inherit;
-}
-
-.brand-logo {
-  transition: filter 0.3s ease;
-}
-
-.dark .brand-logo {
-  filter: brightness(0) invert(1);
+  background-color: var(--page);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  line-height: 1.55;
+  font-variant-numeric: lining-nums proportional-nums;
+  /* EB Garamond has a small x-height; normalise it so 14px UI text stays readable */
+  font-size-adjust: ex-height 0.46;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @layer base {
   * {
-    border-color: var(--border);
+    border-color: var(--line);
   }
 
-  body {
-    @apply antialiased;
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--selection-fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  ::placeholder {
+    color: var(--ink-subtle);
+    opacity: 1;
   }
 }
 
-/* Global Scrollbar (body) */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+/* Legacy: pages that still use <img src="/cahan-logo.svg" class="brand-logo"> */
+.dark .brand-logo {
+  filter: brightness(0) invert(1);
 }
 
-html::-webkit-scrollbar {
-  width: 6px;
-}
-
-html::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-html::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
-
-/* Custom Scrollbar (components) */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-
+/* Scrollbars */
+html::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
 }
-
+html::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
+html::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
+  background: var(--scrollbar);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+html::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+  background-clip: padding-box;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+/* ------------------------------------------------------------------ keyframes (transform/opacity only,
+ * plus the one-shot stroke draw of line ornaments) */
+/* entrance keyframes only define `from`: they end on the element's own opacity/transform,
+ * so `opacity-25` or a flip transform on the same element keeps working */
+@keyframes orn-fade {
+  from { opacity: 0; }
+}
+@keyframes orn-rise {
+  from { opacity: 0; transform: translate3d(0, var(--rise), 0); }
+}
+@keyframes orn-pop {
+  from { opacity: 0; transform: scale(0.98); }
+}
+@keyframes orn-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes orn-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+@keyframes orn-spin {
+  to { transform: rotate(360deg); }
 }

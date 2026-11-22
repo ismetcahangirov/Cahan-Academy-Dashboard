@@ -1,38 +1,16 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mail, 
-  Send, 
-  X, 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
-  AlertCircle,
-  Plus,
-  Trash2,
-  UserCheck,
-  Calendar,
-  GraduationCap
-} from 'lucide-react';
-import { 
-  useGetInvitationsQuery, 
-  useSendInvitationMutation, 
-  useDeleteInvitationMutation 
+import { Mail, Send, Plus, Trash2, UserCheck, Calendar, GraduationCap } from 'lucide-react';
+import {
+  useGetInvitationsQuery,
+  useSendInvitationMutation,
+  useDeleteInvitationMutation,
 } from '../../features/invitations/invitationsApi';
 import { toast } from 'react-hot-toast';
-import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../utils/formatDate';
+import { Badge, Button, Card, EmptyState, FormField, Input, Modal, PageShell, Skeleton, StatusPill, Table } from '../../components/ui';
 
-const getStatusConfig = (status, t) => {
-  switch (status) {
-    case 'pending': return { cls: 'bg-bordo/10 text-bordo border-bordo/20', icon: <Clock size={12} />, label: t('invitations.statusPending') };
-    case 'accepted': return { cls: 'bg-bordo text-white border-bordo', icon: <CheckCircle size={12} />, label: t('invitations.statusAccepted') };
-    case 'expired': return { cls: 'bg-white text-bordo border-bordo/30', icon: <AlertCircle size={12} />, label: t('invitations.statusExpired') };
-    case 'cancelled': return { cls: 'bg-[var(--muted)] text-bordo border-bordo/20', icon: <XCircle size={12} />, label: t('invitations.statusCancelled') };
-    default: return { cls: 'bg-bordo/10 text-bordo border-bordo/20', icon: null, label: status };
-  }
-};
+const INV_STATUS = { pending: 'pending', accepted: 'success', expired: 'warning', cancelled: 'neutral' };
 
 const Invitations = () => {
   const { t } = useTranslation();
@@ -42,6 +20,14 @@ const Invitations = () => {
   const { data, isLoading } = useGetInvitationsQuery();
   const [sendInvitation, { isLoading: isSending }] = useSendInvitationMutation();
   const [deleteInvitation] = useDeleteInvitationMutation();
+
+  const statusLabel = (s) =>
+    ({
+      pending: t('invitations.statusPending'),
+      accepted: t('invitations.statusAccepted'),
+      expired: t('invitations.statusExpired'),
+      cancelled: t('invitations.statusCancelled'),
+    })[s] || s;
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -66,182 +52,173 @@ const Invitations = () => {
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('invitations.title')}</h1>
-          <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('invitations.subtitle')}</p>
-        </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-        >
-          <Plus size={18} />
-          {t('invitations.addNew')}
-        </button>
-      </div>
+  const invitations = data?.data || [];
+  const roleBadge = (inv) => <Badge tone="accent">{inv.role === 'teacher' ? t('common.teacher') : t('common.student')}</Badge>;
+  const deleteBtn = (inv) =>
+    inv.status === 'pending' && (
+      <Button variant="ghost" iconOnly size="sm" icon={Trash2} aria-label={t('common.delete')} onClick={() => handleDelete(inv._id)} />
+    );
 
-      {/* Table */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--muted)]/20">
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t('invitations.tableEmail')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t('invitations.tableRole')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t('invitations.tableStatus')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t('invitations.tableInvitedBy')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">{t('invitations.tableExpiresAt')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider text-right">{t('invitations.tableActions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {isLoading ? (
-                Array(5).fill(0).map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="px-6 py-4"><div className="h-4 w-48 bg-[var(--muted)] rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-20 bg-[var(--muted)] rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-6 w-24 bg-[var(--muted)] rounded-full"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-32 bg-[var(--muted)] rounded"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 w-24 bg-[var(--muted)] rounded"></div></td>
-                    <td className="px-6 py-4"></td>
+  return (
+    <PageShell
+      title={t('invitations.title')}
+      subtitle={t('invitations.subtitle')}
+      actions={
+        <Button icon={Plus} onClick={() => setIsModalOpen(true)}>
+          {t('invitations.addNew')}
+        </Button>
+      }
+    >
+      <section>
+        {isLoading ? (
+          <div className="space-y-3" aria-busy="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        ) : invitations.length === 0 ? (
+          <Card>
+            <EmptyState
+              sketch="notebook"
+              title={t('invitations.noInvitations')}
+              description={t('invitations.emptyHint')}
+              action={
+                <Button variant="outline" icon={Plus} onClick={() => setIsModalOpen(true)}>
+                  {t('invitations.addNew')}
+                </Button>
+              }
+            />
+          </Card>
+        ) : (
+          <>
+            <div className="hidden sm:block">
+              <Table caption={t('invitations.title')}>
+                <thead>
+                  <tr>
+                    <th>{t('invitations.tableEmail')}</th>
+                    <th>{t('invitations.tableRole')}</th>
+                    <th>{t('invitations.tableStatus')}</th>
+                    <th>{t('invitations.tableInvitedBy')}</th>
+                    <th>{t('invitations.tableExpiresAt')}</th>
+                    <th className="text-right">{t('invitations.tableActions')}</th>
                   </tr>
-                ))
-              ) : data?.data?.length > 0 ? (
-                data.data.map((inv) => {
-                  const statusConfig = getStatusConfig(inv.status, t);
-                  return (
-                    <motion.tr
-                      key={inv._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="group hover:bg-[var(--muted)]/30 transition-colors"
-                    >
-                      <td className="px-6 py-4">
+                </thead>
+                <tbody>
+                  {invitations.map((inv) => (
+                    <tr key={inv._id}>
+                      <td>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-[var(--muted)] border border-[var(--border)] flex items-center justify-center text-[var(--muted-foreground)]/40">
-                            <Mail size={15} />
-                          </div>
-                          <span className="font-medium text-[var(--foreground)] text-sm">{inv.email}</span>
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
+                            <Mail size={15} strokeWidth={1.5} aria-hidden="true" />
+                          </span>
+                          <span className="font-semibold text-ink">{inv.email}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium border bg-bordo/10 text-bordo border-bordo/20">
-                          {inv.role === 'teacher' ? t('common.teacher') : t('common.student')}
+                      <td>{roleBadge(inv)}</td>
+                      <td>
+                        <StatusPill status={INV_STATUS[inv.status] || 'neutral'}>{statusLabel(inv.status)}</StatusPill>
+                      </td>
+                      <td className="text-ink-muted">{inv.invitedBy?.name || t('common.admin')}</td>
+                      <td>
+                        <span className="num flex items-center gap-2 text-ink-muted">
+                          <Calendar size={14} aria-hidden="true" />
+                          {formatDate(inv.expiresAt, 'd MMMM yyyy')}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className={cn('inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border', statusConfig.cls)}>
-                          {statusConfig.icon}
-                          <span>{statusConfig.label}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-[var(--muted-foreground)] text-sm">{inv.invitedBy?.name || t('common.admin')}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-[var(--muted-foreground)] text-sm">
-                          <Calendar size={13} />
-                          {formatDate(inv.expiresAt, 'd MMMM yyyy')}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        {inv.status === 'pending' && (
-                          <button
-                            onClick={() => handleDelete(inv._id)}
-                            className="p-2 text-[var(--muted-foreground)] hover:text-bordo hover:bg-bordo/10 rounded-lg transition-all"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </td>
-                    </motion.tr>
-                  );
-                })
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center justify-center text-[var(--muted-foreground)]/40">
-                      <Mail size={40} className="mb-2 opacity-20" />
-                      <p>{t('invitations.noInvitations')}</p>
+                      <td className="text-right">{deleteBtn(inv)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+
+            <ul className="space-y-3 sm:hidden">
+              {invitations.map((inv) => (
+                <li key={inv._id}>
+                  <Card className="p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
+                        <Mail size={16} strokeWidth={1.5} aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold text-ink" title={inv.email}>{inv.email}</p>
+                        <p className="text-sm text-ink-muted">{inv.invitedBy?.name || t('common.admin')}</p>
+                      </div>
+                      {deleteBtn(inv)}
                     </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* New Invitation Modal */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="fixed inset-0 bg-background/60 backdrop-blur-sm" />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-10"
-            >
-              <div className="flex items-center justify-between p-6 border-b border-[var(--border)] bg-[var(--muted)]/20">
-                <h2 className="text-xl font-semibold text-[var(--foreground)]">{t('invitations.modalTitle')}</h2>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all"><X size={20} /></button>
-              </div>
-              <form onSubmit={handleSend} className="p-6 space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('invitations.emailLabel')}</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/20" size={18} />
-                    <input
-                      required type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder={t('auth.emailPlaceholder')}
-                      className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo/50 transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-[var(--muted-foreground)]/70">{t('invitations.roleLabel')}</label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role: 'teacher' })}
-                      className={cn(
-                        'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
-                        formData.role === 'teacher' ? 'border-bordo bg-bordo text-white' : 'border-[var(--border)] bg-white text-bordo hover:bg-bordo/10'
-                      )}
-                    >
-                      <UserCheck size={18} /><span>{t('common.teacher')}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role: 'student' })}
-                      className={cn(
-                        'flex items-center justify-center gap-2 p-3 rounded-xl border transition-all',
-                        formData.role === 'student' ? 'border-bordo bg-bordo text-white' : 'border-[var(--border)] bg-white text-bordo hover:bg-bordo/10'
-                      )}
-                    >
-                      <GraduationCap size={18} /><span>{t('common.student')}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border)]">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-sm font-medium text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all">{t('common.cancel')}</button>
-                  <button type="submit" disabled={isSending} className="flex items-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm disabled:opacity-50">
-                    <Send size={16} />
-                    {isSending ? t('invitations.sendingBtn') : t('invitations.sendBtn')}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {roleBadge(inv)}
+                      <StatusPill status={INV_STATUS[inv.status] || 'neutral'}>{statusLabel(inv.status)}</StatusPill>
+                    </div>
+                    <p className="num mt-2 flex items-center gap-2 text-sm text-ink-muted">
+                      <Calendar size={14} aria-hidden="true" />
+                      {formatDate(inv.expiresAt, 'd MMMM yyyy')}
+                    </p>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
-      </AnimatePresence>
-    </div>
+      </section>
+
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={t('invitations.modalTitle')}
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" form="invite-form" icon={Send} loading={isSending}>
+              {isSending ? t('invitations.sendingBtn') : t('invitations.sendBtn')}
+            </Button>
+          </>
+        }
+      >
+        <form id="invite-form" onSubmit={handleSend} className="space-y-5">
+          <FormField label={t('invitations.emailLabel')} required>
+            {(id) => (
+              <Input
+                id={id}
+                icon={Mail}
+                required
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder={t('auth.emailPlaceholder')}
+              />
+            )}
+          </FormField>
+
+          <fieldset>
+            <legend className="field-label">{t('invitations.roleLabel')}</legend>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={formData.role === 'teacher' ? 'primary' : 'outline'}
+                motif={false}
+                icon={UserCheck}
+                aria-pressed={formData.role === 'teacher'}
+                onClick={() => setFormData({ ...formData, role: 'teacher' })}
+              >
+                {t('common.teacher')}
+              </Button>
+              <Button
+                variant={formData.role === 'student' ? 'primary' : 'outline'}
+                motif={false}
+                icon={GraduationCap}
+                aria-pressed={formData.role === 'student'}
+                onClick={() => setFormData({ ...formData, role: 'student' })}
+              >
+                {t('common.student')}
+              </Button>
+            </div>
+          </fieldset>
+        </form>
+      </Modal>
+    </PageShell>
   );
 };
 

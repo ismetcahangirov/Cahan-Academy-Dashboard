@@ -1,5 +1,9 @@
 {
   "common": {
+    "openMenu": "Menyunu aç",
+    "expandMenu": "Menyunu genişləndir",
+    "collapseMenu": "Menyunu daralt",
+    "profile": "Profil",
     "showPassword": "Şifrəni göstər",
     "hidePassword": "Şifrəni gizlət",
     "welcome": "Cahan Academy-ya xoş gəlmisiniz",
@@ -17,7 +21,7 @@
     "logoutConfirm": "Çıxış etmək istədiyinizə əminsiniz?",
     "lightMode": "İşıqlı rejim",
     "darkMode": "Qaranlıq rejim",
-    "edit": "Redəktə",
+    "edit": "Redaktə et",
     "delete": "Sil",
     "view": "Bax",
     "error": "Xəta baş verdi",
@@ -33,6 +37,10 @@
     "goBack": "Geri qayıt"
   },
   "auth": {
+    "welcomeScript": "Xoş gəlmisiniz",
+    "googleContinue": "Google ilə davam et",
+    "heroLine": "Elm yolunda birlikdə",
+    "heroSub": "Dərslər · Tapşırıqlar · İmtahanlar",
     "loginTitle": "Cahan Academy",
     "loginSubtitle": "Giriş edərək dərslərinizə davam edin",
     "email": "Email",
@@ -116,7 +124,11 @@
     "minutesAgo": "{{count}} dəqiqə əvvəl",
     "hoursAgo": "{{count}} saat əvvəl",
     "daysAgo": "{{count}} gün əvvəl",
-    "vsLastMonth": "yeni əlavələr, keçən aya nisbətən"
+    "vsLastMonth": "yeni əlavələr, keçən aya nisbətən",
+    "greeting": "Xoş gəldiniz, {{name}}",
+    "today": "Bu gün",
+    "viewAll": "Hamısı",
+    "moreLessons": "Daha {{count}} dərs"
   },
   "sidebar": {
     "dashboard": "Dashboard",
@@ -229,6 +241,8 @@
     "role": "Rol"
   },
   "groups": {
+    "statusCancelled": "Ləğv edilib",
+    "detailsTitle": "Qrup məlumatı",
     "title": "Qruplar",
     "subtitle": "Bütün tədris qruplarının idarə edilməsi.",
     "newGroup": "Yeni Qrup",
@@ -264,7 +278,7 @@
     "adding": "Əlavə edilir...",
     "creating": "Yaradılır...",
     "updating": "Yenilənir...",
-    "noStudentsGroup": "Bu qrupda hələ tələbə yoxdur",
+    "noStudentsGroup": "Tələbə yoxdur",
     "statusActive": "Aktiv",
     "statusCompleted": "Tamamlanıb",
     "details": "Detallar",
@@ -329,7 +343,7 @@
     "lessonTopic": "Dərs Mövzusu",
     "topicPlaceholder": "Bugünkü dərsdə nə keçildi?",
     "selectGroupDesc": "Tələbə siyahısı üçün qrup seçin",
-    "selectGroupHint": "Sol tərəfdəki siyahıdan qrup seçərək davamiyyəti qeyd etməyə başlaya bilərsiniz.",
+    "selectGroupHint": "Davamiyyəti qeyd etmək üçün qruplar siyahısından birini seçin, tələbələr burada görünəcək.",
     "studentList": "Tələbə Siyahısı",
     "status": "İştirak Statusu",
     "present": "İştirak",
@@ -339,6 +353,7 @@
     "errorGroup": "Qrup seçin"
   },
   "schedule": {
+    "noLessonsDay": "Bu gündə dərs yoxdur",
     "title": "Cədvəl",
     "addNew": "Yeni Dərs Əlavə Et",
     "subject": "Fənn",
@@ -568,6 +583,7 @@
     "linkOrFile": "link"
   },
   "quizzes": {
+    "takeTitle": "Quizi həll et",
     "title": "Quizlər",
     "subtitle": "Biliklərinizi yoxlamaq üçün testlər",
     "addNew": "Yeni Quiz",
@@ -620,7 +636,7 @@
     "noQuestions": "Bu quizdə hələ sual yoxdur",
     "answerPlaceholder": "Cavabınızı yazın...",
     "resultsTitle": "Quiz nəticələri",
-    "noAttempts": "Bu quizi hələ heç kim tamamlamayıb",
+    "noAttempts": "Hələ cəhd yoxdur",
     "tableStudent": "Tələbə",
     "tableScore": "Bal",
     "tableDate": "Tarix",
@@ -654,6 +670,8 @@
     "deleteError": "Bildiriş silinərkən xəta baş verdi",
     "noNotifications": "Hələ ki, heç bir bildirişiniz yoxdur.",
     "markAsReadBtn": "Oxunmuş işarələ",
+    "emptyTitle": "Bildiriş yoxdur",
+    "unreadCount": "{{count}} oxunmamış",
     "deleteBtn": "Sil",
     "messages": {
       "homeworkCreated": {
@@ -703,6 +721,7 @@
     }
   },
   "invitations": {
+    "emptyHint": "Hələ heç bir dəvət göndərilməyib. Müəllim və ya tələbəni e-poçtla dəvət edin.",
     "title": "Dəvətlər Sistemi",
     "subtitle": "Müəllim və tələbələrə göndərilən qeydiyyat dəvətləri.",
     "addNew": "Yeni Dəvət",
@@ -719,7 +738,7 @@
     "sendSuccess": "Dəvət uğurla göndərildi",
     "deleteConfirm": "Bu dəvəti ləğv etmək istədiyinizə əminsiniz?",
     "deleteSuccess": "Dəvət ləğv edildi",
-    "noInvitations": "Hələ heç bir dəvət göndərilməyib",
+    "noInvitations": "Dəvət yoxdur",
     "modalTitle": "Yeni Dəvət Göndər",
     "emailLabel": "E-poçt ünvanı",
     "roleLabel": "Rol seçin",
@@ -748,7 +767,7 @@
     "roleLocked": "Rol (Dəyişdirilə bilməz)",
     "avatarUrl": "Avatar URL (Şəkil linki)",
     "saveBtn": "Yadda Saxla",
-    "editBtn": "Redəktə et",
+    "editBtn": "Redaktə et",
     "updateSuccess": "Profil məlumatları yeniləndi",
     "nameRequired": "Ad boş ola bilməz"
   },
@@ -786,6 +805,7 @@
     "totalStudents": "Cəmi tələbə"
   },
   "payments": {
+    "emptyHint": "Bu tələbə üçün hələ ödəniş planı yaradılmayıb.",
     "title": "Ödənişlər",
     "newPlan": "Yeni Plan",
     "createPlan": "Plan Yarat",
@@ -793,7 +813,7 @@
     "planUpdated": "Ödəniş planı yeniləndi",
     "planDeleted": "Ödəniş planı silindi",
     "deleteConfirm": "Bu planı silmək istədiyinizə əminsiniz?",
-    "noPlans": "Bu tələbə üçün ödəniş planı yoxdur",
+    "noPlans": "Plan yoxdur",
     "noActivePayments": "Aktiv ödəniş planı yoxdur",
     "amount": "Məbləğ (AZN)",
     "paymentType": "Ödəniş növü",

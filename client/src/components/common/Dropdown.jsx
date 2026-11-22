@@ -1,11 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, cloneElement, isValidElement } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import { cn } from '../../lib/utils';
+import { EdelweissGlyph } from '../ornament/Edelweiss';
 
 /**
  * A reusable, premium dropdown component with Portal support.
@@ -20,6 +17,8 @@ const cn = (...inputs) => twMerge(clsx(inputs));
  * @param {string} props.buttonClassName - Additional class names for the trigger button
  * @param {string} props.menuClassName - Additional class names for the dropdown menu
  * @param {string} props.align - Alignment of the menu: 'left' or 'right'
+ * Keyboard: opening moves focus to the first item; ArrowUp/ArrowDown/Home/End move between items;
+ * Escape (or Tab) closes and returns focus to the trigger.
  */
 const Dropdown = ({
   trigger,
@@ -34,6 +33,22 @@ const Dropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [menuStyle, setMenuStyle] = useState({});
   const triggerRef = useRef(null);
+  const menuRef = useRef(null);
+
+  const focusTrigger = () => triggerRef.current?.querySelector('button, [tabindex]')?.focus();
+  const onMenuKeyDown = (e) => {
+    const list = [...(menuRef.current?.querySelectorAll('[role="menuitem"]') || [])];
+    const i = list.indexOf(document.activeElement);
+    const move = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 }[e.key];
+    if (move !== undefined && list.length) {
+      e.preventDefault();
+      list[(move + list.length) % list.length].focus();
+    } else if (e.key === 'Escape' || e.key === 'Tab') {
+      if (e.key === 'Escape') e.preventDefault();
+      setIsOpen(false);
+      focusTrigger();
+    }
+  };
 
   const calculatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -68,27 +83,36 @@ const Dropdown = ({
         setIsOpen(false);
       }
     };
-    const handleScroll = () => setIsOpen(false);
+    const handleScroll = (e) => {
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      setIsOpen(false);
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        focusTrigger();
+      }
+    };
+    // focus the first item (the ring only shows for keyboard users: :focus-visible)
+    requestAnimationFrame(() => menuRef.current?.querySelector('[role="menuitem"]')?.focus({ preventScroll: true }));
 
     document.addEventListener('mousedown', handleClose);
+    document.addEventListener('keydown', handleKey);
     window.addEventListener('scroll', handleScroll, true);
     window.addEventListener('resize', handleClose);
 
     return () => {
       document.removeEventListener('mousedown', handleClose);
+      document.removeEventListener('keydown', handleKey);
       window.removeEventListener('scroll', handleScroll, true);
       window.removeEventListener('resize', handleClose);
     };
   }, [isOpen]);
 
   const menu = (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: 8, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 8, scale: 0.96 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
+        <div
           style={{
             position: 'fixed',
             top: menuStyle.top,
@@ -96,60 +120,58 @@ const Dropdown = ({
             minWidth: menuStyle.minWidth,
             zIndex: 9999,
           }}
-          className={cn(
-            'bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden py-2 backdrop-blur-2xl',
-            menuClassName
-          )}
+          ref={menuRef}
+          role="menu"
+          onKeyDown={onMenuKeyDown}
+          className={cn('menu-panel orn-pop overflow-hidden origin-top', menuClassName)}
           onMouseDown={(e) => e.stopPropagation()}
         >
           {items.map((item, index) => (
             <button
               key={index}
+              type="button"
+              role="menuitem"
               onClick={() => {
                 if (item.onClick) item.onClick();
                 setIsOpen(false);
               }}
-              className={cn(
-                'flex items-center gap-3 w-full px-4 py-2.5 text-sm transition-all',
-                item.active
-                  ? 'bg-bordo text-white'
-                  : 'text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]',
-                item.className
-              )}
+              className={cn('menu-item', item.active && 'is-active', item.className)}
             >
               {item.icon && (
                 <span className="flex items-center justify-center shrink-0">{item.icon}</span>
               )}
-              <span className="font-semibold whitespace-nowrap">{item.label}</span>
-              {item.active && (
-                <div className="ml-auto w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-              )}
+              <span className="whitespace-nowrap">{item.label}</span>
+              {item.active && <EdelweissGlyph className="ml-auto h-3.5 w-3.5 text-current" />}
             </button>
           ))}
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 
   return (
     <div className={cn('relative inline-block text-left', className)} ref={triggerRef}>
       {trigger ? (
         <div onClick={handleToggle} className="cursor-pointer">
-          {trigger}
+          {isValidElement(trigger) ? cloneElement(trigger, { 'aria-haspopup': 'menu', 'aria-expanded': isOpen }) : trigger}
         </div>
       ) : (
         <button
+          type="button"
           onClick={handleToggle}
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
           className={cn(
-            'flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--card)] backdrop-blur-md border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--muted)] transition-all shadow-lg',
+            'flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-line-strong bg-surface text-ink-muted hover:text-ink hover:border-ornament-soft transition-colors',
             buttonClassName
           )}
         >
           {icon && <span className="flex items-center justify-center">{icon}</span>}
-          {label && <span className="text-sm font-bold uppercase tracking-wider">{label}</span>}
+          {label && <span className="sc text-[0.85rem]">{label}</span>}
           <ChevronDown
-            size={16}
-            className={cn('transition-transform duration-300', isOpen ? 'rotate-180' : '')}
+            size={15}
+            strokeWidth={1.6}
+            className={cn('transition-transform duration-[var(--dur-2)]', isOpen ? 'rotate-180' : '')}
           />
         </button>
       )}

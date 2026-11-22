@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useGetQuizByIdQuery } from '../../features/quizzes/quizzesApi';
 import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
 import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
+import { Button, EmptyState, Modal, StatusPill, Table } from '../../components/ui';
+import { formatDate } from '../../utils/formatDate';
 
 const QuizResultsModal = ({ quizId, onClose }) => {
   const { t, i18n } = useTranslation();
@@ -21,120 +22,80 @@ const QuizResultsModal = ({ quizId, onClose }) => {
     .length;
 
   return (
-    <AnimatePresence>
-      <div key="results" className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-background/60 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-3xl bg-[var(--card)] border border-[var(--border)] rounded-2xl shadow-2xl flex flex-col max-h-[85vh]"
-        >
-          <div className="flex items-center justify-between gap-4 p-5 border-b border-[var(--border)]">
-            <div className="min-w-0">
-              <h2 className="text-lg font-bold text-[var(--foreground)] truncate">
-                {t('quizzes.resultsTitle')}: {quiz?.title}
-              </h2>
-              <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                {quiz?.group?.name} • {t('quizzes.attemptsCount', { count: attempts.length })}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              aria-label={t('quizzes.close')}
-              className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-auto custom-scrollbar p-5">
-            {isLoading ? (
-              <div className="flex justify-center py-12"><Spinner /></div>
-            ) : attempts.length === 0 ? (
-              <p className="text-center py-12 text-[var(--muted-foreground)]">{t('quizzes.noAttempts')}</p>
-            ) : (
-              <div className="rounded-xl border border-[var(--border)] overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[600px]">
-                  <thead>
-                    <tr className="bg-[var(--muted)]/10 text-[var(--muted-foreground)] text-sm border-b border-[var(--border)]">
-                      <th className="p-3 font-medium">{t('quizzes.tableStudent')}</th>
-                      <th className="p-3 font-medium">{t('quizzes.tableScore')}</th>
-                      <th className="p-3 font-medium">{t('quizzes.tableDate')}</th>
-                      <th className="p-3 font-medium">{t('quizzes.reviewTitle')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border)]">
-                    {attempts.map((attempt) => {
-                      const student = typeof attempt.student === 'object' ? attempt.student : null;
-                      const studentId = student?._id || attempt.student;
-                      const pending = pendingCount(attempt);
-                      const percent = attempt.totalPoints > 0
-                        ? Math.round((attempt.score / attempt.totalPoints) * 100)
-                        : 0;
-                      return (
-                        <tr key={attempt._id} className="hover:bg-[var(--muted)]/20 transition-colors">
-                          <td className="p-3">
-                            <div className="flex items-center gap-3">
-                              <Avatar
-                                src={student?.avatar}
-                                name={student?.name}
-                                className="w-8 h-8 rounded-full border border-[var(--border)]"
-                                textSize="xs"
-                              />
-                              <div className="min-w-0">
-                                <div className="text-sm font-medium text-[var(--foreground)] truncate">
-                                  {student?.name || t('common.unknown')}
-                                </div>
-                                <div className="text-xs text-[var(--muted-foreground)]/60 truncate">{student?.email}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-3 text-sm text-[var(--foreground)]">
-                            {t('quizzes.scoreOf', { score: attempt.score, total: attempt.totalPoints })}
-                            <span className="ml-2 text-[var(--muted-foreground)]">({percent}%)</span>
-                          </td>
-                          <td className="p-3 text-sm text-[var(--muted-foreground)]">
-                            {attempt.completedAt
-                              ? new Date(attempt.completedAt).toLocaleString(i18n.language, {
-                                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-                              })
-                              : '—'}
-                          </td>
-                          <td className="p-3">
-                            <button
-                              type="button"
-                              onClick={() => setReviewStudentId(studentId)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[var(--muted)]/50 hover:bg-[var(--muted)] text-[var(--foreground)] rounded-lg transition-colors text-xs font-medium whitespace-nowrap"
-                            >
-                              <Eye size={14} />
-                              {t('quizzes.viewAnswers')}
-                            </button>
-                            {pending > 0 && (
-                              <div className="mt-1 text-xs text-amber-500">
-                                {t('quizzes.pendingReview', { count: pending })}
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </motion.div>
-      </div>
+    <>
+      <Modal
+        open
+        // the nested review dialog owns Escape while it is open
+        onClose={reviewStudentId ? () => {} : onClose}
+        size="xl"
+        title={t('quizzes.resultsTitle')}
+        entity={quiz?.title}
+        subtitle={`${quiz?.group?.name || ''} • ${t('quizzes.attemptsCount', { count: attempts.length })}`}
+        footer={<Button variant="ghost" onClick={onClose}>{t('quizzes.close')}</Button>}
+      >
+        {isLoading ? (
+          <div className="flex justify-center py-12"><Spinner /></div>
+        ) : attempts.length === 0 ? (
+          <EmptyState compact sketch="cap" title={t('quizzes.noAttempts')} />
+        ) : (
+          <Table caption={t('quizzes.resultsTitle')} tableClassName="min-w-[600px]">
+            <thead>
+              <tr>
+                <th>{t('quizzes.tableStudent')}</th>
+                <th>{t('quizzes.tableScore')}</th>
+                <th>{t('quizzes.tableDate')}</th>
+                <th>{t('quizzes.reviewTitle')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attempts.map((attempt) => {
+                const student = typeof attempt.student === 'object' ? attempt.student : null;
+                const studentId = student?._id || attempt.student;
+                const pending = pendingCount(attempt);
+                const percent = attempt.totalPoints > 0
+                  ? Math.round((attempt.score / attempt.totalPoints) * 100)
+                  : 0;
+                return (
+                  <tr key={attempt._id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <Avatar src={student?.avatar} name={student?.name} className="h-8 w-8 shrink-0" textSize="xs" />
+                        <div className="min-w-0">
+                          <div className="truncate font-medium text-ink">{student?.name || t('common.unknown')}</div>
+                          <div className="truncate text-[0.85rem] text-ink-muted">{student?.email}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="num">
+                      {t('quizzes.scoreOf', { score: attempt.score, total: attempt.totalPoints })}
+                      <span className="ml-2 text-ink-muted">({percent}%)</span>
+                    </td>
+                    <td className="time-italic text-ink-muted">
+                      {attempt.completedAt
+                        // date-fns, not toLocaleString: browser ICU lacks az month names ("M11 22")
+                        ? formatDate(attempt.completedAt, 'd MMM, HH:mm', i18n.language)
+                        : '—'}
+                    </td>
+                    <td>
+                      <div className="flex flex-col items-start gap-1.5">
+                        <Button variant="outline" motif={false} size="sm" icon={Eye}
+                          onClick={() => setReviewStudentId(studentId)}>
+                          {t('quizzes.viewAnswers')}
+                        </Button>
+                        {pending > 0 && (
+                          <StatusPill status="pending">{t('quizzes.pendingReview', { count: pending })}</StatusPill>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
+        )}
+      </Modal>
       {reviewStudentId && (
         <AnswerReviewModal
-          key="review"
           kind="quiz"
           id={quizId}
           studentId={reviewStudentId}
@@ -142,7 +103,7 @@ const QuizResultsModal = ({ quizId, onClose }) => {
           onClose={() => setReviewStudentId(null)}
         />
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

@@ -1,10 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import {
-  Plus, Search, MoreVertical, Clock,
-  Users, HelpCircle, Trophy, Pencil, Trash2,
-} from 'lucide-react';
+import { Plus, Search, Clock, Users, HelpCircle, Trophy, Pencil, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   useGetQuizzesQuery,
@@ -13,62 +9,12 @@ import {
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import Select from '../../components/common/Select';
-import Spinner from '../../components/common/Spinner';
+import { Button, Card, EmptyState, Input, PageShell, Skeleton } from '../../components/ui';
 import QuizModal from './QuizModal';
 import TakeQuizModal from './TakeQuizModal';
 import QuizResultsModal from './QuizResultsModal';
 import toast from 'react-hot-toast';
 
-// ─── Dropdown menu per quiz card ────────────────────────────────────────────
-const QuizDropdown = ({ quiz, onEdit, onDelete }) => {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen((p) => !p); }}
-        className="text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] transition-colors p-1 rounded-lg hover:bg-[var(--muted)]/50"
-      >
-        <MoreVertical size={20} />
-      </button>
-
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute right-0 top-8 z-20 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-lg overflow-hidden min-w-[140px]"
-        >
-          <button
-            onClick={() => { setOpen(false); onEdit(quiz); }}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-[var(--muted)]/50 transition-colors"
-          >
-            <Pencil size={14} className="text-bordo" />
-            {t('quizzes.edit')}
-          </button>
-          <button
-            onClick={() => { setOpen(false); onDelete(quiz); }}
-            className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
-          >
-            <Trash2 size={14} />
-            {t('quizzes.delete')}
-          </button>
-        </motion.div>
-      )}
-    </div>
-  );
-};
-
-// ─── Main Page ───────────────────────────────────────────────────────────────
 const Quizzes = () => {
   const { t } = useTranslation();
   const user = useSelector(selectCurrentUser);
@@ -111,156 +57,106 @@ const Quizzes = () => {
     }
   };
 
+  const meta = (Icon, text) => (
+    <div className="flex items-center gap-3 text-[0.95rem] text-ink-muted">
+      <Icon size={16} strokeWidth={1.6} aria-hidden="true" className="shrink-0 text-accent-text" />
+      <span>{text}</span>
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">{t('quizzes.title')}</h1>
-          <p className="text-[var(--muted-foreground)] mt-1">{t('quizzes.subtitle')}</p>
-        </div>
-
-        {isAdminOrTeacher && (
-          <button
-            id="quiz-add-new-btn"
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-bordo/80 text-white rounded-lg hover:bg-bordo transition-colors"
-          >
-            <Plus size={20} />
-            <span>{t('quizzes.addNew')}</span>
-          </button>
-        )}
-      </div>
-
+    <PageShell
+      title={t('quizzes.title')}
+      subtitle={t('quizzes.subtitle')}
+      actions={isAdminOrTeacher && (
+        <Button id="quiz-add-new-btn" icon={Plus} onClick={handleOpenCreate}>
+          {t('quizzes.addNew')}
+        </Button>
+      )}
+    >
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40"
-            size={20}
-          />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={t('quizzes.searchPlaceholder')}
-            className="w-full pl-10 pr-4 py-2 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--foreground)] placeholder:text-[var(--muted-foreground)]/40 focus:outline-none focus:border-bordo transition-colors"
-          />
-        </div>
-
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <Input
+          icon={Search}
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          aria-label={t('quizzes.searchPlaceholder')}
+          placeholder={t('quizzes.searchPlaceholder')}
+        />
         {isAdminOrTeacher && (
-          <div className="w-full md:w-64">
-            <Select
-              value={selectedGroup}
-              onChange={setSelectedGroup}
-              options={[
-                { label: t('exams.allGroups'), value: '' },
-                ...groups.map((group) => ({ label: group.name, value: group._id })),
-              ]}
-            />
-          </div>
+          <Select
+            value={selectedGroup}
+            onChange={setSelectedGroup}
+            options={[
+              { label: t('exams.allGroups'), value: '' },
+              ...groups.map((group) => ({ label: group.name, value: group._id })),
+            ]}
+          />
         )}
       </div>
 
       {/* Quiz Cards */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Spinner />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-64 w-full" />)}
         </div>
+      ) : quizzes.length === 0 ? (
+        <Card variant="paper">
+          <EmptyState sketch="notebook" title={t('quizzes.noQuizzes')} />
+        </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="orn-stagger grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {quizzes.map((quiz) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              key={quiz._id}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-xl p-6 hover:bg-[var(--muted)]/50 transition-all group"
-            >
-              {/* Card Header */}
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-[var(--foreground)] line-clamp-1">
-                  {quiz.title}
-                </h3>
+            <Card key={quiz._id} className="flex h-full flex-col p-5">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="line-clamp-2 text-[1.2rem] font-semibold leading-snug text-ink">{quiz.title}</h3>
                 {isAdminOrTeacher && (
-                  <QuizDropdown quiz={quiz} onEdit={handleEdit} onDelete={handleDelete} />
-                )}
-              </div>
-
-              <p className="text-[var(--muted-foreground)] mb-6 line-clamp-2 text-sm">
-                {quiz.description}
-              </p>
-
-              {/* Meta info */}
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <Users size={16} className="text-bordo" />
-                  <span>
-                    {t('common.group')}: {quiz.group?.name || t('common.unknown')}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <Clock size={16} className="text-bordo" />
-                  <span>
-                    {t('quizzes.duration')}:{' '}
-                    {t('quizzes.minutes', { count: quiz.timeLimit })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-[var(--muted-foreground)]">
-                  <HelpCircle size={16} className="text-bordo" />
-                  <span>
-                    {t('quizzes.questions')}: {quiz.questionCount ?? quiz.questions?.length ?? 0}
-                  </span>
-                </div>
-              </div>
-
-              {/* Card Footer */}
-              <div className="pt-4 border-t border-[var(--border)] flex items-center justify-between">
-                {user.role === 'student' ? (
-                  quiz.attempts?.length > 0 ? (
-                    <button
-                      onClick={() => setTakingQuizId(quiz._id)}
-                      className="w-full flex items-center justify-center gap-2 py-2 bg-green-500/10 border border-green-500/20 text-green-500 rounded-lg transition-colors text-sm font-medium"
-                    >
-                      <Trophy size={16} />
-                      <span>
-                        {t('quizzes.yourResult')}:{' '}
-                        {t('quizzes.scoreOf', { score: quiz.attempts[0].score, total: quiz.attempts[0].totalPoints })}
-                      </span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setTakingQuizId(quiz._id)}
-                      className="w-full flex items-center justify-center gap-2 py-2 bg-bordo/20 hover:bg-bordo/40 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
-                    >
-                      <Trophy size={16} />
-                      <span>{t('quizzes.startNow')}</span>
-                    </button>
-                  )
-                ) : (
-                  <div className="flex items-center justify-between w-full">
-                    <div className="text-sm text-[var(--muted-foreground)]">
-                      <span className="text-[var(--foreground)] font-medium">
-                        {t('quizzes.attemptsCount', { count: quiz.attempts?.length || 0 })}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setResultsQuizId(quiz._id)}
-                      className="px-4 py-2 bg-[var(--muted)] hover:bg-[var(--muted)]/80 text-[var(--foreground)] rounded-lg transition-colors text-sm font-medium"
-                    >
-                      {t('quizzes.resultsBtn')}
-                    </button>
+                  <div className="-mr-1.5 -mt-1 flex shrink-0 items-center">
+                    <Button variant="ghost" iconOnly size="sm" icon={Pencil}
+                      aria-label={t('quizzes.edit')} onClick={() => handleEdit(quiz)} />
+                    <Button variant="ghost" iconOnly size="sm" icon={Trash2}
+                      aria-label={t('quizzes.delete')} onClick={() => handleDelete(quiz)} />
                   </div>
                 )}
               </div>
-            </motion.div>
-          ))}
 
-          {quizzes.length === 0 && (
-            <div className="col-span-full flex flex-col items-center justify-center py-12 text-[var(--muted-foreground)]/40">
-              <HelpCircle size={48} className="mb-4 opacity-50" />
-              <p>{t('quizzes.noQuizzes')}</p>
-            </div>
-          )}
+              <p className="mb-5 mt-2 line-clamp-2 text-[0.98rem] text-ink-muted">{quiz.description}</p>
+
+              <div className="mb-5 space-y-2.5">
+                {meta(Users, `${t('common.group')}: ${quiz.group?.name || t('common.unknown')}`)}
+                {meta(Clock, `${t('quizzes.duration')}: ${t('quizzes.minutes', { count: quiz.timeLimit })}`)}
+                {meta(HelpCircle, `${t('quizzes.questions')}: ${quiz.questionCount ?? quiz.questions?.length ?? 0}`)}
+              </div>
+
+              <div className="mt-auto border-t border-line-hair pt-4">
+                {user.role === 'student' ? (
+                  quiz.attempts?.length > 0 ? (
+                    <Button variant="outline" motif={false} icon={Trophy} block
+                      onClick={() => setTakingQuizId(quiz._id)}>
+                      {t('quizzes.yourResult')}:{' '}
+                      <span className="num">
+                        {t('quizzes.scoreOf', { score: quiz.attempts[0].score, total: quiz.attempts[0].totalPoints })}
+                      </span>
+                    </Button>
+                  ) : (
+                    <Button icon={Trophy} block onClick={() => setTakingQuizId(quiz._id)}>
+                      {t('quizzes.startNow')}
+                    </Button>
+                  )
+                ) : (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-medium text-ink">
+                      {t('quizzes.attemptsCount', { count: quiz.attempts?.length || 0 })}
+                    </span>
+                    <Button variant="outline" onClick={() => setResultsQuizId(quiz._id)}>
+                      {t('quizzes.resultsBtn')}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
         </div>
       )}
 
@@ -278,7 +174,7 @@ const Quizzes = () => {
       {resultsQuizId && (
         <QuizResultsModal quizId={resultsQuizId} onClose={() => setResultsQuizId(null)} />
       )}
-    </div>
+    </PageShell>
   );
 };
 

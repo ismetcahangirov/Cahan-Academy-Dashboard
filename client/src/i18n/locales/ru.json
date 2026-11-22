@@ -1,5 +1,9 @@
 {
   "common": {
+    "openMenu": "Открыть меню",
+    "expandMenu": "Развернуть меню",
+    "collapseMenu": "Свернуть меню",
+    "profile": "Профиль",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
     "welcome": "Добро пожаловать в Cahan Academy",
@@ -33,6 +37,10 @@
     "goBack": "Вернуться назад"
   },
   "auth": {
+    "welcomeScript": "С возвращением",
+    "googleContinue": "Продолжить с Google",
+    "heroLine": "Учимся вместе",
+    "heroSub": "Уроки · Задания · Экзамены",
     "loginTitle": "Cahan Academy",
     "loginSubtitle": "Продолжайте свои уроки, войдя в систему",
     "email": "Электронная почта",
@@ -116,7 +124,14 @@
     "minutesAgo": "{{count}} минут назад",
     "hoursAgo": "{{count}} часов назад",
     "daysAgo": "{{count}} дней назад",
-    "vsLastMonth": "новых в этом месяце к прошлому"
+    "vsLastMonth": "новых в этом месяце к прошлому",
+    "greeting": "Добро пожаловать, {{name}}",
+    "today": "Сегодня",
+    "viewAll": "Все",
+    "moreLessons_one": "Ещё {{count}} урок",
+    "moreLessons_few": "Ещё {{count}} урока",
+    "moreLessons_many": "Ещё {{count}} уроков",
+    "moreLessons_other": "Ещё {{count}} урока"
   },
   "sidebar": {
     "dashboard": "Дашборд",
@@ -229,6 +244,8 @@
     "role": "Роль"
   },
   "groups": {
+    "statusCancelled": "Отменена",
+    "detailsTitle": "О группе",
     "title": "Группы",
     "subtitle": "Управление всеми учебными группами.",
     "newGroup": "Новая Группа",
@@ -264,7 +281,7 @@
     "adding": "Добавление...",
     "creating": "Создание...",
     "updating": "Обновление...",
-    "noStudentsGroup": "В этой группе пока нет студентов",
+    "noStudentsGroup": "Студентов пока нет",
     "statusActive": "Активно",
     "statusCompleted": "Завершено",
     "details": "Подробности",
@@ -329,7 +346,7 @@
     "lessonTopic": "Тема урока",
     "topicPlaceholder": "Что прошли на сегодняшнем уроке?",
     "selectGroupDesc": "Выберите группу для списка студентов",
-    "selectGroupHint": "Вы можете начать отмечать посещаемость, выбрав группу из списка слева.",
+    "selectGroupHint": "Выберите группу из списка групп, чтобы увидеть студентов и отметить посещаемость.",
     "studentList": "Список студентов",
     "status": "Статус посещаемости",
     "present": "Присутствует",
@@ -339,6 +356,7 @@
     "errorGroup": "Выберите группу"
   },
   "schedule": {
+    "noLessonsDay": "В этот день уроков нет",
     "title": "Расписание",
     "addNew": "Добавить новый урок",
     "subject": "Предмет",
@@ -574,6 +592,7 @@
     "linkOrFile": "ссыл."
   },
   "quizzes": {
+    "takeTitle": "Пройти квиз",
     "title": "Квизы",
     "subtitle": "Тесты для проверки ваших знаний",
     "addNew": "Новый квиз",
@@ -629,7 +648,7 @@
     "noQuestions": "В этом квизе пока нет вопросов",
     "answerPlaceholder": "Введите ответ...",
     "resultsTitle": "Результаты квиза",
-    "noAttempts": "Этот квиз ещё никто не прошёл",
+    "noAttempts": "Попыток пока нет",
     "tableStudent": "Студент",
     "tableScore": "Балл",
     "tableDate": "Дата",
@@ -663,6 +682,11 @@
     "deleteError": "Ошибка при удалении уведомления",
     "noNotifications": "У вас пока нет уведомлений.",
     "markAsReadBtn": "Отметить как прочитанное",
+    "emptyTitle": "Уведомлений нет",
+    "unreadCount_one": "{{count}} непрочитанное",
+    "unreadCount_few": "{{count}} непрочитанных",
+    "unreadCount_many": "{{count}} непрочитанных",
+    "unreadCount_other": "{{count}} непрочитанных",
     "deleteBtn": "Удалить",
     "messages": {
       "homeworkCreated": {
@@ -712,6 +736,7 @@
     }
   },
   "invitations": {
+    "emptyHint": "Приглашения ещё не отправлялись. Пригласите преподавателя или студента по e-mail.",
     "title": "Система приглашений",
     "subtitle": "Приглашения для регистрации, отправленные учителям и студентам.",
     "addNew": "Новое приглашение",
@@ -795,6 +820,7 @@
     "totalStudents": "Всего студентов"
   },
   "payments": {
+    "emptyHint": "Для этого студента ещё не создан план оплаты.",
     "title": "Оплаты",
     "newPlan": "Новый план",
     "createPlan": "Создать план",
@@ -802,7 +828,7 @@
     "planUpdated": "План оплаты обновлён",
     "planDeleted": "План оплаты удалён",
     "deleteConfirm": "Вы уверены, что хотите удалить этот план?",
-    "noPlans": "Нет планов оплаты для этого студента",
+    "noPlans": "Планов оплаты нет",
     "noActivePayments": "Нет активных планов оплаты",
     "amount": "Сумма (AZN)",
     "paymentType": "Тип оплаты",

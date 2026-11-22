@@ -1,56 +1,39 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
 import {
   Users as UsersIcon,
   Search,
   Plus,
   Eye,
-  Edit2, 
+  Edit2,
   Trash2,
   GraduationCap,
   TrendingUp,
   BookOpen,
   MoreHorizontal,
-  Banknote
+  Banknote,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
-import { 
-  useGetStudentsQuery, 
+import {
+  useGetStudentsQuery,
   useDeleteStudentMutation,
   useInviteStudentMutation,
-  useUpdateStudentMutation
+  useUpdateStudentMutation,
 } from '../../features/students/studentsApi';
 import UserModal from '../users/UserModal';
 import { toast } from 'react-hot-toast';
-import { cn } from '../../lib/utils';
 import Dropdown from '../../components/common/Dropdown';
 import Select from '../../components/common/Select';
 import { selectCurrentUser } from '../../features/auth/authSlice';
 import { useGetGroupsQuery } from '../../features/groups/groupsApi';
 import { formatDate } from '../../utils/formatDate';
+import { Badge, Button, Card, EmptyState, Input, PageShell, Skeleton, StatCard, StatusPill, Table } from '../../components/ui';
+import { Pagination } from '../users/PeopleBits';
+import { USER_STATUS } from '../users/peopleStatus';
 
 const PAGE_SIZE = 10;
-
-const StatusBadge = ({ status }) => {
-  const { t } = useTranslation();
-  const isActive = status === 'active';
-  return (
-    <span className={cn(
-      'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border',
-      isActive 
-        ? 'border-bordo/20' 
-        : 'bg-[var(--muted)] text-[var(--muted-foreground)] border-[var(--border)]'
-    )}
-    style={{ color: 'var(--bordo-contrast)', backgroundColor: isActive ? 'var(--bordo-muted)' : undefined }}
-    >
-      <span className={cn('w-1.5 h-1.5 rounded-full', isActive ? 'bg-bordo' : 'bg-[var(--muted-foreground)]/40')}></span>
-      {isActive ? t('students.active') : t('students.inactive')}
-    </span>
-  );
-};
 
 const Students = () => {
   const { t } = useTranslation();
@@ -133,66 +116,57 @@ const Students = () => {
       ? [
           { label: t('payments.title'), icon: <Banknote size={14} />, onClick: () => navigate(`/students/${student._id}/payments`) },
           { label: t('common.edit'), icon: <Edit2 size={14} />, onClick: () => handleEdit(student) },
-          { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-bordo hover:bg-bordo/10' },
+          { label: t('common.delete'), icon: <Trash2 size={14} />, onClick: () => handleDelete(student._id), className: 'text-accent-text' },
         ]
       : []),
   ];
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[var(--foreground)] flex items-center gap-3">
-            <div className="p-2 bg-bordo text-white rounded-lg shadow-sm">
-              <UsersIcon size={20} />
-            </div>
-            {t('students.title')}
-          </h1>
-          <p className="text-[var(--muted-foreground)]/60 text-sm mt-1">{t('students.subtitle')}</p>
-        </div>
-        {isAdmin && (
-          <button
-            onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }}
-            className="flex items-center justify-center gap-2 bg-bordo hover:bg-bordo/90 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-bordo/20 font-medium text-sm shrink-0"
-          >
-            <Plus size={18} />
-            {t('students.newStudent')}
-          </button>
-        )}
-      </div>
+  const students = data?.data || [];
+  const loading = isLoading || isFetching;
+  const statusPill = (s) => (
+    <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : s === 'pending' ? t('users.pending') : t('students.inactive')}</StatusPill>
+  );
+  // one line, truncated, full group name(s) in the tooltip: long names no longer wrap into 2-line pills
+  const groupBadge = (student) => (
+    <Badge tone="accent" className="inline-flex max-w-[15rem] items-center gap-1.5 whitespace-nowrap" title={student.group || undefined}>
+      <BookOpen size={12} aria-hidden="true" className="shrink-0" />
+      <span className="min-w-0 truncate">{student.group || t('students.noGroup')}</span>
+    </Badge>
+  );
+  const actionsMenu = (student) => (
+    <Dropdown
+      trigger={<Button variant="ghost" iconOnly size="sm" icon={MoreHorizontal} aria-label={t('students.tableActions')} />}
+      items={rowActions(student)}
+    />
+  );
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {stats.map((stat, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="bg-bordo border border-bordo rounded-2xl p-5 flex items-center gap-4 text-white shadow-lg shadow-bordo/20"
-          >
-            <div className="p-3 rounded-xl bg-white text-bordo shadow-sm">
-              <stat.icon size={22} />
-            </div>
-            <div>
-              <p className="text-white/75 text-sm">{stat.title}</p>
-              <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
-            </div>
-          </motion.div>
+  return (
+    <PageShell
+      title={t('students.title')}
+      subtitle={t('students.subtitle')}
+      actions={
+        isAdmin && (
+          <Button icon={Plus} onClick={() => { setSelectedStudent(null); setIsModalOpen(true); }}>
+            {t('students.newStudent')}
+          </Button>
+        )
+      }
+    >
+      <div className="orn-stagger grid grid-cols-1 gap-4 md:grid-cols-3">
+        {stats.map((stat) => (
+          <StatCard key={stat.title} label={stat.title} value={stat.value} icon={stat.icon} />
         ))}
       </div>
 
-      {/* Search */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 flex flex-col md:flex-row gap-4 items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--muted-foreground)]/40" size={18} />
-          <input
+      <Card className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
+        <div className="w-full flex-1">
+          <Input
+            icon={Search}
             type="text"
+            aria-label={t('students.searchPlaceholder')}
             placeholder={t('students.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[var(--input)] border border-[var(--border)] rounded-xl py-2 pl-10 pr-4 text-[var(--foreground)] text-sm focus:outline-none focus:border-bordo transition-colors"
           />
         </div>
         <Select
@@ -205,100 +179,78 @@ const Students = () => {
             ...(groupsData?.data?.map((g) => ({ label: g.name, value: g._id })) || []),
           ]}
         />
-      </div>
+      </Card>
 
-      {/* Table */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[var(--border)] bg-[var(--muted)]/20">
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider">{t('students.tableStudent')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider">{t('students.tableEmail')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider">{t('students.tableGroup')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider">{t('students.tableStatus')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider">{t('students.tableRegistration')}</th>
-                <th className="px-6 py-4 text-xs font-semibold text-[var(--muted-foreground)]/40 uppercase tracking-wider text-right">{t('students.tableActions')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {isLoading || isFetching ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td className="px-6 py-4"><div className="flex items-center gap-3"><div className="w-10 h-10 rounded-full bg-[var(--muted)]"></div><div className="h-4 bg-[var(--muted)] rounded w-32"></div></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-[var(--muted)] rounded w-40"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-[var(--muted)] rounded w-20"></div></td>
-                    <td className="px-6 py-4"><div className="h-6 bg-[var(--muted)] rounded w-16"></div></td>
-                    <td className="px-6 py-4"><div className="h-4 bg-[var(--muted)] rounded w-24"></div></td>
-                    <td className="px-6 py-4"><div className="h-8 bg-[var(--muted)] rounded w-8 ml-auto"></div></td>
-                  </tr>
-                ))
-              ) : data?.data?.length > 0 ? (
-                data.data.map((student) => (
-                  <tr key={student._id} className="group hover:bg-[var(--muted)]/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar
-                          src={student.avatar}
-                          name={student.name}
-                          className="w-10 h-10 rounded-full border border-[var(--border)] group-hover:border-bordo/50 transition-colors"
-                          textSize="sm"
-                        />
-                        <p className="text-sm font-medium text-[var(--foreground)]">{student.name}</p>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{student.email}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-bordo text-white shadow-sm shadow-bordo/10">
-                        <BookOpen size={12} />
-                        {student.group || t('students.noGroup')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4"><StatusBadge status={student.status} /></td>
-                    <td className="px-6 py-4 text-[var(--muted-foreground)]/60 text-sm">{formatDate(student.createdAt, 'd MMM yyyy')}</td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end">
-                        <Dropdown
-                          trigger={
-                            <button className="p-2 text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] rounded-lg transition-all">
-                              <MoreHorizontal size={16} />
-                            </button>
-                          }
-                          items={rowActions(student)}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center justify-center text-[var(--muted-foreground)]/40">
-                      <GraduationCap size={40} className="mb-2 opacity-20" />
-                      <p>{t('students.noStudents')}</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--muted)]/10 flex items-center justify-between">
-          <p className="text-xs text-[var(--muted-foreground)]/40">
-            {t('students.totalCount', {
-              total,
-              from: total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1,
-              to: Math.min(page * PAGE_SIZE, total),
-            })}
-          </p>
-          <div className="flex items-center gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.prev')}</button>
-            <button disabled={page >= pages || isFetching} onClick={() => setPage(p => p + 1)} className="px-3 py-1 border border-[var(--border)] rounded-lg text-[var(--muted-foreground)]/40 hover:text-[var(--foreground)] hover:bg-[var(--muted)] disabled:opacity-30 text-sm transition-all">{t('students.next')}</button>
+      <section>
+        {loading ? (
+          <div className="space-y-3" aria-busy="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
           </div>
-        </div>
-      </div>
+        ) : students.length === 0 ? (
+          <Card>
+            <EmptyState sketch="globe" title={t('students.noStudents')} />
+          </Card>
+        ) : (
+          <>
+            <div className="hidden sm:block">
+              <Table caption={t('students.title')}>
+                <thead>
+                  <tr>
+                    <th>{t('students.tableStudent')}</th>
+                    <th>{t('students.tableEmail')}</th>
+                    <th>{t('students.tableGroup')}</th>
+                    <th>{t('students.tableStatus')}</th>
+                    <th>{t('students.tableRegistration')}</th>
+                    <th className="text-right">{t('students.tableActions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {students.map((student) => (
+                    <tr key={student._id}>
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <Avatar src={student.avatar} name={student.name} className="h-10 w-10" textSize="sm" />
+                          <p className="font-semibold text-ink">{student.name}</p>
+                        </div>
+                      </td>
+                      <td className="text-ink-muted">{student.email}</td>
+                      <td>{groupBadge(student)}</td>
+                      <td>{statusPill(student.status)}</td>
+                      <td className="text-ink-muted">{formatDate(student.createdAt, 'd MMM yyyy')}</td>
+                      <td className="text-right">{actionsMenu(student)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+
+            <ul className="space-y-3 sm:hidden">
+              {students.map((student) => (
+                <li key={student._id}>
+                  <Card className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar src={student.avatar} name={student.name} className="h-11 w-11 shrink-0" textSize="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold text-ink">{student.name}</p>
+                        <p className="truncate text-sm text-ink-muted">{student.email}</p>
+                      </div>
+                      {actionsMenu(student)}
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      {groupBadge(student)}
+                      {statusPill(student.status)}
+                    </div>
+                    <p className="num mt-2 text-sm text-ink-muted">{formatDate(student.createdAt, 'd MMM yyyy')}</p>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+            <Pagination page={page} pages={pages} total={total} pageSize={PAGE_SIZE} onChange={setPage} />
+          </>
+        )}
+      </section>
 
       <UserModal
         isOpen={isModalOpen}
@@ -306,8 +258,10 @@ const Students = () => {
         onSubmit={handleModalSubmit}
         user={selectedStudent}
         isLoading={isAdding || isUpdating}
+        defaultRole="student"
+        title={t('students.newStudent')}
       />
-    </div>
+    </PageShell>
   );
 };
 

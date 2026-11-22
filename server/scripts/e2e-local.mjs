@@ -16,7 +16,9 @@ Object.assign(process.env, {
   JWT_REFRESH_SECRET: crypto.randomBytes(32).toString('hex'),
   JWT_EXPIRES_IN: '1h',
   JWT_REFRESH_EXPIRES_IN: '7d',
-  CLIENT_URL: 'http://localhost:5173',
+  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+  // QA scripts load hundreds of pages from one IP; see middleware/rateLimiters.js
+  E2E_LOCAL_NO_RATE_LIMIT: '1',
   ACADEMY_TIMEZONE: 'Asia/Baku',
   ADMIN_EMAIL: '',
   ADMIN_PASSWORD: '',
@@ -50,14 +52,25 @@ const { default: Classwork } = await import('../models/Classwork.js');
 const { default: Exam } = await import('../models/Exam.js');
 const { default: Quiz } = await import('../models/Quiz.js');
 const { default: Attendance } = await import('../models/Attendance.js');
+const { default: Invitation } = await import('../models/Invitation.js');
 
 const DAY = 24 * 60 * 60 * 1000;
-const mkUser = (name, email, role) => User.create({ name, email, password, role, status: 'active' });
+const mkUser = (name, email, role, status = 'active') => User.create({ name, email, password, role, status });
 
 const admin = await mkUser('E2E Admin', 'admin@e2e.example.com', 'admin');
 const teacher = await mkUser('E2E Teacher', 'teacher@e2e.example.com', 'teacher');
 const student1 = await mkUser('E2E Student One', 'student1@e2e.example.com', 'student');
 const student2 = await mkUser('E2E Student Two', 'student2@e2e.example.com', 'student');
+// A registration waiting for approval (Users page "pending" state). Azerbaijani letters on purpose:
+// this file is UTF-8, so the name must arrive in the DB exactly as written.
+await mkUser('Gözlənilən İstifadəçi', 'pending@e2e.example.com', 'student', 'pending');
+// An open invitation, so the Invitations list has a populated row without SMTP
+await Invitation.create({
+  email: 'invited.teacher@e2e.example.com',
+  role: 'teacher',
+  invitedBy: admin._id,
+  expiresAt: new Date(Date.now() + 7 * DAY),
+});
 
 // Schedule.dayOfWeek: 0 = Monday ... 6 = Sunday; always include today
 const todayIdx = (new Date().getDay() + 6) % 7;
@@ -91,7 +104,7 @@ await Course.create({
   status: 'published',
 });
 
-await Homework.create({
+const homework = await Homework.create({
   title: 'E2E Homework: Landing page',
   description: 'Build a landing page and submit the repository link.',
   group: group._id,
@@ -99,7 +112,7 @@ await Homework.create({
   dueDate: new Date(Date.now() + 7 * DAY),
 });
 
-await Classwork.create({
+const classwork = await Classwork.create({
   title: 'E2E Classwork: Flexbox',
   description: 'Recreate the layout from class.',
   group: group._id,
@@ -107,13 +120,13 @@ await Classwork.create({
   dueDate: new Date(Date.now() + 2 * DAY),
 });
 
-await Exam.create({
+const exam = await Exam.create({
   title: 'E2E Exam: JavaScript basics',
   description: 'Auto-graded and open-ended questions',
   group: group._id,
   teacher: teacher._id,
   date: new Date(),
-  duration: 30,
+  duration: 240, // long window so a local QA session can open the take page for hours after start
   questions: [
     { text: 'Which keyword declares a block-scoped constant?', type: 'multiple-choice', options: ['var', 'const', 'function'], correctAnswer: '1', points: 1 },
     { text: 'typeof null === "object"', type: 'true-false', correctAnswer: 'true', points: 1 },
@@ -121,7 +134,7 @@ await Exam.create({
   ],
 });
 
-await Quiz.create({
+const quiz = await Quiz.create({
   title: 'E2E Quiz: CSS',
   description: 'Quick CSS check',
   group: group._id,
@@ -146,6 +159,69 @@ for (const daysAgo of [7, 2]) {
       { student: student1._id, status: 'present' },
       { student: student2._id, status: daysAgo === 7 ? 'absent' : 'late' },
     ],
+  });
+}
+
+// Student Two has already handed things in, so the grading / results / answer-review modals have
+// a row to show (Student One keeps everything open for the take/submit flows).
+homework.submissions.push({ student: student2._id, status: 'submitted', submittedAt: new Date(), files: ['https://github.com/e2e/landing-page'], note: 'Responsive version included.' });
+await homework.save();
+classwork.submissions.push({ student: student2._id, status: 'submitted', submittedAt: new Date(), files: ['https://codepen.io/e2e/flexbox'] });
+await classwork.save();
+const [q1, q2, q3] = exam.questions;
+exam.results.push({
+  student: student2._id,
+  score: 50,
+  earnedPoints: 2,
+  totalPoints: 4,
+  answers: [
+    { questionId: q1._id, selectedOption: '1', isCorrect: true, awardedPoints: 1 },
+    { questionId: q2._id, selectedOption: 'true', isCorrect: true, awardedPoints: 1 },
+    { questionId: q3._id, selectedOption: 'let is block scoped, var is function scoped and hoisted.', awardedPoints: null },
+  ],
+});
+await exam.save();
+const [z1, z2, z3] = quiz.questions;
+quiz.attempts.push({
+  student: student2._id,
+  score: 1,
+  totalPoints: 4,
+  answers: [
+    { questionId: z1._id, selectedOption: '0', isCorrect: true, awardedPoints: 1 },
+    { questionId: z2._id, selectedOption: 'false', isCorrect: false, awardedPoints: 0 },
+    { questionId: z3._id, selectedOption: 'Grid for two-dimensional layouts.', awardedPoints: null },
+  ],
+});
+await quiz.save();
+
+// A second group with a long name: exercises wrapping/truncation in tables and pills
+await Group.create({
+  name: 'E2E Advanced Full-Stack JavaScript Evening Group',
+  teacher: teacher._id,
+  students: [student2._id],
+  course: 'Full-Stack',
+  schedule: { repetitionType: 'weekly', days: ['1', '3'], startTime: '10:00', endTime: '12:00', type: 'offline' },
+  startDate: new Date(Date.now() - 10 * DAY),
+});
+
+// Optional bulk data for long-list checks (perf probe, scrolling): E2E_BULK=<n> adds n students, groups and homeworks
+const bulk = Math.min(Number(process.env.E2E_BULK || 0), 200);
+for (let i = 1; i <= bulk; i += 1) {
+  const s = await mkUser(`E2E Bulk Student ${i}`, `bulk${i}@e2e.example.com`, 'student');
+  const g = await Group.create({
+    name: `E2E Bulk Group ${i}`,
+    teacher: teacher._id,
+    students: [s._id, student1._id],
+    course: 'Frontend',
+    schedule: { repetitionType: 'weekly', days: [String(i % 7)], startTime: '15:00', endTime: '16:30', type: i % 2 ? 'online' : 'offline' },
+    startDate: new Date(Date.now() - i * DAY),
+  });
+  await Homework.create({
+    title: `E2E Bulk Homework ${i}`,
+    description: 'Generated for long-list checks.',
+    group: g._id,
+    teacher: teacher._id,
+    dueDate: new Date(Date.now() + ((i % 14) - 4) * DAY),
   });
 }
 
