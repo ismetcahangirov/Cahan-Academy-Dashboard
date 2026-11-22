@@ -29,7 +29,5 @@ src/pages/schedule/Schedule.jsx
 src/pages/settings/Settings.jsx
 src/pages/students/StudentDetail.jsx
 src/pages/students/Students.jsx
-src/pages/teachers/TeacherDetail.jsx
-src/pages/teachers/Teachers.jsx
 src/components/grading/AnswerReviewModal.jsx
 src/components/schedule/JoinClassButton.jsx
