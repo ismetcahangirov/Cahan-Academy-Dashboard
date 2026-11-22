@@ -16,7 +16,6 @@ src/pages/exams/TakeExam.jsx
 src/pages/groups/Groups.jsx
 src/pages/homeworks/Homeworks.jsx
 src/pages/invitations/AcceptInvitation.jsx
-src/pages/invitations/Invitations.jsx
 src/pages/meeting/MeetingRoom.jsx
 src/pages/notifications/Notifications.jsx
 src/pages/payments/StudentPayments.jsx
