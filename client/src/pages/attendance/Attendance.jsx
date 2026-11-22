@@ -161,7 +161,7 @@ const Attendance = () => {
             <Card>
               <EmptyState
                 sketch="globe"
-                title={t('attendance.selectGroupDesc')}
+                title={t('attendance.selectGroup')}
                 description={t('attendance.selectGroupHint')}
               />
             </Card>

@@ -81,6 +81,7 @@ const Invitations = () => {
             <EmptyState
               sketch="notebook"
               title={t('invitations.noInvitations')}
+              description={t('invitations.emptyHint')}
               action={
                 <Button variant="outline" icon={Plus} onClick={() => setIsModalOpen(true)}>
                   {t('invitations.addNew')}

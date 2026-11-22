@@ -242,6 +242,7 @@
     "role": "Role"
   },
   "groups": {
+    "detailsTitle": "Group details",
     "title": "Groups",
     "subtitle": "Management of all study groups.",
     "newGroup": "New Group",
@@ -277,7 +278,7 @@
     "adding": "Adding...",
     "creating": "Creating...",
     "updating": "Updating...",
-    "noStudentsGroup": "No students in this group yet",
+    "noStudentsGroup": "No students yet",
     "statusActive": "Active",
     "statusCompleted": "Completed",
     "details": "Details",
@@ -342,7 +343,7 @@
     "lessonTopic": "Lesson Topic",
     "topicPlaceholder": "What was covered in today's lesson?",
     "selectGroupDesc": "Select a group for the student list",
-    "selectGroupHint": "You can start recording attendance by selecting a group from the list on the left.",
+    "selectGroupHint": "Pick a group from the list of groups to see its students and record attendance.",
     "studentList": "Student List",
     "status": "Attendance Status",
     "present": "Present",
@@ -352,6 +353,7 @@
     "errorGroup": "Select a group"
   },
   "schedule": {
+    "noLessonsDay": "No lessons on this day",
     "title": "Schedule",
     "addNew": "Add New Lesson",
     "subject": "Subject",
@@ -583,6 +585,7 @@
     "linkOrFile": "link(s)"
   },
   "quizzes": {
+    "takeTitle": "Take the quiz",
     "title": "Quizzes",
     "subtitle": "Tests to check your knowledge",
     "addNew": "New Quiz",
@@ -636,7 +639,7 @@
     "noQuestions": "This quiz has no questions yet",
     "answerPlaceholder": "Type your answer...",
     "resultsTitle": "Quiz results",
-    "noAttempts": "Nobody has completed this quiz yet",
+    "noAttempts": "No attempts yet",
     "tableStudent": "Student",
     "tableScore": "Score",
     "tableDate": "Date",
@@ -722,6 +725,7 @@
     }
   },
   "invitations": {
+    "emptyHint": "No invitations have been sent yet. Invite a teacher or a student by e-mail.",
     "title": "Invitations System",
     "subtitle": "Registration invitations sent to teachers and students.",
     "addNew": "New Invitation",
@@ -738,7 +742,7 @@
     "sendSuccess": "Invitation sent successfully",
     "deleteConfirm": "Are you sure you want to cancel this invitation?",
     "deleteSuccess": "Invitation cancelled",
-    "noInvitations": "No invitations sent yet",
+    "noInvitations": "No invitations yet",
     "modalTitle": "Send New Invitation",
     "emailLabel": "Email address",
     "roleLabel": "Select Role",
@@ -805,6 +809,7 @@
     "totalStudents": "Total Students"
   },
   "payments": {
+    "emptyHint": "No payment plan has been set up for this student yet.",
     "title": "Payments",
     "newPlan": "New Plan",
     "createPlan": "Create Plan",
@@ -812,7 +817,7 @@
     "planUpdated": "Payment plan updated",
     "planDeleted": "Payment plan deleted",
     "deleteConfirm": "Are you sure you want to delete this plan?",
-    "noPlans": "No payment plans for this student",
+    "noPlans": "No payment plans",
     "noActivePayments": "No active payment plans",
     "amount": "Amount (AZN)",
     "paymentType": "Payment Type",
