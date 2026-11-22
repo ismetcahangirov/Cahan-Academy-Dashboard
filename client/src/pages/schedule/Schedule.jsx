@@ -87,7 +87,7 @@ const Schedule = () => {
             </div>
 
             {byDay[dayIndex].length === 0 ? (
-              <p className="py-3 text-center text-sm text-ink-muted">{t('schedule.noLessons')}</p>
+              <p className="py-3 text-center text-sm text-ink-muted">{dayIndex === todayIdx ? t('schedule.noLessons') : t('schedule.noLessonsDay')}</p>
             ) : (
               <Timeline>
                 {byDay[dayIndex].map((entry) => (

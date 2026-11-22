@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentUser, logout } from '../../features/auth/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -39,6 +39,12 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const { pathname } = useLocation();
+  const navRef = useRef(null);
+  // Geometry of every nav link, measured once (mount, resize, collapse) and cached, so a route
+  // change only moves the marker with a transform and never forces a layout read.
+  const [geometry, setGeometry] = useState([]);
+  const [markerReady, setMarkerReady] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -101,6 +107,44 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   };
 
   const links = getLinksByRole(user?.role || 'student');
+  const linkKey = links.map((l) => l.path).join('|');
+  const activeIndex = links.findIndex((l) =>
+    l.path === '/' ? pathname === '/' : pathname === l.path || pathname.startsWith(`${l.path}/`)
+  );
+
+  const measureLinks = useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const next = [...nav.querySelectorAll('a[data-nav-link]')].map((a) => ({
+      x: a.offsetLeft,
+      y: a.offsetTop,
+      w: a.offsetWidth,
+      h: a.offsetHeight,
+    }));
+    setGeometry((prev) =>
+      prev.length === next.length && prev.every((p, i) => p.x === next[i].x && p.y === next[i].y && p.w === next[i].w && p.h === next[i].h)
+        ? prev
+        : next
+    );
+  }, []);
+
+  useLayoutEffect(() => {
+    measureLinks();
+    const nav = navRef.current;
+    if (!nav || typeof ResizeObserver === 'undefined') return undefined;
+    const ro = new ResizeObserver(() => measureLinks());
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, [measureLinks, linkKey, isCollapsed]);
+
+  // first placement without a slide; later route changes glide
+  useEffect(() => {
+    if (!geometry.length || markerReady) return undefined;
+    const id = requestAnimationFrame(() => setMarkerReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [geometry.length, markerReady]);
+
+  const marker = activeIndex >= 0 ? geometry[activeIndex] : null;
 
   const handleLogout = () => {
     if (window.confirm(t('common.logoutConfirm'))) {
@@ -138,14 +182,18 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         )}
       </AnimatePresence>
 
+      {/* Desktop: the column runs the full page height (wine + lace to the bottom of long pages)
+          while the panel itself stays sticky to the viewport. Mobile: the panel is a fixed drawer. */}
+      <div className="sidebar-column lg:relative lg:z-40 lg:shrink-0">
+        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 hidden h-full lg:block" />
       <motion.aside
         initial={false}
         animate={isMobile ? (isMobileOpen ? 'mobileOpen' : 'mobileClosed') : isCollapsed ? 'collapsed' : 'expanded'}
         variants={sidebarVariants}
         className="theme-wine sidebar-wine fixed left-0 top-0 z-50 flex h-screen w-[264px] flex-col lg:sticky"
       >
-        {/* lace trim hanging over the content edge */}
-        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 h-full" />
+        {/* lace trim hanging over the content edge (drawer; on desktop the column draws it) */}
+        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 h-full lg:hidden" />
 
         {/* Brand */}
         <div className={cn('relative flex items-center pb-3 pt-6', compact ? 'flex-col gap-3 px-2' : 'justify-between gap-2 pl-5 pr-3')}>
@@ -171,13 +219,24 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         {!compact && <OrnamentDivider draw={false} className="relative pb-1 [&>svg]:w-20" />}
 
         {/* Navigation */}
-        <nav className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
+        <nav ref={navRef} className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
+          {/* active marker + satin bookmark ribbon: one element, moved with a transform (compositor only) */}
+          {marker && (
+            <span
+              aria-hidden="true"
+              className={cn('sidebar-active sidebar-marker', markerReady && 'is-ready')}
+              style={{ width: marker.w, height: marker.h, transform: `translate3d(${marker.x}px, ${marker.y}px, 0)` }}
+            >
+              <span className="sidebar-ribbon" />
+            </span>
+          )}
           {links.map((link) => {
             const Icon = link.icon;
             return (
               <NavLink
                 key={link.path}
                 to={link.path}
+                data-nav-link=""
                 end={link.path === '/'}
                 title={compact ? link.name : undefined}
                 onClick={() => setIsMobileOpen(false)}
@@ -191,17 +250,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
               >
                 {({ isActive }) => (
                   <>
-                    {isActive && (
-                      <motion.span
-                        layoutId="sidebar-active"
-                        transition={EASE.spring}
-                        aria-hidden="true"
-                        className="sidebar-active absolute inset-0 rounded-[10px]"
-                      >
-                        {/* satin bookmark ribbon marking the current page */}
-                        <span className="sidebar-ribbon" />
-                      </motion.span>
-                    )}
                     <Icon size={19} strokeWidth={1.5} className="relative shrink-0" />
                     <span
                       className={cn(
@@ -251,6 +299,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           </div>
         </div>
       </motion.aside>
+      </div>
     </>
   );
 };

@@ -11,7 +11,11 @@ import OrnamentDivider from './OrnamentDivider';
  *   <ScriptTitle align="center" size="section" title="…" subtitle="…" />
  * Props: title, subtitle, eyebrow (small caps above), actions, align 'start'|'center',
  *        size 'hero'|'page'|'section'|'card', as (heading tag, default h1 for page/hero else h2),
- *        divider (default true), className.
+ *        entity (serif line under the script title), divider (default true), className.
+ *
+ * Rule: the script carries a SHORT FIXED phrase ("İmtahan nəticələri", "Yeni qrup"). Data — an exam,
+ * quiz, course, group or person name — never goes into the script; pass it as `entity` (serif,
+ * semibold, wraps cleanly). Only a detail page may use its entity's (person's) name as the page title.
  */
 const SIZES = {
   hero: 'text-[3.4rem] sm:text-[4.2rem]',
@@ -29,6 +33,7 @@ const ScriptTitle = ({
   size = 'page',
   as,
   divider = true,
+  entity,
   className,
 }) => {
   const Tag = as || (size === 'page' || size === 'hero' ? 'h1' : 'h2');
@@ -44,6 +49,7 @@ const ScriptTitle = ({
         <div className="min-w-0">
           {eyebrow && <p className="sc mb-1 text-[0.8rem] text-ink-muted">{eyebrow}</p>}
           <Tag className={cn('script-title break-words pb-1', SIZES[size])}>{title}</Tag>
+          {entity && <p className="mt-0.5 break-words text-[1.2rem] font-semibold leading-snug text-ink">{entity}</p>}
           {subtitle && <p className="sc mt-1.5 text-[0.9rem] text-ink-muted">{subtitle}</p>}
         </div>
         {actions && (

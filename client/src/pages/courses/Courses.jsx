@@ -22,6 +22,32 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
 import Select from '../../components/common/Select';
 import { PageShell, Card, Button, Badge, Modal, FormField, Input, Textarea, EmptyState, Skeleton } from '../../components/ui';
+import { SketchIllustration } from '../../components/ornament';
+import { courseThumbnail } from '../../lib/courseThumbnail';
+
+// Course cover: the uploaded image, or a parchment panel with the books sketch when there is none
+// (empty, placeholder-service URL, or the image fails to load).
+const CourseCover = ({ course }) => {
+  const src = courseThumbnail(course);
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div className="paper flex h-full w-full items-center justify-center">
+        <SketchIllustration name="books" className="w-28" />
+      </div>
+    );
+  }
+  return (
+    <img
+      data-user-image
+      src={src}
+      alt={course.title}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    />
+  );
+};
 
 const getLevelConfig = (t) => ({
   Beginner: { label: t('courses.levels.Beginner') },
@@ -163,13 +189,7 @@ const Courses = () => {
               className="group overflow-hidden"
             >
               <div className="relative h-40 overflow-hidden bg-surface-2">
-                <img
-                  data-user-image
-                  src={course.thumbnail}
-                  alt={course.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                <CourseCover course={course} />
                 <div className="absolute left-3 top-3">
                   <Badge className="bg-surface">{levelConfig[course.level]?.label || course.level}</Badge>
                 </div>
@@ -184,7 +204,7 @@ const Courses = () => {
               <div className="space-y-3 p-5">
                 <div>
                   <span className="sc text-[0.8rem] text-accent-text">{course.category}</span>
-                  <h3 className="line-clamp-1 text-[1.2rem] font-semibold text-ink">{course.title}</h3>
+                  <h3 className="line-clamp-2 break-words text-[1.2rem] font-semibold leading-snug text-ink" title={course.title}>{course.title}</h3>
                 </div>
                 <p className="line-clamp-2 min-h-[3rem] text-[0.95rem] text-ink-muted">{course.description}</p>
                 <div className="flex items-center justify-between border-t border-line-hair pt-3">

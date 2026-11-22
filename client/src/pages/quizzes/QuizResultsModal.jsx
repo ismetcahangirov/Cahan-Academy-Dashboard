@@ -6,6 +6,7 @@ import Avatar from '../../components/common/Avatar';
 import Spinner from '../../components/common/Spinner';
 import AnswerReviewModal from '../../components/grading/AnswerReviewModal';
 import { Button, EmptyState, Modal, StatusPill, Table } from '../../components/ui';
+import { formatDate } from '../../utils/formatDate';
 
 const QuizResultsModal = ({ quizId, onClose }) => {
   const { t, i18n } = useTranslation();
@@ -27,7 +28,8 @@ const QuizResultsModal = ({ quizId, onClose }) => {
         // the nested review dialog owns Escape while it is open
         onClose={reviewStudentId ? () => {} : onClose}
         size="xl"
-        title={`${t('quizzes.resultsTitle')}: ${quiz?.title || ''}`}
+        title={t('quizzes.resultsTitle')}
+        entity={quiz?.title}
         subtitle={`${quiz?.group?.name || ''} • ${t('quizzes.attemptsCount', { count: attempts.length })}`}
         footer={<Button variant="ghost" onClick={onClose}>{t('quizzes.close')}</Button>}
       >
@@ -70,9 +72,8 @@ const QuizResultsModal = ({ quizId, onClose }) => {
                     </td>
                     <td className="time-italic text-ink-muted">
                       {attempt.completedAt
-                        ? new Date(attempt.completedAt).toLocaleString(i18n.language, {
-                          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
-                        })
+                        // date-fns, not toLocaleString: browser ICU lacks az month names ("M11 22")
+                        ? formatDate(attempt.completedAt, 'd MMM, HH:mm', i18n.language)
                         : '—'}
                     </td>
                     <td>

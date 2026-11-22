@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -34,6 +34,7 @@ import Avatar from '../../components/common/Avatar';
 import { PageShell, Card, Button, Badge, StatusPill, Modal, FormField, Input, Textarea, EmptyState, Skeleton } from '../../components/ui';
 import { DAY_KEYS, DAY_NAMES, formatDays, toDayName } from '../../utils/days';
 import { formatDate } from '../../utils/formatDate';
+import { useProgressiveList } from '../../lib/useProgressiveList';
 
 // Days are stored as language-neutral English names; labels follow the UI language
 const getDays = (t) => DAY_NAMES.map((value, i) => ({ value, label: t(`schedule.days.${DAY_KEYS[i]}`) }));
@@ -74,7 +75,8 @@ const GroupDetailModal = ({ groupId, onClose, isAdmin }) => {
       open
       onClose={onClose}
       size="lg"
-      title={isLoading ? t('common.loading') : group?.name}
+      title={t('groups.detailsTitle')}
+      entity={isLoading ? t('common.loading') : group?.name}
       subtitle={isLoading ? undefined : group?.course}
     >
       {isLoading ? (
@@ -201,6 +203,78 @@ const GroupDetailModal = ({ groupId, onClose, isAdmin }) => {
   );
 };
 
+// One card of the groups grid. Memoised: RTK Query state changes re-render the page several times
+// on mount (groups, teachers, students), and 40+ unchanged cards must not render again each time.
+const GroupCard = memo(function GroupCard({ group, featured, isAdmin, onEdit, onDelete, onDetails }) {
+  const { t } = useTranslation();
+  return (
+    <Card
+      variant={featured ? 'featured' : 'plain'}
+      hover
+      className={cn('space-y-4 p-5', featured && 'p-7')}
+    >
+      <div className="flex items-start justify-between">
+        <BookOpen size={22} className="text-accent-text" aria-hidden="true" />
+        {isAdmin && (
+          <div className={cn('flex gap-1', featured && 'mr-6')}>
+            <Button variant="ghost" size="sm" iconOnly icon={Edit2} onClick={() => onEdit(group)} aria-label={t('common.edit')} />
+            <Button variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => onDelete(group._id)} aria-label={t('common.delete')} />
+          </div>
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-[1.2rem] font-semibold text-ink">{group.name}</h3>
+        <p className="text-ink-muted">{group.course}</p>
+      </div>
+
+      <div className="space-y-2 border-t border-line-hair pt-3">
+        <div className="flex items-center gap-2 text-ink-muted">
+          <User size={14} aria-hidden="true" />
+          <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
+        </div>
+        <div className="flex items-center gap-2 text-ink-muted">
+          <Users size={14} aria-hidden="true" />
+          <span>{group.students?.length || 0} {t('sidebar.students')}</span>
+        </div>
+        {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
+          <div className="flex flex-col gap-1 text-ink-muted">
+            <div className="flex items-center gap-2">
+              <Calendar size={14} aria-hidden="true" />
+              <span className="min-w-0 flex-1">
+                {group.schedule.repetitionType === 'weekly'
+                  ? formatDays(group.schedule.days, t)
+                  : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
+              </span>
+              <span className="sc ml-auto shrink-0 whitespace-nowrap text-[0.75rem]">
+                {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
+              </span>
+            </div>
+            {(group.schedule.startTime || group.schedule.endTime) && (
+              <div className="flex items-center gap-2 pl-5 text-sm">
+                <span className="num">{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
+                <Badge>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</Badge>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between pt-2">
+        <StatusPill status={group.status === 'active' ? 'success' : 'neutral'}>
+          {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
+        </StatusPill>
+        <button
+          onClick={() => onDetails(group._id)}
+          className="sc flex min-h-10 items-center gap-1 text-[0.9rem] text-accent-text hover:underline"
+        >
+          {t('groups.details')} <ChevronRight size={15} aria-hidden="true" />
+        </button>
+      </div>
+    </Card>
+  );
+});
+
 // ─── Main Groups Page ────────────────────────────────────────────────────────
 const Groups = () => {
   const { t } = useTranslation();
@@ -229,9 +303,10 @@ const Groups = () => {
   const isAdmin = user?.role === 'admin';
 
   const { data: groupsData, isLoading } = useGetGroupsQuery();
-  // Only the admin form needs these lists (and only admins may fetch teachers)
-  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin });
-  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin });
+  // Only the admin form needs these lists (and only admins may fetch teachers). Fetched when the form
+  // opens, so entering the page does not wait on (and re-render for) two extra requests.
+  const { data: teachersData } = useGetTeachersQuery({ limit: 100 }, { skip: !isAdmin || !isCreateModalOpen });
+  const { data: studentsData } = useGetStudentsQuery({ limit: 500 }, { skip: !isAdmin || !isCreateModalOpen });
   const [createGroup, { isLoading: isCreating }] = useCreateGroupMutation();
   const [updateGroup, { isLoading: isUpdating }] = useUpdateGroupMutation();
   const [deleteGroup] = useDeleteGroupMutation();
@@ -252,7 +327,7 @@ const Groups = () => {
     }
   };
 
-  const handleEditClick = (group) => {
+  const handleEditClick = useCallback((group) => {
     setEditingGroupId(group._id);
     setFormData({
       name: group.name,
@@ -271,7 +346,7 @@ const Groups = () => {
       },
     });
     setIsCreateModalOpen(true);
-  };
+  }, [setFormData]);
 
   const handleCloseModal = () => {
     setIsCreateModalOpen(false);
@@ -293,7 +368,7 @@ const Groups = () => {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = useCallback(async (id) => {
     if (window.confirm(t('groups.deleteConfirm'))) {
       try {
         await deleteGroup(id).unwrap();
@@ -302,7 +377,7 @@ const Groups = () => {
         toast.error(t('students.error'));
       }
     }
-  };
+  }, [deleteGroup, t]);
 
   const filteredGroups = groupsData?.data?.filter(
     (group) =>
@@ -321,6 +396,7 @@ const Groups = () => {
     );
 
   const featuredId = filteredGroups?.find((g) => g.status === 'active')?._id;
+  const visibleGroups = useProgressiveList(filteredGroups);
 
   return (
     <PageShell
@@ -355,72 +431,16 @@ const Groups = () => {
                 <EmptyState sketch="globe" title={t('groups.noGroups')} />
               </Card>
             )
-          : filteredGroups?.map((group) => (
-              <Card
+          : visibleGroups?.map((group) => (
+              <GroupCard
                 key={group._id}
-                variant={group._id === featuredId ? 'featured' : 'plain'}
-                hover
-                className={cn('space-y-4 p-5', group._id === featuredId && 'p-7')}
-              >
-                <div className="flex items-start justify-between">
-                  <BookOpen size={22} className="text-accent-text" aria-hidden="true" />
-                  {isAdmin && (
-                    <div className={cn('flex gap-1', group._id === featuredId && 'mr-6')}>
-                      <Button variant="ghost" size="sm" iconOnly icon={Edit2} onClick={() => handleEditClick(group)} aria-label={t('common.edit')} />
-                      <Button variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => handleDelete(group._id)} aria-label={t('common.delete')} />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <h3 className="text-[1.2rem] font-semibold text-ink">{group.name}</h3>
-                  <p className="text-ink-muted">{group.course}</p>
-                </div>
-
-                <div className="space-y-2 border-t border-line-hair pt-3">
-                  <div className="flex items-center gap-2 text-ink-muted">
-                    <User size={14} aria-hidden="true" />
-                    <span>{group.teacher?.name || t('teachers.noTeachers')}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-ink-muted">
-                    <Users size={14} aria-hidden="true" />
-                    <span>{group.students?.length || 0} {t('sidebar.students')}</span>
-                  </div>
-                  {(group.schedule?.days?.length > 0 || group.schedule?.specificDate) && (
-                    <div className="flex flex-col gap-1 text-ink-muted">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} aria-hidden="true" />
-                        <span className="min-w-0 flex-1">
-                          {group.schedule.repetitionType === 'weekly'
-                            ? formatDays(group.schedule.days, t)
-                            : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
-                        </span>
-                        <span className="sc ml-auto shrink-0 whitespace-nowrap text-[0.75rem]">
-                          {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
-                        </span>
-                      </div>
-                      {(group.schedule.startTime || group.schedule.endTime) && (
-                        <div className="flex items-center gap-2 pl-5 text-sm">
-                          <span className="num">{group.schedule.startTime || ''} - {group.schedule.endTime || ''}</span>
-                          <Badge>{group.schedule.type === 'online' ? t('groups.formatOnline') : t('groups.formatOffline')}</Badge>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <StatusPill status={group.status === 'active' ? 'success' : 'neutral'}>
-                    {group.status === 'active' ? t('groups.statusActive') : t('groups.statusCompleted')}
-                  </StatusPill>
-                  <button
-                    onClick={() => setSelectedGroupId(group._id)}
-                    className="sc flex min-h-10 items-center gap-1 text-[0.9rem] text-accent-text hover:underline"
-                  >
-                    {t('groups.details')} <ChevronRight size={15} aria-hidden="true" />
-                  </button>
-                </div>
-              </Card>
+                group={group}
+                featured={group._id === featuredId}
+                isAdmin={isAdmin}
+                onEdit={handleEditClick}
+                onDelete={handleDelete}
+                onDetails={setSelectedGroupId}
+              />
             ))}
       </div>
 

@@ -20,7 +20,8 @@ const userSchema = (t, isEdit) => z.object({
     : z.string().regex(PASSWORD_REGEX, t('auth.passwordRule')),
 });
 
-const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
+// defaultRole / title: Students and Teachers open the same form pre-set to their role
+const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading, defaultRole = 'student', title }) => {
   const { t } = useTranslation();
   const isEdit = !!user;
 
@@ -35,7 +36,7 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
     defaultValues: {
       name: '',
       email: '',
-      role: 'student',
+      role: defaultRole,
       status: 'active',
       password: '',
     },
@@ -54,18 +55,18 @@ const UserModal = ({ isOpen, onClose, onSubmit, user, isLoading }) => {
       reset({
         name: '',
         email: '',
-        role: 'student',
+        role: defaultRole,
         status: 'active',
         password: '',
       });
     }
-  }, [user, reset, isOpen]);
+  }, [user, reset, isOpen, defaultRole]);
 
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
-      title={isEdit ? t('users.editUser') : t('users.newUser')}
+      title={isEdit ? t('users.editUser') : title || t('users.newUser')}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>

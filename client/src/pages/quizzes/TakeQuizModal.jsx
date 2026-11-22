@@ -194,7 +194,8 @@ const TakeQuizModal = ({ quizId, onClose }) => {
         // the nested review dialog owns Escape while it is open
         onClose={showAnswers ? () => {} : handleClose}
         size="lg"
-        title={quiz?.title}
+        title={t('quizzes.takeTitle')}
+        entity={quiz?.title}
         footer={(
           <>
             <Button variant="ghost" onClick={handleClose}>{t('quizzes.close')}</Button>

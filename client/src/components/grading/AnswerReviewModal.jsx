@@ -181,7 +181,8 @@ const AnswerReviewModal = ({ kind, id, studentId, canGrade = false, onClose }) =
       open
       onClose={onClose}
       size="lg"
-      title={`${t(`${ns}.reviewTitle`)}${review?.student?.name ? `: ${review.student.name}` : ''}`}
+      title={t(`${ns}.reviewTitle`)}
+      entity={review?.student?.name}
       subtitle={subtitle}
       footer={(
         <>

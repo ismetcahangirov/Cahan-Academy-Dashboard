@@ -365,6 +365,7 @@ const StudentPayments = () => {
           <EmptyState
             sketch="inkwell"
             title={t('payments.noPlans')}
+            description={t('payments.emptyHint')}
             action={
               <Button variant="outline" icon={Plus} onClick={() => setShowForm(true)}>
                 {t('payments.newPlan')}

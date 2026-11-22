@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { Children, cloneElement, isValidElement, useId } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -9,14 +9,32 @@ import { cn } from '../../lib/utils';
  * <FormField label={t('auth.email')} error={errors.email?.message} hint="…">
  *   {(id, describedBy) => <Input id={id} aria-describedby={describedBy} icon={Mail} {...register('email')} />}
  * </FormField>
- * FormField also accepts a plain child; then pass `htmlFor` yourself.
+ * FormField also accepts a plain child: a single <Input>/<Textarea>/<NativeSelect> (or native input/textarea/
+ * select) gets the label's id and aria-describedby automatically; for anything else pass `htmlFor` yourself.
  * <Input icon={Search} placeholder="…" />   <Textarea rows={4} />   <NativeSelect>…<option/></NativeSelect>
  * <Checkbox label="Yadda saxla" />  (also .check on a raw input)
  * Classes for raw elements: .field, .field-label, .field-hint, .field-error, .check
  */
+// Wire a plain single field child to the label (id) and to the hint/error (aria-describedby).
+const LABELLABLE = new Set(['input', 'textarea', 'select']);
+const isFieldChild = (children) =>
+  typeof children !== 'function' &&
+  Children.count(children) === 1 &&
+  isValidElement(children) &&
+  (LABELLABLE.has(children.type) || children.type === Input || children.type === Textarea || children.type === NativeSelect);
+const linkChild = (children, id, describedBy, error) => {
+  if (!isFieldChild(children)) return children;
+  const { type, props } = children;
+  return cloneElement(children, {
+    id,
+    'aria-describedby': [props['aria-describedby'], describedBy].filter(Boolean).join(' ') || undefined,
+    ...(error && type !== 'input' && type !== 'textarea' && type !== 'select' ? { invalid: props.invalid ?? true } : null),
+  });
+};
+
 export const FormField = ({ label, hint, error, required, htmlFor, className, children }) => {
   const autoId = useId();
-  const id = htmlFor || autoId;
+  const id = htmlFor || (isFieldChild(children) && children.props.id) || autoId;
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
@@ -28,7 +46,7 @@ export const FormField = ({ label, hint, error, required, htmlFor, className, ch
           {required && <span aria-hidden="true"> *</span>}
         </label>
       )}
-      {typeof children === 'function' ? children(id, describedBy, Boolean(error)) : children}
+      {typeof children === 'function' ? children(id, describedBy, Boolean(error)) : linkChild(children, id, describedBy, error)}
       {hint && !error && (
         <p id={hintId} className="field-hint">
           {hint}

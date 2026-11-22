@@ -126,10 +126,11 @@ const Students = () => {
   const statusPill = (s) => (
     <StatusPill status={USER_STATUS[s] || 'neutral'}>{s === 'active' ? t('students.active') : s === 'pending' ? t('users.pending') : t('students.inactive')}</StatusPill>
   );
+  // one line, truncated, full group name(s) in the tooltip: long names no longer wrap into 2-line pills
   const groupBadge = (student) => (
-    <Badge tone="accent" className="inline-flex items-center gap-1.5">
-      <BookOpen size={12} aria-hidden="true" />
-      {student.group || t('students.noGroup')}
+    <Badge tone="accent" className="inline-flex max-w-[15rem] items-center gap-1.5 whitespace-nowrap" title={student.group || undefined}>
+      <BookOpen size={12} aria-hidden="true" className="shrink-0" />
+      <span className="min-w-0 truncate">{student.group || t('students.noGroup')}</span>
     </Badge>
   );
   const actionsMenu = (student) => (
@@ -257,6 +258,8 @@ const Students = () => {
         onSubmit={handleModalSubmit}
         user={selectedStudent}
         isLoading={isAdding || isUpdating}
+        defaultRole="student"
+        title={t('students.newStudent')}
       />
     </PageShell>
   );

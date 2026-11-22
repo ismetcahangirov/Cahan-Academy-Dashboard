@@ -54,7 +54,11 @@ const GroupCard = ({ group }) => {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate font-semibold text-ink">{group.name}</span>
-          {group.status && <StatusPill status={GROUP_STATUS[group.status] || 'neutral'}>{group.status}</StatusPill>}
+          {group.status && (
+            <StatusPill status={GROUP_STATUS[group.status] || 'neutral'}>
+              {t(`groups.status${group.status.charAt(0).toUpperCase()}${group.status.slice(1)}`, { defaultValue: group.status })}
+            </StatusPill>
+          )}
           {group?.schedule?.type && (
             <Badge className="inline-flex items-center gap-1">
               {isOnline ? <Wifi size={11} aria-hidden="true" /> : <WifiOff size={11} aria-hidden="true" />}

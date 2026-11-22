@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Spinner from '../../components/common/Spinner';
 import { Button, Card, Textarea } from '../../components/ui';
+import { formatDate } from '../../utils/formatDate';
 import { OrnamentDivider } from '../../components/ornament';
 import { ChoiceList, ExamClock, QuestionHeading, ScoreSeal } from './assessment/AssessmentParts';
 
@@ -74,10 +75,8 @@ const TakeExam = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const formatDateTime = (value) =>
-    new Date(value).toLocaleString(i18n.language, {
-      day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit',
-    });
+  // date-fns, not toLocaleString: browser ICU lacks az month names
+  const formatDateTime = (value) => formatDate(value, 'd MMMM, HH:mm', i18n.language);
 
   if (isLoading) {
     return (

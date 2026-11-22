@@ -12,12 +12,15 @@
 // Usage (local stack only):
 //   E2E_PASSWORD=... node scripts/color-audit.mjs --base http://localhost:5173 --api http://localhost:5000/api \
 //     --routes "public:/login,admin:/,teacher:/groups" [--themes light,dark] [--widths 1440,390] [--out color-audit] [--scope "main"]
+//   Interactive states: --actions "click=role=button[name=/Yeni/]" (+ --name) or --plan scripts/qa-plan.json
+//   [--only <regex>]: modals, menus and toasts are audited after the steps run (see scripts/lib/session.mjs).
+//   --shots <dir> also saves a screenshot of every audited state (one browser pass for audit + visual review).
 // Output: <out>/color-audit.json + <out>/color-audit.txt; exit code 1 when anything violates the law.
 // Escape hatch (needs a reason in review): data-color-audit-ignore on an element skips its subtree.
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { apiLogin, assertLocal, newContext, parseRoutes, settle } from './lib/session.mjs';
+import { apiLogin, assertLocal, finishAnimations, loadTargets, newContext, runActions, settle, targetSlug } from './lib/session.mjs';
 
 const args = Object.fromEntries(
   process.argv.slice(2).reduce((acc, a, i, arr) => (a.startsWith('--') ? [...acc, [a.slice(2), arr[i + 1]]] : acc), [])
@@ -25,7 +28,6 @@ const args = Object.fromEntries(
 const base = args.base || 'http://localhost:5173';
 const api = args.api || 'http://localhost:5000/api';
 const out = args.out || 'color-audit';
-const routes = parseRoutes(args.routes || 'public:/login,admin:/');
 const themes = (args.themes || 'light,dark').split(',');
 const widths = (args.widths || '1440,390').split(',').map(Number);
 const TOL = Number(args.tolerance || 4);
@@ -35,10 +37,21 @@ const RASTER_MAX_OFF = Number(args['raster-max-off'] || 0.002); // fraction of o
 assertLocal(base);
 
 /* ---------------------------------------------------------------- in-page auditor */
-async function auditPage(page, tol, scope) {
-  return page.evaluate(async ({ TOL, SCOPE }) => {
+async function auditPage(page, tol, scope, skipRasters = []) {
+  return page.evaluate(async ({ TOL, SCOPE, SKIP }) => {
     const WINE = [92, 0, 14];
+    // memoised per rounded colour: raster textures repeat the same few hundred tones
+    const lawCache = new Map();
     const onLaw = (c) => {
+      const key = (Math.round(c[0]) << 16) | (Math.round(c[1]) << 8) | Math.round(c[2]);
+      let r = lawCache.get(key);
+      if (r === undefined) {
+        r = onLawRaw([Math.round(c[0]), Math.round(c[1]), Math.round(c[2])]);
+        lawCache.set(key, r);
+      }
+      return r;
+    };
+    const onLawRaw = (c) => {
       // min over the two segments of the max-channel distance to the closest sampled point
       let best = Infinity;
       for (const [p0, p1] of [[[255, 255, 255], WINE], [WINE, [0, 0, 0]]]) {
@@ -208,6 +221,7 @@ async function auditPage(page, tol, scope) {
     // raster ornaments: every pixel with alpha >= 64 must itself be a polyline tone
     const rasterResults = [];
     for (const src of rasters) {
+      if (SKIP.includes(src)) continue; // already verified on an earlier page
       try {
         const img = new Image();
         img.decoding = 'async';
@@ -238,7 +252,7 @@ async function auditPage(page, tol, scope) {
       }
     }
     return { violations, rasterResults, checks };
-  }, { TOL: tol, SCOPE: scope || null });
+  }, { TOL: tol, SCOPE: scope || null, SKIP: skipRasters });
 }
 
 async function auditFocus(page, tol) {
@@ -281,19 +295,41 @@ async function auditFocus(page, tol) {
 
 /* ---------------------------------------------------------------- run */
 mkdirSync(out, { recursive: true });
+if (args.shots) mkdirSync(args.shots, { recursive: true });
+const targets = await loadTargets(args, api, readFileSync);
 const browser = await chromium.launch();
 const report = [];
+const rasterOk = new Set(); // raster URLs that passed once need no second pixel walk
 let total = 0;
 try {
-  for (const { role, path } of routes) {
+  for (const target of targets) {
+    const { role, path, steps } = target;
+    const label = `${role}:${path}${target.name ? ` #${target.name}` : ''}`;
     const session = role === 'public' ? null : await apiLogin(api, role);
-    for (const theme of themes) {
-      for (const width of widths) {
+    for (const theme of target.themes || themes) {
+      for (const width of target.widths || widths) {
         const context = await newContext(browser, { theme, viewport: { width, height: width < 600 ? 844 : 900 }, session, reducedMotion: 'reduce' });
         const page = await context.newPage();
-        await page.goto(base + path, { waitUntil: 'domcontentloaded' });
-        await settle(page);
-        const { violations, rasterResults, checks } = await auditPage(page, TOL, args.scope);
+        try {
+          await page.goto(base + path, { waitUntil: 'domcontentloaded' });
+          await settle(page);
+          await runActions(page, steps, { log: console.log });
+          // a late redirect (e.g. /meeting -> /schedule) restarts the route fade: let it finish
+          await page.waitForLoadState('networkidle').catch(() => {});
+          await finishAnimations(page);
+        } catch (e) {
+          total += 1;
+          report.push({ route: path, name: target.name, role, theme, width, checks: 0, rasters: 0, violations: [{ selector: '-', prop: 'action', value: e.message, rendered: '-', distance: -1 }] });
+          console.log(`FAIL ${label} ${theme} ${width}px — ${e.message}`);
+          await context.close();
+          continue;
+        }
+        if (args.shots) {
+          await page.screenshot({ path: join(args.shots, `${targetSlug(target)}-${theme}-${width}.png`), fullPage: !steps.length });
+        }
+        const { violations, rasterResults, checks } = await auditPage(page, TOL, args.scope, [...rasterOk]);
+        for (const r of rasterResults) if (!r.error && !(r.pixels > 0 && r.off / r.pixels > RASTER_MAX_OFF)) rasterOk.add(r.src);
+        // with a modal/menu open, keep focus inside it (Tab cycles there) — still audits the rings
         const focus = await auditFocus(page, TOL);
         const rasterViolations = rasterResults
           .filter((r) => r.error || (r.pixels > 0 && r.off / r.pixels > RASTER_MAX_OFF))
@@ -314,8 +350,8 @@ try {
           return true;
         });
         total += unique.length;
-        report.push({ route: path, role, theme, width, checks, rasters: rasterResults.length, violations: unique });
-        console.log(`${unique.length ? 'FAIL' : 'ok  '} ${role}:${path} ${theme} ${width}px — ${checks} colour checks, ${rasterResults.length} rasters, ${unique.length} violations`);
+        report.push({ route: path, name: target.name, role, theme, width, checks, rasters: rasterResults.length, violations: unique });
+        console.log(`${unique.length ? 'FAIL' : 'ok  '} ${label} ${theme} ${width}px — ${checks} colour checks, ${rasterResults.length} rasters, ${unique.length} violations`);
         await context.close();
       }
     }
@@ -327,7 +363,7 @@ try {
 writeFileSync(join(out, 'color-audit.json'), JSON.stringify({ tolerance: TOL, total, report }, null, 2));
 const lines = [`Colour audit — tolerance ±${TOL}/channel — ${total} violation(s)`, ''];
 for (const r of report) {
-  lines.push(`## ${r.role}:${r.route} · ${r.theme} · ${r.width}px — ${r.violations.length} violation(s)`);
+  lines.push(`## ${r.role}:${r.route}${r.name ? ` #${r.name}` : ''} · ${r.theme} · ${r.width}px — ${r.violations.length} violation(s)`);
   for (const v of r.violations.slice(0, 200)) lines.push(`  - ${v.prop}: ${v.value} -> ${v.rendered} (off by ${v.distance})  @ ${v.selector}`);
   if (r.violations.length > 200) lines.push(`  … ${r.violations.length - 200} more in color-audit.json`);
   lines.push('');

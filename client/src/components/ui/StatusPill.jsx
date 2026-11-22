@@ -54,8 +54,8 @@ export const StatusDot = ({ status = 'neutral', label, className }) => {
 };
 
 /** Badge — small-caps tag/count. tone: 'default' | 'accent'. */
-export const Badge = ({ tone = 'default', className, children }) => (
-  <span className={cn('badge', tone === 'accent' && 'badge-accent', className)}>{children}</span>
+export const Badge = ({ tone = 'default', className, children, ...rest }) => (
+  <span className={cn('badge', tone === 'accent' && 'badge-accent', className)} {...rest}>{children}</span>
 );
 
 export default StatusPill;

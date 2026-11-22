@@ -118,7 +118,8 @@ const ExamResultsModal = ({ isOpen, onClose, exam }) => {
         // the nested review dialog owns Escape while it is open
         onClose={reviewStudentId ? () => {} : onClose}
         size="xl"
-        title={`${t('exams.resultsModalTitle')}: ${exam.title}`}
+        title={t('exams.resultsModalTitle')}
+        entity={exam.title}
         subtitle={`${examDetails?.group?.name || ''} • ${t('exams.studentCount')}: ${students.length}`}
         footer={(
           <>

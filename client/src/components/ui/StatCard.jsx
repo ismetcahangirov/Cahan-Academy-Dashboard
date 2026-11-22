@@ -18,14 +18,15 @@ const StatCard = ({ label, value, icon: Icon, hint, trend, trendLabel, as: Tag =
     <Tag className={cn('card-ornate card-hover block p-5 sm:p-6', className)} {...rest}>
       <CornerFlourish corner="tr" className="absolute right-2.5 top-2.5 h-6 w-6" />
       <CornerFlourish corner="bl" className="absolute bottom-2.5 left-2.5 h-6 w-6" />
-      <div className="relative flex items-start gap-4">
+      {/* pr-6 keeps long small-caps labels clear of the top-right flourish (h-6 at right-2.5) */}
+      <div className="relative flex items-start gap-4 pr-6">
         {Icon && (
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line-strong text-accent-text">
             <Icon size={20} strokeWidth={1.5} aria-hidden="true" />
           </span>
         )}
         <div className="min-w-0">
-          <p className="sc text-[0.8rem] text-ink-muted">{label}</p>
+          <p className="sc text-[0.8rem] leading-snug text-ink-muted">{label}</p>
           <p className="num mt-1 text-[2rem] font-semibold leading-none text-ink">{value}</p>
           {(hint || TrendIcon) && (
             <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-muted">
