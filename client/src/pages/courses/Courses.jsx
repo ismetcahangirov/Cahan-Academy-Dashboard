@@ -204,7 +204,7 @@ const Courses = () => {
               <div className="space-y-3 p-5">
                 <div>
                   <span className="sc text-[0.8rem] text-accent-text">{course.category}</span>
-                  <h3 className="line-clamp-1 text-[1.2rem] font-semibold text-ink">{course.title}</h3>
+                  <h3 className="line-clamp-2 break-words text-[1.2rem] font-semibold leading-snug text-ink" title={course.title}>{course.title}</h3>
                 </div>
                 <p className="line-clamp-2 min-h-[3rem] text-[0.95rem] text-ink-muted">{course.description}</p>
                 <div className="flex items-center justify-between border-t border-line-hair pt-3">

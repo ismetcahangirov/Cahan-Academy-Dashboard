@@ -241,6 +241,7 @@
     "role": "Rol"
   },
   "groups": {
+    "statusCancelled": "Ləğv edilib",
     "detailsTitle": "Qrup məlumatı",
     "title": "Qruplar",
     "subtitle": "Bütün tədris qruplarının idarə edilməsi.",

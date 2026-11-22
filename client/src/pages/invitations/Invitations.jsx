@@ -141,7 +141,7 @@ const Invitations = () => {
                         <Mail size={16} strokeWidth={1.5} aria-hidden="true" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="break-all font-semibold text-ink">{inv.email}</p>
+                        <p className="truncate font-semibold text-ink" title={inv.email}>{inv.email}</p>
                         <p className="text-sm text-ink-muted">{inv.invitedBy?.name || t('common.admin')}</p>
                       </div>
                       {deleteBtn(inv)}

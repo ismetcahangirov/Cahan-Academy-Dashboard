@@ -242,6 +242,7 @@
     "role": "Role"
   },
   "groups": {
+    "statusCancelled": "Cancelled",
     "detailsTitle": "Group details",
     "title": "Groups",
     "subtitle": "Management of all study groups.",

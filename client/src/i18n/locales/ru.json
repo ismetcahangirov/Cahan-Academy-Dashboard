@@ -244,6 +244,7 @@
     "role": "Роль"
   },
   "groups": {
+    "statusCancelled": "Отменена",
     "detailsTitle": "О группе",
     "title": "Группы",
     "subtitle": "Управление всеми учебными группами.",
