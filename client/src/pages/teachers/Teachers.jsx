@@ -194,6 +194,8 @@ const Teachers = () => {
         onSubmit={handleModalSubmit}
         user={selectedTeacher}
         isLoading={isAdding || isUpdating}
+        defaultRole="teacher"
+        title={t('teachers.newTeacher')}
       />
     </PageShell>
   );
