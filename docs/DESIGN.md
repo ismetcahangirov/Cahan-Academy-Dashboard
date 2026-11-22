@@ -108,7 +108,7 @@ radial wine gradient + grain.
 
 | role | family | token / class | rules |
 |---|---|---|---|
-| Title italic | **Tinos 700** (Times New Roman metric clone; owner reference: the "Qeydiyyat davam edir" post lettering) | `font-script`, `.script-title`, `<ScriptTitle>` | page and section titles, empty-state line, auth hero line. **Never** for data, buttons, inputs, tables, nav. |
+| Title italic | **Libre Baskerville 400** (owner asked for Baskerville Display PT — paid ParaType font; free Baskerville used, Cyrillic falls back to Tinos) | `font-script`, `.script-title`, `<ScriptTitle>` | page and section titles, empty-state line, auth hero line. **Never** for data, buttons, inputs, tables, nav. |
 | Body + data | **EB Garamond** (400/500/600/700 + italic) | `font-serif` (default body) | everything readable. `.num` = lining tabular figures for tables/stats. `.time-italic` for times. |
 | Small caps | **Cormorant SC** (500/600/700) | `font-sc`, `.sc` | labels, table headers, buttons, badges, subtitles, eyebrow, nav meta. Letter-spacing ~.1em is built in. Always rendered `text-transform: uppercase` with `<html lang>` synced to the UI language: Cormorant SC draws lowercase `i` as a dotless small cap, which reads as Azerbaijani "ı" — uppercase + `lang="az"` gives the correct "İ". Never remove the uppercase from SC styles. |
 

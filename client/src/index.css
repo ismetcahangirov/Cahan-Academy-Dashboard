@@ -22,7 +22,7 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
-  --font-script: "Tinos", "Times New Roman", "Times", serif; /* titles: Times-style bold serif (owner reference: "Qeydiyyat davam edir" post) */
+  --font-script: "Libre Baskerville", "Tinos", "Times New Roman", serif; /* titles: Baskerville (owner asked for Baskerville Display PT, a paid ParaType face; Libre Baskerville is the free OFL Baskerville with Azerbaijani; Cyrillic falls back to Tinos) */
   --font-serif: "EB Garamond", "Garamond", "Georgia", serif;
   --font-sc: "Cormorant SC", "EB Garamond", "Georgia", serif;
   --font-sans: "EB Garamond", "Garamond", "Georgia", serif;

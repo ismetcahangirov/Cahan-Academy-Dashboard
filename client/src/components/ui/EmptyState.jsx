@@ -20,7 +20,7 @@ const EmptyState = ({ sketch = 'books', title, description, action, compact = fa
   >
     <SketchIllustration name={sketch} className={compact ? 'w-24' : 'w-36 sm:w-44'} />
     {title && (
-      <p className={cn('font-script text-accent-text dark:text-ink', compact ? 'text-[1.7rem]' : 'text-[2.2rem]')}>
+      <p className={cn('font-script text-accent-text dark:text-ink', compact ? 'text-[1.25rem]' : 'text-[1.6rem]')}>
         {title}
       </p>
     )}
