@@ -68,7 +68,7 @@ const AuthLayout = ({ children, className }) => (
       {/* parchment texture, toned down to a soft hint (owner: not flat, not as strong as .paper) */}
       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'var(--tex-paper)', backgroundSize: '512px 512px' }} />
       <div className="absolute inset-0 flex items-center justify-center">
-        <BrandMark className="w-auto max-w-none shrink-0 text-wine opacity-[0.13] dark:text-white dark:opacity-[0.1]" style={{ height: '100vh' }} />
+        <BrandMark className="w-auto max-w-none shrink-0 translate-x-[6vw] text-wine opacity-[0.13] dark:text-white dark:opacity-[0.1]" style={{ height: '100vh' }} />
       </div>
       <EdelweissCorner corner="tl" className={cn('absolute left-0 top-0', CORNER_SIZE)} />
       <EdelweissCorner corner="tr" className={cn('absolute right-0 top-0', CORNER_SIZE)} />
