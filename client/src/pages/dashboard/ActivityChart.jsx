@@ -256,7 +256,12 @@ const ActivityChart = ({ stats, isLoading, title, subtitle }) => {
             {active && (
               <div
                 className="card pointer-events-none absolute z-10 min-w-[6.5rem] px-3 py-2 text-center shadow-[var(--shadow-md)]"
-                style={{ left: active.x, top: active.y - 16, transform: 'translate(-50%, -100%)' }}
+                style={
+                  // near the top the tooltip would cover the header figure: put it beside the point instead
+                  active.y > 84
+                    ? { left: active.x, top: active.y - 16, transform: 'translate(-50%, -100%)' }
+                    : { left: active.x - 18, top: active.y, transform: 'translate(-100%, -50%)' }
+                }
               >
                 <p className="sc text-[0.72rem] text-ink-muted">{active.label}</p>
                 <p className="num text-[1.35rem] font-semibold leading-tight text-ink">{active.value}</p>

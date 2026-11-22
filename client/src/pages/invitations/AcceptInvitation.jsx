@@ -140,7 +140,7 @@ const AcceptInvitation = () => {
         </div>
       </form>
 
-      <p className="sc mt-8 text-center text-[0.8rem] text-ink-subtle">Cahan Academy &copy; {new Date().getFullYear()}</p>
+      <p className="mt-8 text-center text-[0.9rem] text-ink-subtle">Cahan Academy &copy; {new Date().getFullYear()}</p>
     </AuthLayout>
   );
 };

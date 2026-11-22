@@ -72,7 +72,7 @@ const Settings = () => {
           role="tablist"
           aria-orientation="vertical"
           aria-label={t('settings.title')}
-          className="orn-stagger -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 md:mx-0 md:w-60 md:shrink-0 md:flex-col md:overflow-visible md:px-0"
+          className="orn-stagger grid grid-cols-3 gap-1.5 md:flex md:w-60 md:shrink-0 md:flex-col"
         >
           {TABS.map(({ id, icon: Icon, label }) => {
             const active = activeTab === id;
@@ -86,7 +86,7 @@ const Settings = () => {
                 aria-controls={`settings-panel-${id}`}
                 onClick={() => setActiveTab(id)}
                 className={cn(
-                  'relative flex min-h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-[var(--radius-md)] border px-4 py-2.5 text-left text-[1rem] transition-colors duration-[var(--dur-1)]',
+                  'relative flex min-h-11 flex-col items-center justify-center gap-1 rounded-[var(--radius-md)] border px-2 py-2.5 text-center text-[0.92rem] leading-tight transition-colors duration-[var(--dur-1)] md:flex-row md:justify-start md:gap-3 md:px-4 md:text-left md:text-[1rem]',
                   active
                     ? 'border-line-strong bg-surface font-semibold text-accent-text shadow-[var(--shadow-sm)]'
                     : 'border-transparent text-ink-muted hover:bg-surface-2 hover:text-ink'
