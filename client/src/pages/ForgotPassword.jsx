@@ -4,10 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, ChevronLeft, Send, MailCheck } from 'lucide-react';
+import { Mail, ArrowLeft, MailCheck, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import Spinner from '../components/common/Spinner';
 import { useForgotPasswordMutation } from '../features/auth/authApi';
+import { Button, FormField, Input } from '../components/ui';
+import { ScriptTitle } from '../components/ornament';
+import AuthLayout from './auth/AuthLayout';
 
 const forgotPasswordSchema = (t) => z.object({
   email: z.string().email(t('auth.emailInvalid')),
@@ -37,68 +39,49 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4 relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-bordo rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-0 -right-4 w-72 h-72 bg-bordo rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <AuthLayout>
+      <ScriptTitle align="center" size="page" title={t('forgotPassword.title')} />
+      <p className="orn-rise mx-auto mt-4 max-w-sm text-center text-[1rem] text-ink-muted">{t('forgotPassword.subtitle')}</p>
 
-      <div className="w-full max-w-md bg-[var(--card)] backdrop-blur-xl rounded-2xl border border-[var(--border)] p-8 shadow-2xl relative z-10">
-        <Link to="/login" className="inline-flex items-center text-[var(--muted-foreground)]/60 hover:text-[var(--foreground)] mb-6 transition-colors gap-1 text-sm">
-           <ChevronLeft className="w-4 h-4" />
-           {t('forgotPassword.backToLogin')}
-         </Link>
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">{t('forgotPassword.title')}</h1>
-          <p className="text-[var(--muted-foreground)]/60 text-sm">{t('forgotPassword.subtitle')}</p>
+      {sentTo ? (
+        <div className="orn-rise mt-8 flex flex-col items-center gap-4 text-center" role="status">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full border border-line-strong bg-surface text-accent-text shadow-[var(--glow-inset)]">
+            <MailCheck size={28} strokeWidth={1.4} aria-hidden="true" />
+          </span>
+          <p className="text-[1rem] text-ink">{t('forgotPassword.sentDescription', { email: sentTo })}</p>
+          <Button variant="outline" icon={RotateCcw} onClick={() => setSentTo(null)}>
+            {t('forgotPassword.sendAgain')}
+          </Button>
         </div>
-
-        {sentTo ? (
-          <div className="text-center space-y-4" role="status">
-            <MailCheck className="w-12 h-12 mx-auto text-bordo" />
-            <p className="text-sm text-[var(--foreground)]">{t('forgotPassword.sentDescription', { email: sentTo })}</p>
-            <button
-              type="button"
-              onClick={() => setSentTo(null)}
-              className="text-sm text-bordo hover:underline"
-            >
-              {t('forgotPassword.sendAgain')}
-            </button>
-          </div>
-        ) : (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--foreground)]/80 block">{t('auth.email')}</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]/40" />
-              <input
-                {...register('email')}
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="orn-rise mt-8 space-y-5" noValidate>
+          <FormField label={t('auth.email')} error={errors.email?.message}>
+            {(id, describedBy, invalid) => (
+              <Input
+                id={id}
                 type="email"
-                className={`w-full bg-[var(--input)] border ${errors.email ? 'border-bordo' : 'border-[var(--border)]'} rounded-lg py-3 pl-10 pr-4 text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-bordo/50 transition-all`}
+                autoComplete="email"
+                icon={Mail}
+                invalid={invalid}
+                aria-describedby={describedBy}
                 placeholder={t('forgotPassword.emailPlaceholder')}
+                {...register('email')}
               />
-            </div>
-            {errors.email && <p className="text-xs text-bordo mt-1">{errors.email.message}</p>}
-          </div>
-
-          <button
-            disabled={isLoading}
-            type="submit"
-            className="w-full bg-bordo hover:bg-bordo/90 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Spinner size="sm" color="white" />
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                {t('forgotPassword.sendLink')}
-              </>
             )}
-          </button>
+          </FormField>
+
+          <Button type="submit" size="lg" block loading={isLoading} motif>
+            {t('forgotPassword.sendLink')}
+          </Button>
         </form>
-        )}
+      )}
+
+      <div className="mt-8 flex justify-center">
+        <Button as={Link} to="/login" variant="ghost" icon={ArrowLeft}>
+          {t('forgotPassword.backToLogin')}
+        </Button>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
