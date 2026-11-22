@@ -360,12 +360,12 @@ const Groups = () => {
                 key={group._id}
                 variant={group._id === featuredId ? 'featured' : 'plain'}
                 hover
-                className="space-y-4 p-5"
+                className={cn('space-y-4 p-5', group._id === featuredId && 'p-7')}
               >
                 <div className="flex items-start justify-between">
                   <BookOpen size={22} className="text-accent-text" aria-hidden="true" />
                   {isAdmin && (
-                    <div className="flex gap-1">
+                    <div className={cn('flex gap-1', group._id === featuredId && 'mr-6')}>
                       <Button variant="ghost" size="sm" iconOnly icon={Edit2} onClick={() => handleEditClick(group)} aria-label={t('common.edit')} />
                       <Button variant="ghost" size="sm" iconOnly icon={Trash2} onClick={() => handleDelete(group._id)} aria-label={t('common.delete')} />
                     </div>
@@ -390,12 +390,12 @@ const Groups = () => {
                     <div className="flex flex-col gap-1 text-ink-muted">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} aria-hidden="true" />
-                        <span>
+                        <span className="min-w-0 flex-1">
                           {group.schedule.repetitionType === 'weekly'
                             ? formatDays(group.schedule.days, t)
                             : formatDate(group.schedule.specificDate, 'd MMMM yyyy')}
                         </span>
-                        <span className="sc ml-auto text-[0.75rem]">
+                        <span className="sc ml-auto shrink-0 whitespace-nowrap text-[0.75rem]">
                           {group.schedule.repetitionType === 'weekly' ? t('groups.repetitionWeekly') : t('groups.repetitionOnce')}
                         </span>
                       </div>

@@ -75,7 +75,7 @@ const Schedule = () => {
     <PageShell title={t('schedule.title')}>
       <div className="grid gap-5 lg:grid-cols-2">
         {DAYS.map((day, dayIndex) => (
-          <Card key={dayIndex} variant={dayIndex === todayIdx ? 'ornate' : 'plain'} className="p-5">
+          <Card key={dayIndex} variant={dayIndex === todayIdx ? 'ornate' : 'plain'} className={dayIndex === todayIdx ? 'p-7' : 'p-5'}>
             <div className="mb-4 flex items-baseline gap-3 border-b border-line-hair pb-3">
               <span className="sc text-[0.9rem] text-accent-text">{day.short}</span>
               <h2 className="text-[1.2rem] font-semibold text-ink">{day.label}</h2>
