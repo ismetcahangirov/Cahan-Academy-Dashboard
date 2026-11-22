@@ -136,7 +136,9 @@ const QuizModal = ({ isOpen, onClose, quiz }) => {
         <>
           <Button variant="ghost" onClick={handleClose}>{t('common.cancel')}</Button>
           <Button type="submit" form="quiz-form" loading={isSubmitting}>
-            {isEditing ? t('quizzes.updating') : t('quizzes.creating')}
+            {isSubmitting
+              ? (isEditing ? t('quizzes.updating') : t('quizzes.creating'))
+              : (isEditing ? t('exams.update') : t('exams.create'))}
           </Button>
         </>
       )}
