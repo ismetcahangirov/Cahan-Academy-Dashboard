@@ -14,6 +14,7 @@ import Spinner from '../../components/common/Spinner';
 import { PageShell, Section, Card, Button, Badge, StatusPill, EmptyState } from '../../components/ui';
 import { formatDays } from '../../utils/days';
 import { formatDate } from '../../utils/formatDate';
+import { courseThumbnail } from '../../lib/courseThumbnail';
 
 const GroupRow = ({ group }) => {
   const { t } = useTranslation();
@@ -54,7 +55,7 @@ const CourseDetail = () => {
   const lessons = [...(course?.lessons || [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const groups = course?.groups || [];
   // The model's default thumbnail points at a dead placeholder service
-  const thumbnail = course?.thumbnail && !course.thumbnail.includes('via.placeholder.com') ? course.thumbnail : null;
+  const thumbnail = courseThumbnail(course);
 
   const back = (
     <Button variant="ghost" icon={ArrowLeft} onClick={() => navigate('/courses')}>
