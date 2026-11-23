@@ -29,7 +29,7 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/useTheme';
 import { BrandLockup, BrandMark } from '../brand';
-import { WaxSeal, OrnamentDivider } from '../ornament';
+import { OrnamentDivider } from '../ornament';
 import { DUR, EASE } from '../../lib/motion';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
@@ -263,14 +263,13 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           })}
         </nav>
 
-        {/* Footer: seal + theme + logout */}
+        {/* Footer: theme + logout */}
         <div
           className={cn(
             'relative border-t border-line-hair',
             compact ? 'space-y-1 px-2 py-4' : 'flex items-center gap-3 px-4 py-4'
           )}
         >
-          <WaxSeal size={compact ? 40 : 54} className={cn(compact && 'mx-auto mb-2 block')} />
           <div className={cn('min-w-0', compact ? 'space-y-1' : 'flex-1 space-y-0.5')}>
             <button
               type="button"

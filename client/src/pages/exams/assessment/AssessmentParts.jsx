@@ -1,6 +1,6 @@
 import { AlertTriangle, Check, Clock } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import { OrnamentDivider, OrnateFrame, WaxSeal } from '../../../components/ornament';
+import { OrnamentDivider, OrnateFrame } from '../../../components/ornament';
 
 /**
  * Shared pieces for the exam / quiz surfaces (page-local, composed from the ornament kit).
@@ -12,7 +12,7 @@ import { OrnamentDivider, OrnateFrame, WaxSeal } from '../../../components/ornam
  *   Options as selectable cards. A native radio group sits inside, so arrow keys and focus
  *   work. Selected = filled wine + check icon (never colour alone).
  * <QuestionHeading index text extra />  italic serif question number + text.
- * <ScoreSeal ... />  Result frame with the wax seal.
+ * <ScoreSeal ... />  Result frame (score, percent, caption).
  */
 const formatRemaining = (ms) => {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -104,8 +104,7 @@ export const QuestionHeading = ({ index, text, extra, className }) => (
 
 export const ScoreSeal = ({ eyebrow, score, total, percent, caption, children, className }) => (
   <OrnateFrame paper className={cn('flex flex-col items-center px-6 py-9 text-center', className)}>
-    <WaxSeal size={84} />
-    {eyebrow && <p className="sc mt-4 text-[0.85rem] text-ink-muted">{eyebrow}</p>}
+    {eyebrow && <p className="sc text-[0.85rem] text-ink-muted">{eyebrow}</p>}
     <p className="num mt-1 text-ink">
       <span className="time-italic text-[3.2rem] leading-none">{score}</span>
       {total !== undefined && total !== null && (
