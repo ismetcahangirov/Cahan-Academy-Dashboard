@@ -10,6 +10,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useGetCourseByIdQuery } from '../../features/courses/coursesApi';
+import { useGetCategoriesQuery, courseCategoryLabel } from '../../features/categories/categoriesApi';
 import Spinner from '../../components/common/Spinner';
 import { PageShell, Section, Card, Button, Badge, StatusPill, EmptyState } from '../../components/ui';
 import { formatDays } from '../../utils/days';
@@ -48,7 +49,8 @@ const GroupRow = ({ group }) => {
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { data: categoriesData } = useGetCategoriesQuery();
   const { data, isLoading, isError } = useGetCourseByIdQuery(id);
 
   const course = data?.data;
@@ -88,7 +90,7 @@ const CourseDetail = () => {
   return (
     <PageShell
       width="narrow"
-      eyebrow={course.category}
+      eyebrow={courseCategoryLabel(course.category, categoriesData?.data, i18n.language)}
       title={course.title}
       subtitle={course.level ? t(`courses.levels.${course.level}`) : undefined}
       actions={back}

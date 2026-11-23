@@ -65,6 +65,7 @@ export const apiSlice = createApi({
     'Student', 
     'Group', 
     'Course', 
+    'Category',
     'Attendance', 
     'Homework', 
     'Classwork', 
