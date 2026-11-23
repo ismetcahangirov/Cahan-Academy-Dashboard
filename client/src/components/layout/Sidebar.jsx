@@ -31,6 +31,7 @@ import { useTheme } from '../../context/useTheme';
 import { BrandLockup, BrandMark } from '../brand';
 import { OrnamentDivider } from '../ornament';
 import { DUR, EASE } from '../../lib/motion';
+import { isolateWheel } from '../../lib/scrollIsolation';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -41,6 +42,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const navRef = useRef(null);
+  const asideRef = useRef(null);
+  // the sidebar and the main column scroll independently: a wheel over the sidebar never scrolls the page
+  useEffect(() => (asideRef.current ? isolateWheel(asideRef.current) : undefined), []);
   // Geometry of every nav link, measured once (mount, resize, collapse) and cached, so a route
   // change only moves the marker with a transform and never forces a layout read.
   const [geometry, setGeometry] = useState([]);
@@ -186,6 +190,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           while the panel itself stays sticky to the viewport. Mobile: the panel is a fixed drawer. */}
       <div className="sidebar-column lg:relative lg:z-40 lg:shrink-0">
       <motion.aside
+        ref={asideRef}
         initial={false}
         animate={isMobile ? (isMobileOpen ? 'mobileOpen' : 'mobileClosed') : isCollapsed ? 'collapsed' : 'expanded'}
         variants={sidebarVariants}
@@ -215,7 +220,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         {!compact && <OrnamentDivider draw={false} className="relative pb-1 [&>svg]:w-20" />}
 
         {/* Navigation */}
-        <nav ref={navRef} className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
+        <nav ref={navRef} className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-3 py-3">
           {/* active marker + satin bookmark ribbon: one element, moved with a transform (compositor only) */}
           {marker && (
             <span
