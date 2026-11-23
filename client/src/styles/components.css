@@ -632,6 +632,9 @@ select.field {
 .orn-reveal {
   animation: orn-fade var(--dur-3) var(--ease-silk) both;
 }
+.orn-bloom {
+  animation: orn-bloom var(--dur-bloom) var(--ease-silk) var(--bloom-delay, 120ms) both;
+}
 .orn-rise {
   animation: orn-rise var(--dur-3) var(--ease-silk) both;
 }

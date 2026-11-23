@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/formatDate';
 import { notificationText } from '../features/notifications/notificationText';
 import { Badge, Button, Card, CardHeader, EmptyState, Skeleton, StatCard, StatusPill } from '../components/ui';
-import { LaceEdge, ScriptTitle, Timeline, TimelineItem, WaveEdge } from '../components/ornament';
+import { ScriptTitle, Timeline, TimelineItem, WaveEdge } from '../components/ornament';
 import ActivityChart from './dashboard/ActivityChart';
 import TodayAgenda from './dashboard/TodayAgenda';
 
@@ -197,8 +197,7 @@ const DashboardHero = ({ user }) => {
         <TodayAgenda role={user?.role} className="orn-rise" />
       </div>
 
-      {/* lace trim + wave into the page */}
-      <LaceEdge direction="up" size={22} className="absolute inset-x-0 bottom-9" />
+      {/* wave into the page */}
       <WaveEdge fill="var(--page-base)" className="absolute inset-x-0 -bottom-px" />
     </section>
   );

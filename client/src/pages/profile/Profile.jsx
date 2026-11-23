@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import Avatar from '../../components/common/Avatar';
 import { Badge, Button, FormField, Input, PageShell, Skeleton } from '../../components/ui';
-import { LaceEdge, OrnamentDivider, WaveEdge } from '../../components/ornament';
+import { OrnamentDivider, WaveEdge } from '../../components/ornament';
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -83,9 +83,8 @@ const Profile = () => {
       }
     >
       <section className="card-paper orn-rise overflow-hidden">
-        {/* wine band with lace, flowing into the parchment on a wave */}
+        {/* wine band flowing into the parchment on a wave */}
         <div className="theme-wine login-hero relative h-32 sm:h-36" aria-hidden="true">
-          <LaceEdge direction="up" size={20} className="absolute inset-x-0 bottom-8" />
           <WaveEdge fill="var(--paper-base)" className="absolute inset-x-0 -bottom-px" />
         </div>
 

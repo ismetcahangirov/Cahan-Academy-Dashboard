@@ -29,8 +29,9 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/useTheme';
 import { BrandLockup, BrandMark } from '../brand';
-import { LaceEdge, WaxSeal, OrnamentDivider } from '../ornament';
+import { OrnamentDivider } from '../ornament';
 import { DUR, EASE } from '../../lib/motion';
+import { isolateWheel } from '../../lib/scrollIsolation';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -41,6 +42,9 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const navRef = useRef(null);
+  const asideRef = useRef(null);
+  // the sidebar and the main column scroll independently: a wheel over the sidebar never scrolls the page
+  useEffect(() => (asideRef.current ? isolateWheel(asideRef.current) : undefined), []);
   // Geometry of every nav link, measured once (mount, resize, collapse) and cached, so a route
   // change only moves the marker with a transform and never forces a layout read.
   const [geometry, setGeometry] = useState([]);
@@ -182,19 +186,16 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         )}
       </AnimatePresence>
 
-      {/* Desktop: the column runs the full page height (wine + lace to the bottom of long pages)
+      {/* Desktop: the column runs the full page height (wine to the bottom of long pages)
           while the panel itself stays sticky to the viewport. Mobile: the panel is a fixed drawer. */}
       <div className="sidebar-column lg:relative lg:z-40 lg:shrink-0">
-        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 hidden h-full lg:block" />
       <motion.aside
+        ref={asideRef}
         initial={false}
         animate={isMobile ? (isMobileOpen ? 'mobileOpen' : 'mobileClosed') : isCollapsed ? 'collapsed' : 'expanded'}
         variants={sidebarVariants}
         className="theme-wine sidebar-wine fixed left-0 top-0 z-50 flex h-screen w-[264px] flex-col lg:sticky"
       >
-        {/* lace trim hanging over the content edge (drawer; on desktop the column draws it) */}
-        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 h-full lg:hidden" />
-
         {/* Brand */}
         <div className={cn('relative flex items-center pb-3 pt-6', compact ? 'flex-col gap-3 px-2' : 'justify-between gap-2 pl-5 pr-3')}>
           <span className="sr-only">Cahan Academy</span>
@@ -219,7 +220,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         {!compact && <OrnamentDivider draw={false} className="relative pb-1 [&>svg]:w-20" />}
 
         {/* Navigation */}
-        <nav ref={navRef} className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
+        <nav ref={navRef} className="custom-scrollbar relative flex flex-1 flex-col gap-0.5 overflow-y-auto overscroll-contain px-3 py-3">
           {/* active marker + satin bookmark ribbon: one element, moved with a transform (compositor only) */}
           {marker && (
             <span
@@ -267,14 +268,13 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           })}
         </nav>
 
-        {/* Footer: seal + theme + logout */}
+        {/* Footer: theme + logout */}
         <div
           className={cn(
             'relative border-t border-line-hair',
             compact ? 'space-y-1 px-2 py-4' : 'flex items-center gap-3 px-4 py-4'
           )}
         >
-          <WaxSeal size={compact ? 40 : 54} className={cn(compact && 'mx-auto mb-2 block')} />
           <div className={cn('min-w-0', compact ? 'space-y-1' : 'flex-1 space-y-0.5')}>
             <button
               type="button"

@@ -71,9 +71,9 @@ const AuthLayout = ({ children, className }) => (
         <BrandMark className="w-auto max-w-none shrink-0 translate-x-[6vw] text-wine opacity-[0.13] dark:text-white dark:opacity-[0.1]" style={{ height: '100vh' }} />
       </div>
       <EdelweissCorner corner="tl" className={cn('absolute left-0 top-0', CORNER_SIZE)} />
-      <EdelweissCorner corner="tr" className={cn('absolute right-0 top-0', CORNER_SIZE)} />
-      <EdelweissCorner corner="bl" className={cn('absolute bottom-0 left-0', CORNER_SIZE)} />
-      <EdelweissCorner corner="br" className={cn('absolute bottom-0 right-0', CORNER_SIZE)} />
+      <EdelweissCorner corner="tr" delay={240} className={cn('absolute right-0 top-0', CORNER_SIZE)} />
+      <EdelweissCorner corner="bl" delay={360} className={cn('absolute bottom-0 left-0', CORNER_SIZE)} />
+      <EdelweissCorner corner="br" delay={480} className={cn('absolute bottom-0 right-0', CORNER_SIZE)} />
     </div>
 
     {/* language menu + theme toggle: top centre, clear of the corner ornaments */}
