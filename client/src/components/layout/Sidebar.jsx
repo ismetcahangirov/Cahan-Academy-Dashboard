@@ -29,7 +29,7 @@ import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../context/useTheme';
 import { BrandLockup, BrandMark } from '../brand';
-import { LaceEdge, WaxSeal, OrnamentDivider } from '../ornament';
+import { WaxSeal, OrnamentDivider } from '../ornament';
 import { DUR, EASE } from '../../lib/motion';
 
 const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
@@ -182,19 +182,15 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         )}
       </AnimatePresence>
 
-      {/* Desktop: the column runs the full page height (wine + lace to the bottom of long pages)
+      {/* Desktop: the column runs the full page height (wine to the bottom of long pages)
           while the panel itself stays sticky to the viewport. Mobile: the panel is a fixed drawer. */}
       <div className="sidebar-column lg:relative lg:z-40 lg:shrink-0">
-        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 hidden h-full lg:block" />
       <motion.aside
         initial={false}
         animate={isMobile ? (isMobileOpen ? 'mobileOpen' : 'mobileClosed') : isCollapsed ? 'collapsed' : 'expanded'}
         variants={sidebarVariants}
         className="theme-wine sidebar-wine fixed left-0 top-0 z-50 flex h-screen w-[264px] flex-col lg:sticky"
       >
-        {/* lace trim hanging over the content edge (drawer; on desktop the column draws it) */}
-        <LaceEdge vertical size={16} className="absolute -right-[15px] top-0 z-10 h-full lg:hidden" />
-
         {/* Brand */}
         <div className={cn('relative flex items-center pb-3 pt-6', compact ? 'flex-col gap-3 px-2' : 'justify-between gap-2 pl-5 pr-3')}>
           <span className="sr-only">Cahan Academy</span>
