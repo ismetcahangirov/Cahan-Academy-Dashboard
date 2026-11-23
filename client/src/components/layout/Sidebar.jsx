@@ -24,6 +24,7 @@ import {
   Sun,
   Moon,
   Bell,
+  Tags,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
@@ -68,6 +69,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
         { name: t('sidebar.students'), path: '/students', icon: Users },
         { name: t('sidebar.groups'), path: '/groups', icon: Layers },
         { name: t('sidebar.courses'), path: '/courses', icon: BookOpen },
+        { name: t('sidebar.categories'), path: '/categories', icon: Tags },
         { name: t('sidebar.attendance'), path: '/attendance', icon: CheckCircle },
         { name: t('sidebar.homeworks'), path: '/homeworks', icon: FileText },
         { name: t('sidebar.classworks'), path: '/classworks', icon: ClipboardList },

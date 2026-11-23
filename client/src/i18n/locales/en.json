@@ -62,7 +62,7 @@
     "registerSubtitle": "Welcome to Cahan Academy family",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Ismat Jahangirov",
-    "confirmPassword": "Confirm Password",
+    "confirmPassword": "Confirm password",
     "registerBtn": "Register",
     "haveAccount": "Already have an account?",
     "loginLink": "Login",
@@ -73,7 +73,6 @@
     "passMismatch": "Passwords do not match",
     "newPassword": "New password",
     "enterNewPassword": "Please enter your new password",
-    "confirmPassword": "Confirm password",
     "savePassword": "Save password",
     "passwordResetSuccess": "Password reset successfully",
     "passwordsDoNotMatch": "Passwords do not match",
@@ -149,7 +148,8 @@
     "invitations": "Invitations",
     "users": "Users",
     "groups": "Groups",
-    "settings": "Settings"
+    "settings": "Settings",
+    "categories": "Categories"
   },
   "settings": {
     "title": "Settings",
@@ -852,5 +852,27 @@
       "paid": "Paid",
       "overdue": "Overdue"
     }
+  },
+  "categories": {
+    "title": "Categories",
+    "subtitle": "Course categories: the LMS and the website share one list.",
+    "new": "New category",
+    "create": "Create category",
+    "edit": "Edit category",
+    "nameAz": "Name (Azerbaijani)",
+    "nameEn": "Name (English)",
+    "nameRu": "Name (Russian)",
+    "slug": "Slug",
+    "slugHint": "Shown in links: lowercase Latin letters, digits and \"-\". Filled in from the Azerbaijani name.",
+    "actions": "Actions",
+    "empty": "No categories yet",
+    "sharedNote": "This list is shared with the website: a change here shows in the course form at once and in the website catalogue within an hour (the website only lists categories that have courses).",
+    "deleteConfirm": "Delete the \"{{name}}\" category?",
+    "addSuccess": "Category created",
+    "updateSuccess": "Category updated",
+    "deleteSuccess": "Category deleted",
+    "error": "Something went wrong",
+    "loadError": "Could not load the categories",
+    "retry": "Try again"
   }
 }

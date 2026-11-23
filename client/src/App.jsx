@@ -26,6 +26,7 @@ const Invitations = lazy(() => import('./pages/invitations/Invitations'));
 const AcceptInvitation = lazy(() => import('./pages/invitations/AcceptInvitation'));
 const Groups = lazy(() => import('./pages/groups/Groups'));
 const Courses = lazy(() => import('./pages/courses/Courses'));
+const Categories = lazy(() => import('./pages/categories/Categories'));
 const CourseDetail = lazy(() => import('./pages/courses/CourseDetail'));
 const Attendance = lazy(() => import('./pages/attendance/Attendance'));
 const Homeworks = lazy(() => import('./pages/homeworks/Homeworks'));
@@ -86,6 +87,7 @@ function App() {
                 <Route path="/users" element={<Users />} />
                 <Route path="/users/:id" element={<UserDetail />} />
                 <Route path="/invitations" element={<Invitations />} />
+                <Route path="/categories" element={<Categories />} />
                 <Route path="/students/:id/payments" element={<StudentPayments />} />
                 <Route path="/teachers" element={<Teachers />} />
                 <Route path="/teachers/:id" element={<TeacherDetail />} />

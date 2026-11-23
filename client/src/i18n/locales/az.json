@@ -62,7 +62,7 @@
     "registerSubtitle": "Cahan Academy ailəsinə xoş gəldiniz",
     "fullName": "Ad Soyad",
     "fullNamePlaceholder": "İsmət Cahangirov",
-    "confirmPassword": "Şifrəni Təsdiqləyin",
+    "confirmPassword": "Şifrəni təsdiqləyin",
     "registerBtn": "Qeydiyyatdan Keç",
     "haveAccount": "Artıq hesabınız var?",
     "loginLink": "Giriş edin",
@@ -73,7 +73,6 @@
     "passMismatch": "Şifrələr uyğun gəlmir",
     "newPassword": "Yeni şifrə",
     "enterNewPassword": "Lütfən yeni şifrənizi daxil edin",
-    "confirmPassword": "Şifrəni təsdiqləyin",
     "savePassword": "Şifrəni yadda saxla",
     "passwordResetSuccess": "Şifrə uğurla yeniləndi",
     "passwordsDoNotMatch": "Şifrələr uyğun gəlmir",
@@ -148,7 +147,8 @@
     "invitations": "Dəvətlər",
     "users": "İstifadəçilər",
     "groups": "Qruplar",
-    "settings": "Tənzimləmələr"
+    "settings": "Tənzimləmələr",
+    "categories": "Kateqoriyalar"
   },
   "settings": {
     "title": "Tənzimləmələr",
@@ -847,5 +847,27 @@
       "paid": "Ödənilib",
       "overdue": "Gecikib"
     }
+  },
+  "categories": {
+    "title": "Kateqoriyalar",
+    "subtitle": "Kursların kateqoriyaları: LMS və sayt eyni siyahını işlədir.",
+    "new": "Yeni kateqoriya",
+    "create": "Kateqoriya yarat",
+    "edit": "Kateqoriyanı redaktə et",
+    "nameAz": "Ad (Azərbaycanca)",
+    "nameEn": "Ad (İngiliscə)",
+    "nameRu": "Ad (Rusca)",
+    "slug": "Slug",
+    "slugHint": "Linkdə görünür: kiçik latın hərfləri, rəqəm və \"-\". Azərbaycanca addan avtomatik yaranır.",
+    "actions": "Əməliyyatlar",
+    "empty": "Hələ kateqoriya yoxdur",
+    "sharedNote": "Bu siyahı saytla ortaqdır: burada etdiyiniz dəyişiklik kurs formasında dərhal, saytın kurs kataloqunda isə bir saat ərzində görünür (sayt yalnız kursu olan kateqoriyaları göstərir).",
+    "deleteConfirm": "\"{{name}}\" kateqoriyasını silmək istədiyinizə əminsiniz?",
+    "addSuccess": "Kateqoriya yaradıldı",
+    "updateSuccess": "Kateqoriya yeniləndi",
+    "deleteSuccess": "Kateqoriya silindi",
+    "error": "Əməliyyat alınmadı",
+    "loadError": "Kateqoriyaları yükləmək olmadı",
+    "retry": "Yenidən cəhd et"
   }
 }
