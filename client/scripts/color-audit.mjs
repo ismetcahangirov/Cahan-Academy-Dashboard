@@ -11,7 +11,7 @@
 //
 // Usage (local stack only):
 //   E2E_PASSWORD=... node scripts/color-audit.mjs --base http://localhost:5173 --api http://localhost:5000/api \
-//     --routes "public:/login,admin:/,teacher:/groups" [--themes light,dark] [--widths 1440,390] [--out color-audit] [--scope "main"]
+//     --routes "public:/login,admin:/,teacher:/groups" [--themes dark] [--widths 1440,390] [--out color-audit] [--scope "main"]
 //   Interactive states: --actions "click=role=button[name=/Yeni/]" (+ --name) or --plan scripts/qa-plan.json
 //   [--only <regex>]: modals, menus and toasts are audited after the steps run (see scripts/lib/session.mjs).
 //   --shots <dir> also saves a screenshot of every audited state (one browser pass for audit + visual review).
@@ -28,7 +28,7 @@ const args = Object.fromEntries(
 const base = args.base || 'http://localhost:5173';
 const api = args.api || 'http://localhost:5000/api';
 const out = args.out || 'color-audit';
-const themes = (args.themes || 'light,dark').split(',');
+const themes = (args.themes || 'dark').split(',');
 const widths = (args.widths || '1440,390').split(',').map(Number);
 const TOL = Number(args.tolerance || 4);
 // --scope "aside, header" restricts the element walk to matching subtrees (e.g. audit only the app shell)

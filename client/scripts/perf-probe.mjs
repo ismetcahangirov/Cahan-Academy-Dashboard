@@ -121,7 +121,7 @@ try {
     const { kind, role, path: scPath } = parseScenario(sc);
     const session = role ? await apiLogin(api, role) : null;
     const path = kind === 'take-exam' ? `/exams/${await firstExamId(session)}/take` : scPath;
-    const context = await newContext(browser, { theme: 'light', session, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
+    const context = await newContext(browser, { theme: 'dark', session, reducedMotion: reducedMotion ? 'reduce' : 'no-preference' });
     await context.addInitScript(INSTRUMENT);
     const chunks = new Set();
     context.on('request', (r) => {

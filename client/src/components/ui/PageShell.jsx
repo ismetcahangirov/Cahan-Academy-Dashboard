@@ -21,7 +21,7 @@ const PageShell = ({ title, subtitle, eyebrow, actions, width = 'default', class
 );
 
 export const Section = ({ title, subtitle, actions, variant = 'plain', className, children }) => (
-  <section className={cn(variant === 'paper' && 'card-paper p-5 sm:p-7', className)}>
+  <section className={cn(variant === 'paper' && 'theme-light card-paper p-5 sm:p-7', className)}>
     {title && (
       <ScriptTitle as="h2" size="section" title={title} subtitle={subtitle} actions={actions} className="mb-5" />
     )}

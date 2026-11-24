@@ -2,7 +2,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import Sidebar from './Sidebar.jsx';
-import { ThemeProvider } from '../../context/ThemeContext.jsx';
 import az from '../../i18n/locales/az.json';
 
 let currentUser = { role: 'admin', name: 'Test Admin' };
@@ -32,11 +31,7 @@ Object.defineProperty(window, 'innerWidth', {
 
 const renderAs = (role) => {
   currentUser = { role, name: `Test ${role}` };
-  render(
-    <ThemeProvider>
-      <Sidebar isMobileOpen={false} setIsMobileOpen={vi.fn()} />
-    </ThemeProvider>
-  );
+  render(<Sidebar isMobileOpen={false} setIsMobileOpen={vi.fn()} />);
   return screen.getAllByRole('link').map((a) => a.getAttribute('href'));
 };
 

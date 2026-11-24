@@ -82,10 +82,10 @@ const Profile = () => {
         )
       }
     >
-      <section className="card-paper orn-rise overflow-hidden">
+      <section className="theme-light card-paper orn-rise overflow-hidden">
         {/* wine band flowing into the parchment on a wave */}
         <div className="theme-wine login-hero relative h-32 sm:h-36" aria-hidden="true">
-          <WaveEdge fill="var(--paper-base)" className="absolute inset-x-0 -bottom-px" />
+          <WaveEdge fill="var(--paper-light)" className="absolute inset-x-0 -bottom-px" />
         </div>
 
         {isLoading ? (
@@ -107,7 +107,7 @@ const Profile = () => {
               <div className="relative shrink-0">
                 <Avatar src={form.avatar} name={form.name} className="h-28 w-28 sm:h-32 sm:w-32" textSize="3xl" />
                 {isEditing && (
-                  <span className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--paper-base)] bg-accent text-accent-fg">
+                  <span className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border-2 border-[var(--paper-light)] bg-accent text-accent-fg">
                     <Camera size={16} strokeWidth={1.6} aria-hidden="true" />
                   </span>
                 )}

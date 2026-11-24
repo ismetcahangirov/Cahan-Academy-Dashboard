@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import "./styles/components.css";
 
-/* `dark:` utilities follow the .dark class on <html> and also apply inside .theme-wine panels */
-@custom-variant dark (&:where(.dark, .dark *, .theme-wine, .theme-wine *));
+/* The LMS is dark-only: <html class="dark"> is static (no theme switch). `.theme-light` turns one panel white
+   (light tokens + light ornament art), `.theme-wine` into a deep wine panel. `dark:` utilities apply everywhere
+   except inside a `.theme-light` panel (a wine panel nested in a light one is dark again). */
+@custom-variant dark (&:where(.dark:not(.theme-light *), .dark *:not(.theme-light, .theme-light *), .theme-wine, .theme-wine *));
 
 /*
  * Cahan Academy · ornate theme tokens.  Read docs/DESIGN.md before changing anything here.
@@ -75,15 +77,9 @@
   --radius-lg: 18px;
   --radius-xl: 26px;
 
-  /* raster ornaments (dark variants are swapped in below) */
-  --tex-paper: url("/ornaments/parchment.webp");
-  --tex-lace-edge: url("/ornaments/lace-edge.webp");
-  --tex-lace-edge-v: url("/ornaments/lace-edge-v.webp");
-  --tex-lace-corner: url("/ornaments/lace-corner.webp");
-  --tex-edel-corner: url("/ornaments/edel-corner.webp");
-  --tex-bookmark: url("/ornaments/bookmark-ribbon.webp");
-  --tex-ribbon: url("/ornaments/draped-ribbon.webp");
-  --tex-seal: url("/ornaments/wax-seal.webp");
+  /* fixed light colours for fills next to / inside a .theme-light panel (the --*-base pair is the dark app's) */
+  --page-light: #FAF7F8;
+  --paper-light: #F8F4F4;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -103,8 +99,11 @@
   }
 }
 
-/* ------------------------------------------------------------------ light theme */
-:root {
+/* ------------------------------------------------------------------ light token set
+ * The app root is always .dark; these light tokens apply inside .theme-light panels (white reading panels).
+ * :root keeps them as the base so the dark set below only has to override. */
+:root,
+.theme-light {
   color-scheme: light;
 
   --page: #FAF7F8;          /* s .03  faint parchment */
@@ -112,8 +111,6 @@
   --surface-2: #F5F0F1;     /* s .06  hover, muted fills, table stripe */
   --surface-3: #EBE0E2;     /* s .12  pressed / selected */
   --paper: #F8F4F4;         /* s .045 parchment panels (+ --tex-paper) */
-  --paper-base: #F8F4F4;    /* the theme's paper, NOT overridden inside .theme-wine (wave fills) */
-  --page-base: #FAF7F8;
   --field: #FFFFFF;
 
   --ink: #170004;           /* s 1.75 wine-black body text */
@@ -148,6 +145,16 @@
   --shadow-lg: 0 28px 64px -24px rgba(92, 0, 14, 0.38), 0 6px 16px -6px rgba(92, 0, 14, 0.12);
   --glow-inset: inset 0 0 0 1px rgba(92, 0, 14, 0.03), inset 0 0 32px rgba(92, 0, 14, 0.045);
 
+  /* raster ornaments (dark variants are swapped in below) */
+  --tex-paper: url("/ornaments/parchment.webp");
+  --tex-lace-edge: url("/ornaments/lace-edge.webp");
+  --tex-lace-edge-v: url("/ornaments/lace-edge-v.webp");
+  --tex-lace-corner: url("/ornaments/lace-corner.webp");
+  --tex-edel-corner: url("/ornaments/edel-corner.webp");
+  --tex-bookmark: url("/ornaments/bookmark-ribbon.webp");
+  --tex-ribbon: url("/ornaments/draped-ribbon.webp");
+  --tex-seal: url("/ornaments/wax-seal.webp");
+
   /* legacy aliases used by pages that are not migrated yet */
   --background: var(--page);
   --foreground: var(--ink);
@@ -165,9 +172,9 @@
   --destructive: #5C000E;
 }
 
-/* ------------------------------------------------------------------ dark theme
- * .theme-wine applies the dark token set to a single panel in either theme
- * (sidebar, login hero), so ornaments and text inside it use the on-dark variants. */
+/* ------------------------------------------------------------------ dark token set (the app)
+ * .theme-wine applies the dark token set to a single panel (sidebar, dashboard / profile hero),
+ * so ornaments and text inside it use the on-dark variants. */
 .dark,
 .theme-wine {
   color-scheme: dark;
@@ -236,12 +243,18 @@
   --destructive: #E2D1D4;
 }
 
-.dark {
+/* the app's page / paper even inside .theme-wine and .theme-light panels */
+:root {
   --paper-base: #170004;
   --page-base: #120003;
 }
 
-/* A deeper, warmer wine panel (login hero, sidebar) - same in both themes */
+/* a white panel in the dark app: its own text colour (body's colour is resolved with the dark --ink) */
+.theme-light {
+  color: var(--ink);
+}
+
+/* A deeper, warmer wine panel (sidebar, dashboard hero) */
 .theme-wine {
   --page: #2E0007;          /* s 1.5 */
   --surface: #3C0009;       /* s 1.35 */
@@ -303,7 +316,7 @@ body {
 }
 
 /* Legacy: pages that still use <img src="/cahan-logo.svg" class="brand-logo"> */
-.dark .brand-logo {
+.dark .brand-logo:not(.theme-light *) {
   filter: brightness(0) invert(1);
 }
 
