@@ -110,7 +110,7 @@ try {
   for (const target of targets) {
     const session = target.role === 'public' ? null : await apiLogin(api, target.role);
     for (const width of target.widths || widths) {
-      const context = await newContext(browser, { theme: 'light', viewport: { width, height: width < 600 ? 844 : 900 }, session, reducedMotion: 'reduce' });
+      const context = await newContext(browser, { theme: 'dark', viewport: { width, height: width < 600 ? 844 : 900 }, session, reducedMotion: 'reduce' });
       const page = await context.newPage();
       const label = `${target.role}:${target.path}${target.name ? ` #${target.name}` : ''} ${width}px`;
       let issues = [];

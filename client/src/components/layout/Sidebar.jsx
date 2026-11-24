@@ -21,14 +21,11 @@ import {
   ClipboardList,
   Trophy,
   PenTool,
-  Sun,
-  Moon,
   Bell,
   Tags,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../../context/useTheme';
 import { BrandLockup, BrandMark } from '../brand';
 import { OrnamentDivider } from '../ornament';
 import { DUR, EASE } from '../../lib/motion';
@@ -40,7 +37,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const navRef = useRef(null);
   const asideRef = useRef(null);
@@ -270,7 +266,7 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           })}
         </nav>
 
-        {/* Footer: theme + logout */}
+        {/* Footer: logout */}
         <div
           className={cn(
             'relative border-t border-line-hair',
@@ -278,17 +274,6 @@ const Sidebar = ({ isMobileOpen, setIsMobileOpen }) => {
           )}
         >
           <div className={cn('min-w-0', compact ? 'space-y-1' : 'flex-1 space-y-0.5')}>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              title={compact ? (theme === 'dark' ? t('common.lightMode') : t('common.darkMode')) : undefined}
-              className={footerBtn}
-            >
-              {theme === 'dark' ? <Sun size={17} strokeWidth={1.5} /> : <Moon size={17} strokeWidth={1.5} />}
-              <span className={cn('whitespace-nowrap text-[0.95rem]', compact && 'sr-only')}>
-                {theme === 'dark' ? t('common.lightMode') : t('common.darkMode')}
-              </span>
-            </button>
             <button
               type="button"
               onClick={handleLogout}

@@ -20,7 +20,7 @@ const args = Object.fromEntries(
 const base = args.base || 'http://localhost:5173';
 const api = args.api || 'http://localhost:5000/api';
 const out = args.out || 'shots';
-const themes = (args.themes || 'light,dark').split(',');
+const themes = (args.themes || 'dark').split(',');
 const widths = (args.widths || '1440,390').split(',').map(Number);
 const fullPage = args.full !== 'false';
 

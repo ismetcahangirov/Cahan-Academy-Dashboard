@@ -156,8 +156,8 @@ const TakeExam = () => {
         </div>
       </div>
 
-      {/* Questions: calm parchment paper */}
-      <div className="paper space-y-8 rounded-[var(--radius-lg)] border border-line px-5 py-7 sm:px-9 sm:py-10">
+      {/* Questions: a white parchment panel (reading surface on the dark app) */}
+      <div className="theme-light paper space-y-8 rounded-[var(--radius-lg)] border border-line px-5 py-7 sm:px-9 sm:py-10">
         {questions.map((q, i) => (
           <fieldset key={q._id} className="min-w-0 space-y-4 border-0 p-0">
             <legend className="w-full">

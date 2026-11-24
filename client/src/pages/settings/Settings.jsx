@@ -105,7 +105,7 @@ const Settings = () => {
           role="tabpanel"
           id={`settings-panel-${activeTab}`}
           aria-labelledby={`settings-tab-${activeTab}`}
-          className="card-paper orn-rise min-w-0 flex-1 p-5 sm:p-8"
+          className="theme-light card-paper orn-rise min-w-0 flex-1 p-5 sm:p-8"
           key={activeTab}
         >
           {activeTab === 'security' && (

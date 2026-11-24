@@ -154,7 +154,7 @@ const TakeQuizModal = ({ quizId, onClose }) => {
             <ExamClock remainingMs={deadline - now} label={t('quizzes.timeLeft')} />
           </div>
         )}
-        <div className="paper space-y-7 rounded-[var(--radius-lg)] border border-line p-5 sm:p-6">
+        <div className="theme-light paper space-y-7 rounded-[var(--radius-lg)] border border-line p-5 sm:p-6">
           {questions.map((q, i) => (
             <fieldset key={q._id} className="min-w-0 space-y-3 border-0 p-0">
               <legend className="w-full">

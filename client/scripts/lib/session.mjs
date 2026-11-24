@@ -43,7 +43,7 @@ export async function apiLogin(apiUrl, role) {
 }
 
 /** Create a browser context with theme + (optional) logged-in role pre-seeded in localStorage. */
-export async function newContext(browser, { theme = 'light', viewport = { width: 1440, height: 900 }, session = null, reducedMotion } = {}) {
+export async function newContext(browser, { theme = 'dark', viewport = { width: 1440, height: 900 }, session = null, reducedMotion } = {}) {
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1, reducedMotion });
   await context.addInitScript(
     ({ theme: th, session: s }) => {

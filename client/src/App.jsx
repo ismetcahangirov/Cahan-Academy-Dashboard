@@ -9,7 +9,6 @@ import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
 import RoleRoute from './components/RoleRoute';
-import { ThemeProvider } from './context/ThemeContext';
 import Spinner from './components/common/Spinner';
 import { toastOptions } from './components/ui/toast';
 
@@ -61,8 +60,7 @@ const PageLoader = () => {
 
 function App() {
   return (
-    <ThemeProvider>
-      <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion="user">
       <Toaster position="top-right" reverseOrder={false} toastOptions={toastOptions} containerClassName="orn-toaster" />
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -118,8 +116,7 @@ function App() {
           </Route>
         </Routes>
       </Suspense>
-      </MotionConfig>
-    </ThemeProvider>
+    </MotionConfig>
   );
 }
 

@@ -65,8 +65,8 @@ the ID token the API needs).
 
 ## 2. Tokens
 
-All tokens live in `client/src/index.css` (`:root` = light, `.dark` = dark, `.theme-wine` = a wine panel in either
-theme). Tailwind utilities exist for the semantic ones (`@theme inline`):
+All tokens live in `client/src/index.css` (`:root` / `.theme-light` = the light set, `.dark` = the dark set the app
+runs on, `.theme-wine` = a wine panel). Tailwind utilities exist for the semantic ones (`@theme inline`):
 
 | token | Tailwind | light | dark | use |
 |---|---|---|---|---|
@@ -75,7 +75,8 @@ theme). Tailwind utilities exist for the semantic ones (`@theme inline`):
 | `--surface-2` | `bg-surface-2` | `#F5F0F1` | `#270006` | hover, muted fills, disabled |
 | `--surface-3` | `bg-surface-3` | `#EBE0E2` | `#370008` | pressed / selected |
 | `--paper` | `bg-paper` (+ `.paper`) | `#F8F4F4` | `#170004` | parchment panels (texture via `.paper`/`.card-paper`) |
-| `--paper-base`, `--page-base` | — | | | the theme's paper/page even inside `.theme-wine` (wave fills) |
+| `--paper-base`, `--page-base` | — | | `#170004` / `#120003` | the app's paper/page even inside `.theme-wine` / `.theme-light` |
+| `--paper-light`, `--page-light` | — | `#F8F4F4` / `#FAF7F8` | | fills toward / inside a `.theme-light` panel |
 | `--field` | `bg-field` | `#FFFFFF` | `#170004` | inputs |
 | `--ink` | `text-ink` | `#170004` | `#FFFFFF` | body text, data |
 | `--ink-muted` | `text-ink-muted` | `#86424D` | `#C19EA3` | secondary text (AA on surface) |
@@ -101,6 +102,14 @@ are not migrated keep working. **Do not use them in migrated code.** `bg-bordo` 
 `.theme-wine` on any element turns its subtree into a deep wine panel with dark-theme tokens and dark ornament
 variants (`dark:` utilities apply inside it too). Use it for auth heroes and wine bands. `.login-hero` adds the
 radial wine gradient + grain.
+
+### Theme: dark base with white panels (owner requirement, 2026-11-24)
+There is **no theme switch** (ThemeContext and the sidebar / auth toggles are gone). `<html class="dark">` is static
+in `client/index.html`, so the dark set is the app's base. Reading and form panels are white: put `.theme-light` on
+the panel (with `card-paper` / `paper`). It re-applies the light tokens and light ornament art inside, and `dark:`
+utilities stop applying there (the custom variant excludes `.theme-light` subtrees; component rules written as
+`.dark .x` carry `:not(.theme-light *)`). Current white panels: `Section variant="paper"` (detail info, course
+lessons), Profile card, Settings panel, exam and quiz question sheets. The sidebar and heroes stay `.theme-wine`.
 
 ---
 
@@ -371,10 +380,10 @@ cd server && E2E_PASSWORD='<any password>' npm run e2e:local
 # 2. client (terminal 2) — port 5173 is required (CORS allow-list)
 cd client && VITE_API_URL=http://localhost:5000/api npm run dev
 
-# 3. screenshots: light + dark, 1440 + 390, every role that sees the page — then LOOK at them
+# 3. screenshots: 1440 + 390, every role that sees the page — then LOOK at them
 E2E_PASSWORD='<same>' node scripts/screenshots.mjs --routes "admin:/groups,teacher:/groups,student:/groups" --out ../shots/groups
 
-# 4. colour audit (runtime) — must print 0 violations for your routes, both themes, both widths
+# 4. colour audit (runtime) — must print 0 violations for your routes, both widths
 E2E_PASSWORD='<same>' node scripts/color-audit.mjs --routes "admin:/groups,teacher:/groups" --out ../shots/groups/audit
 #    (--scope "main" audits only page content; --widths 1440 for a quick pass)
 
@@ -384,8 +393,7 @@ node scripts/color-lint.mjs
 # 6. build, tests, lint
 npm run build && npx vitest run && npx eslint <touched files>
 ```
-Also open interactive states the screenshots miss (modal open, menu open, toast, error state, empty state) in
-both themes, and check keyboard focus is visible. `/_kit` shows every component for comparison.
+Also open interactive states the screenshots miss (modal open, menu open, toast, error state, empty state), and check keyboard focus is visible. `/_kit` shows every component for comparison.
 
 Interactive states are scriptable: `--actions "click=role=button[name=/Yeni Qrup/i]"` (+ `--name create`) on
 `screenshots.mjs` / `color-audit.mjs` / `a11y-scan.mjs`, or `--plan scripts/qa-plan.json [--only "teacher:/exams"]`
