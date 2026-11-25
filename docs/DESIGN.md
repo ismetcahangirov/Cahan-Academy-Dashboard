@@ -117,7 +117,7 @@ lessons), Profile card, Settings panel, exam and quiz question sheets. The sideb
 
 | role | family | token / class | rules |
 |---|---|---|---|
-| Title italic | **Cahan Display 400** — the academy's own high-contrast serif (Light 300 / Regular 400 / Bold 700, OFL; source in `docs/brand/font/cahan-display/`) | `font-script`, `.script-title`, `<ScriptTitle>` | page and section titles, empty-state line, auth hero line. **Never** for data, buttons, inputs, tables, nav. |
+| Title | **Times New Roman** 400 (owner, 2026-11-25, same as the landing site; system font via `--font-title`: Times New Roman → Times → Liberation Serif → serif, also all `h1`–`h6`). Cahan Display (Light/Regular/Bold, OFL, `docs/brand/font/cahan-display/`) stays as an `@font-face` to switch back, not downloaded while unused | `font-script`, `.script-title`, `<ScriptTitle>` | page and section titles, empty-state line, auth hero line. **Never** for data, buttons, inputs, tables, nav. |
 | Body + data | **EB Garamond** (400/500/600/700 + italic) | `font-serif` (default body) | everything readable. `.num` = lining tabular figures for tables/stats. `.time-italic` for times. |
 | Small caps | **Cormorant SC** (500/600/700) | `font-sc`, `.sc` | labels, table headers, buttons, badges, subtitles, eyebrow, nav meta. Letter-spacing ~.1em is built in. Always rendered `text-transform: uppercase` with `<html lang>` synced to the UI language: Cormorant SC draws lowercase `i` as a dotless small cap, which reads as Azerbaijani "ı" — uppercase + `lang="az"` gives the correct "İ". Never remove the uppercase from SC styles. |
 

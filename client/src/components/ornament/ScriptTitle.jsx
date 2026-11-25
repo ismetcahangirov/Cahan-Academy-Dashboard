@@ -18,7 +18,7 @@ import OrnamentDivider from './OrnamentDivider';
  * semibold, wraps cleanly). Only a detail page may use its entity's (person's) name as the page title.
  */
 const SIZES = {
-  // sized for Cahan Display titles; the old script font needed ~25% more
+  // sized for the title face (now Times New Roman; was Cahan Display); the old script font needed ~25% more
   hero: 'text-[2.7rem] sm:text-[3.3rem]',
   page: 'text-[2.1rem] sm:text-[2.45rem]',
   section: 'text-[1.7rem] sm:text-[1.95rem]',
