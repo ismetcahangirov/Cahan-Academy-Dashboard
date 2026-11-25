@@ -49,7 +49,9 @@ const AuthLayout = ({ children, className }) => (
       {/* parchment texture, toned down to a soft hint (owner: not flat, not as strong as .paper) */}
       <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'var(--tex-paper)', backgroundSize: '512px 512px' }} />
       <div className="absolute inset-0 flex items-center justify-center">
-        <BrandMark className="w-auto max-w-none shrink-0 translate-x-[6vw] text-wine opacity-[0.13] dark:text-white dark:opacity-[0.1]" style={{ height: '100vh' }} />
+        {/* full height on wide screens; on phones (portrait) the width decides, so the whole mark stays on screen
+            (aspect 1.36: 60vw tall = 81vw wide; the 7% nudge is the old 6vw optical offset, relative to the mark) */}
+        <BrandMark className="w-auto max-w-none shrink-0 translate-x-[7%] text-wine opacity-[0.13] dark:text-white dark:opacity-[0.1]" style={{ height: 'min(100vh, 60vw)' }} />
       </div>
       <EdelweissCorner corner="tl" className={cn('absolute left-0 top-0', CORNER_SIZE)} />
       <EdelweissCorner corner="tr" delay={240} className={cn('absolute right-0 top-0', CORNER_SIZE)} />
