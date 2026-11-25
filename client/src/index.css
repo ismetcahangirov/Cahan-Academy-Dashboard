@@ -24,7 +24,10 @@
   --color-white: #FFFFFF;
   --color-black: #000000;
 
-  --font-script: "Cahan Display", "EB Garamond", "Georgia", serif; /* titles: the academy's own typeface (docs/brand/font/cahan-display) */
+  /* titles + h1-h6: Times New Roman (owner, 2026-11-25, same as the landing site). Cahan Display stays loaded as an
+     @font-face (src/fonts.js) but is only downloaded if a rule uses it again; switch back by editing --font-title. */
+  --font-title: "Times New Roman", Times, "Liberation Serif", "Nimbus Roman", serif;
+  --font-script: var(--font-title);
   --font-serif: "EB Garamond", "Garamond", "Georgia", serif;
   --font-sc: "Cormorant SC", "EB Garamond", "Georgia", serif;
   --font-sans: "EB Garamond", "Garamond", "Georgia", serif;
@@ -288,6 +291,9 @@ body {
 }
 
 @layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-title);
+  }
   * {
     border-color: var(--line);
   }
